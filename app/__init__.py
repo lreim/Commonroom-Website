@@ -6,6 +6,7 @@ from flask_socketio import SocketIO
 bootstrap = Bootstrap()
 socketio = SocketIO()
 
+
 #Application factory: erzeugt jedes Mal neu konfiguierte Flask-App 
 #je nachdem, was für (config_name) eingesetzt wird und aufgerufen wird, wier app verschieden konfiguriert 
 def create_app(config_name):
