@@ -1,10 +1,8 @@
 from flask import Flask
 from flask_bootstrap import Bootstrap
 from config import config
-from flask_socketio import SocketIO
 
 bootstrap = Bootstrap()
-socketio = SocketIO()
 
 
 #Application factory: erzeugt jedes Mal neu konfiguierte Flask-App 
@@ -16,7 +14,6 @@ def create_app(config_name):
 
     #extensions an app binden, statt nur wie oben zu definieren 
     bootstrap.init_app(app)
-    socketio.init_app(app)
     
 
     from .main import main as main_blueprint
