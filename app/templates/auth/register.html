@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}TalkTo - Login{% endblock %}
+{% block title %}TalkTo - Register{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    <h1>Login :D</h1>
+    <h1>Register -- Join the group ;)</h1>
 </div>
 <p>
-    New friend?
-    <a href="{{ url_for('auth.register') }}">
-        Click here to register
+    Old friend?
+    <a href="{{ url_for('auth.login') }}">
+        Click here to lock in
     </a>
 </p>
 <div class="col-md-4">
