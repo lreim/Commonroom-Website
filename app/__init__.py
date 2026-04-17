@@ -1,8 +1,18 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from config import config
+from flask_migrate import Migrate
+from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
+
 
 bootstrap = Bootstrap()
+db = SQLAlchemy()
+migrate = Migrate()
+
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'      #endpoint for the login page 
+login_manager.session_protection = 'strong'
 
 
 #Application factory: erzeugt jedes Mal neu konfiguierte Flask-App 
@@ -14,7 +24,11 @@ def create_app(config_name):
 
     #extensions an app binden, statt nur wie oben zu definieren 
     bootstrap.init_app(app)
-    
+    db.init_app(app)
+    migrate.init_app(app,db)
+    login_manager.init_app(app)
+
+    from . import models
 
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)   #hängt alle Routen an die App

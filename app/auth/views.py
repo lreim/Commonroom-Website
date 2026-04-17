@@ -14,6 +14,13 @@ def login():
         return redirect(url_for("main.index"))
     return render_template("auth/login.html", form=form)
 
+@auth.route('/logout')
+@login_required
+def logout():
+    logout_user()     #removes and resets the user session
+    flash('You have been logged out, see you soon!')
+    return redirect(url_for('main.index'))
+
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()

@@ -1,3 +1,5 @@
 Flask
 Flask-Bootstrap
 Flask-Login
+Flask-SQLAlchemy
+Flask-Migrate
