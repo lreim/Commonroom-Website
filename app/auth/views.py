@@ -6,7 +6,8 @@ from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailF
 from .. import db 
 from ..email import send_email
 
-@auth.route("/login", methods=["GET", "POST"])
+
+@auth.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -16,7 +17,7 @@ def login():
             flash(f"{form.email.data} locked in!")
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Welp, invalid username or password, my friend.')
-    return render_template("auth/login.html", form=form)
+    return render_template('auth/login.html', form=form)
 
 @auth.route('/logout')
 @login_required
@@ -34,10 +35,9 @@ def register():
         db.session.commit()
         token = user.generate_confirmation_token()
         send_email(user.email, 'Please Confirm Your Account', 'auth/email/confirm', user=user, token=token)
-        flash('A confirmation email has been sent to you. Please take a look (innert the next hour)!')
+        flash('A confirmation email has been sent to you. Pls take a look!')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
-
 
 @auth.route('/confirm/<token>')
 @login_required    #first log in after clicking on link in email

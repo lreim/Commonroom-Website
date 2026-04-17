@@ -1,0 +1,3 @@
+{% macro user_link(user) -%}
+<a href="{{ url_for('main.user', username=user.username) }}">{{ user.username }}</a>
+{%- endmacro %}

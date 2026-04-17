@@ -1,0 +1,12 @@
+{% from "_macros.html" import user_link %}
+Dear {{ user_link(user) }},
+
+To confirm your changed email please click on the following link:
+
+{{ url_for('auth.change_email', token=token, _external=True) }}
+
+Sincerely,
+
+The TalkTo Developers
+
+Note: replies to this email address are not monitored.

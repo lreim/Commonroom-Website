@@ -1,0 +1,5 @@
+{% from "_macros.html" import user_link %}
+<p>Hi {{ user_link(user) }},</p>
+<p>Please verify your account:</p>
+<p><a href="{{ url_for('auth.confirm', token=token, _external=True) }}">Confirm</a></p>
+<p>If that wasnt you, ignore this mail.</p>

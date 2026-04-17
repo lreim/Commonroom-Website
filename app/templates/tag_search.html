@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Tag Search{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+  <h1>Tag Search</h1>
+  <p>Use one search bar to find existing tags with semantic matching.</p>
+</div>
+
+<div
+  id="tag-search-widget"
+  data-tag-widget="search"
+  data-search-endpoint="{{ url_for('main.tag_search_api') }}"
+  data-all-tags='{{ all_tags|tojson }}'
+>
+  <div class="form-group">
+    <input id="tag-search-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, loneliness, study strategy, making friends)">
+  </div>
+
+  <h4>Matches</h4>
+  <div id="tag-search-results" class="tag-results"></div>
+
+  <hr>
+  <h4>Existing Tags</h4>
+  <div id="tag-existing-list" class="tag-list"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
+{% endblock %}

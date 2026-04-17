@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% from "_macros.html" import user_link %}
+{% block title %}Chat{% endblock %}
+
+{% block page_content %}
+<div class="chat-page">
+  <div class="chat-header">
+    <h3>Chat mit {{ user_link(other) }}</h3>
+    {% if pagination.has_next %}
+      <a class="chat-load-older" href="{{ url_for('chat.detail', conversation_id=conversation.id, page=pagination.next_num) }}">Aeltere laden</a>
+    {% endif %}
+  </div>
+
+  <ul id="messages" class="chat-messages">
+    {% for m in messages %}
+      <li class="chat-message{% if m.author_id == current_user.id %} chat-message-own{% endif %}">
+        <div class="chat-bubble">
+          <div class="chat-meta">
+            <span class="chat-author">{{ user_link(m.author) }}</span>
+            <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
+          </div>
+          <div class="chat-body">{{ m.body }}</div>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <form id="chat-form" class="chat-form">
+    <input id="chat-input" type="text" autocomplete="off" placeholder="Nachricht..." />
+    <button type="submit">Senden</button>
+  </form>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+  const conversationId = Number("{{ conversation.id }}");
+  const currentUserId = Number("{{ current_user.id }}");
+  const socket = io();
+
+  function formatTimestamp(isoString) {
+    const date = new Date(isoString);
+    return date.toLocaleString("de-DE", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  function createMessageElement(msg) {
+    const li = document.createElement("li");
+    li.className = "chat-message" + (msg.author_id === currentUserId ? " chat-message-own" : "");
+
+    const bubble = document.createElement("div");
+    bubble.className = "chat-bubble";
+
+    const meta = document.createElement("div");
+    meta.className = "chat-meta";
+
+    const author = document.createElement("span");
+    author.className = "chat-author";
+    author.textContent = msg.author_username;
+
+    const time = document.createElement("span");
+    time.className = "chat-time";
+    time.textContent = formatTimestamp(msg.created_at);
+
+    const body = document.createElement("div");
+    body.className = "chat-body";
+    body.textContent = msg.body;
+
+    meta.appendChild(author);
+    meta.appendChild(time);
+    bubble.appendChild(meta);
+    bubble.appendChild(body);
+    li.appendChild(bubble);
+    return li;
+  }
+
+  socket.on("connect", () => {
+    socket.emit("join_conversation", { conversation_id: conversationId });
+  });
+
+  socket.on("new_message", (msg) => {
+    if (msg.conversation_id !== conversationId) return;
+    document.getElementById("messages").appendChild(createMessageElement(msg));
+  });
+
+  document.getElementById("chat-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = document.getElementById("chat-input");
+    const body = input.value.trim();
+    if (!body) return;
+    socket.emit("send_message", { conversation_id: conversationId, body });
+    input.value = "";
+  });
+</script>
+{% endblock %}

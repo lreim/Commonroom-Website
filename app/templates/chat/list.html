@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import user_link %}
+
+{% block title %}Chats{% endblock %}
+
+{% block page_content %}
+<h2>Private Chats</h2>
+
+<hr>
+
+<h4>Your Chats</h4>
+<ul class="chat-list">
+  {% for item in items %}
+    <li>
+      <a href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}">Chat mit {{ item.other.username }}</a>
+      {% if item.last_msg %}
+        - {{ item.last_msg.body }}
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+<h4>Start Chat</h4>
+<form method="get" action="{{ url_for('chat.index') }}" style="margin-bottom: 12px;">
+  <input type="text" name="q" value="{{ q or '' }}" placeholder="search for username">
+  <button type="submit">Search</button>
+</form>
+
+{% if q %}
+  <ul class="chat-list">
+  {% for u in users %}
+    <li>
+      <form method="post" action="{{ url_for('chat.start', user_id=u.id) }}" style="margin-bottom:8px;">
+        <button type="submit">Chat with {{ user_link(u) }}</button>
+      </form>
+    </li>
+  {% endfor %}
+  </ul>
+  {% if not users %}
+    <p>No user found.</p>
+  {% endif %}
+{% else %}
+  <p>Search for a user to start a chat.</p>
+{% endif %}
+
+{% endblock %}

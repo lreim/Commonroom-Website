@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}TalkTo - Unconfirmed status{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>You are stuck until you confirm your email... :D</h1>
+</div>
+<p>
+    <a href="{{ url_for('auth.login') }}">
+        Click here to log in
+    </a>
+</p>
+<p>
+  <a href="{{ url_for('auth.resend_confirmation') }}">
+    Click here to resend a confirmation email.
+  </a>
+</p>
+
+{% endblock %}

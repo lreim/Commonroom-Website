@@ -7,5 +7,41 @@
 <p>Good seeing you here! 
     Let me give you a quick overview on what to do next. 
 </p>
+<p>
+    The local date and time is {{ moment(current_time).format('LLL') }}.
+</p>
+<p>
+    That was {{ moment(current_time).fromNow(refresh=True) }} <!--Idee: die Zeit evtl in der oberen Leiste anzeigen??-->
+</p>
+<div class="page-header">
+    <h1>
+        Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %} Stranger {% endif %}! <!--unnecessary greeting-->
+    </h1>
+    {% if not known %}
+    <p> 
+        Pleased to meet you!
+    </p>
+    {% else %}
+    <p>
+        Happy to see you again!
+    </p>
+    {% endif %}
+</div>
+{{wtf.quick_form(form)}}
 
 {% endblock %}
+<!-- oben wird die aktuelle Zeit angegeben, evtl in side bar oder top bar schreiben
+ The format('LLL') format renders the date and time according to the time zone and
+locale settings in the client computer. The argument determines the rendering style,
+from 'L' to 'LLLL' for different levels of verbosity. The format() function can also
+accept custom format specifiers.
+
+The fromNow() render style shown in the second line renders a relative timestamp and
+automatically refreshes it as time passes. Initially this timestamp will be shown as “a few
+seconds ago,” but the refresh option will keep it updated as time passes, so if you leave
+the page open for a few minutes you will see the text changing to “a minute ago,” then
+“2 minutes ago,” and so on.-->
+
+
+
+<!--ToDO: language selecten-->
