@@ -4,11 +4,13 @@ from config import config
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail
 
 
 bootstrap = Bootstrap()
 db = SQLAlchemy()
 migrate = Migrate()
+mail = Mail()
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'      #endpoint for the login page 
@@ -27,6 +29,7 @@ def create_app(config_name):
     db.init_app(app)
     migrate.init_app(app,db)
     login_manager.init_app(app)
+    mail.init_app(app)
 
     from . import models
 

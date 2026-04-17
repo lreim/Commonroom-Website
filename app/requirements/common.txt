@@ -3,3 +3,4 @@ Flask-Bootstrap
 Flask-Login
 Flask-SQLAlchemy
 Flask-Migrate
+Flask-Mail
