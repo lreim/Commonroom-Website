@@ -11,10 +11,11 @@ from ..email import send_email
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        email = User.normalize_email(form.email.data)
+        user = User.query.filter_by(email=email).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
-            flash(f"{form.email.data} locked in!")
+            flash(f"{email} locked in!")
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Welp, invalid username or password, my friend.')
     return render_template('auth/login.html', form=form)
@@ -33,7 +34,8 @@ def reset_password_mail():
         return redirect(url_for('main.index'))
     form = form = EmailForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        email = User.normalize_email(form.email.data)
+        user = User.query.filter_by(email=email).first()
         if user is not None:
             token = user.generate_reset_token()
             send_email(
@@ -68,7 +70,11 @@ def reset_password(token):
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        user = User(email=form.email.data, username=form.username.data, password=form.password.data)
+        user = User(
+            email=User.normalize_email(form.email.data),
+            username=form.username.data,
+            password=form.password.data
+        )
         db.session.add(user)
         db.session.commit()
         token = user.generate_confirmation_token()

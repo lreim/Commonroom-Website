@@ -68,6 +68,10 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
+    @staticmethod
+    def normalize_email(email):
+        return email.strip().lower() if email else email
+
     def generate_confirmation_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
         return s.dumps({'confirm': self.id})
@@ -141,6 +145,8 @@ class User(UserMixin, db.Model):
     
     #when registering initialise user with a specific email (TALKTO_ADMIN) with administrator role 
     def __init__(self, **kwargs):
+        if 'email' in kwargs:
+            kwargs['email'] = self.normalize_email(kwargs['email'])
         super(User, self).__init__(**kwargs)
         if self.role is None:
             if self.email == current_app.config['TALKTO_ADMIN']:
