@@ -10,6 +10,21 @@ class LoginForm(FlaskForm):
     remember_me = BooleanField("Keep me logged in")
     submit = SubmitField("Let's Lock in ;)")
 
+class EmailForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Send verification token to reset password")
+
+class ResetForm(FlaskForm):
+    password = PasswordField(
+        "Password",
+        validators=[
+            DataRequired(),
+            Length(8, 128),
+            EqualTo('password2', message='Passwords must match.')
+        ]
+    )
+    password2 = PasswordField("Confirm password", validators=[DataRequired()])
+    submit = SubmitField("Save new password")
 
 class RegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(8, 64), Email()])
@@ -17,7 +32,11 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username(TODO: given)', validators=[DataRequired(), Length(max=64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
                                                                                         'Usernames must have only letters, '
                                                                                         'numbers, dots or underscores')])
-    password = PasswordField('Password', validators=[DataRequired(), EqualTo('password2', message='Passwords must match.')])
+    password = PasswordField('Password', validators=[DataRequired(), Length(8, 128),
+        Regexp(
+            r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$',
+            message='Password must contain uppercase, lowercase, and a number.'), 
+        EqualTo('password2', message='Passwords must match.')])
     password2 = PasswordField('Confirm password', validators=[DataRequired()])
     submit = SubmitField('Register and join the community! ')
 
