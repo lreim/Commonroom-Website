@@ -2,6 +2,7 @@ from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
 from . import db, login_manager
+from sqlalchemy.orm import validates
 import hashlib 
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app, request
@@ -72,6 +73,10 @@ class User(UserMixin, db.Model):
     def normalize_email(email):
         return email.strip().lower() if email else email
 
+    @validates('email')
+    def _normalize_email(self, key, email):
+        return self.normalize_email(email)
+
     def generate_confirmation_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])
         return s.dumps({'confirm': self.id})
@@ -116,6 +121,7 @@ class User(UserMixin, db.Model):
         new_email = data.get('new_email')
         if not new_email:
             return False
+        new_email = self.normalize_email(new_email)
         if User.query.filter_by(email=new_email).first():
             return False
 
