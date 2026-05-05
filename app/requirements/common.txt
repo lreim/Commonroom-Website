@@ -25,3 +25,4 @@ WTForms==3.2.1
 zipp==3.23.0
 sentence-transformers==3.0.1
 Flask-SocketIO==5.3.6
+python-dotenv
