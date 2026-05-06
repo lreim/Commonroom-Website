@@ -4,6 +4,19 @@ body {
   background-color: #f9f5e8;
 }
 
+.session-timeout-badge {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2000;
+  padding: 8px 12px;
+  border: 1px solid #c7b78b;
+  border-radius: 6px;
+  background: #fff8e8;
+  color: #4b3b12;
+  font-size: 13px;
+}
+
 .layout {
   display: flex;
   min-height: 100vh;

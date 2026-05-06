@@ -48,6 +48,12 @@ def create_app(config_name):
     app.register_blueprint(chat_blueprint, url_prefix='/chat')
 
     from .chat import events 
+
+    @app.context_processor
+    def inject_session_timeout():
+        lifetime = app.config.get('PERMANENT_SESSION_LIFETIME')
+        timeout_minutes = int(lifetime.total_seconds() // 60) if lifetime else 0
+        return dict(session_timeout_minutes=timeout_minutes)
     
     # attach routes and custom error pages here
     @app.shell_context_processor

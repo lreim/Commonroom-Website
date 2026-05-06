@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 basedir = os.path.abspath(os.path.dirname(__file__)) #nötig für path con database 
 
@@ -10,6 +11,13 @@ class Config:
     TALKTO_MAIL_SENDER = 'TALKTO Developers <lissy.reim@t-online.de>'
     TALKTO_ADMIN = os.environ.get('TALKTO_ADMIN')
     TALKTO_POSTS_PER_PAGE = 20
+    #für Sicherheit bei Nutzung von Login session cookies 
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=20)   #damit man automatisch ausgeloggt werden kann nach einer bestimmten Zeitspanne, 
+                                                     # der cookie überträgt login daten von request zu request
+    REMEMBER_COOKIE_DURATION = timedelta(days=7)        # cookie, der den user wiedererkennt, wenn remember_me aktiviert wurde, damit man sich nicht einloggen muss.
+    REMEMBER_COOKIE_HTTPONLY = False #True für Deploy!!!!!# !!!!!!!!!!!!!!!!!!!!!!
+    REMEMBER_COOKIE_SECURE = False
+    REMEMBER_COOKIE_SAMESITE = "Lax"
 
     @staticmethod
     def init_app(app):
@@ -50,3 +58,11 @@ config = {
 #app.config['MAIL_SUBJECT_PREFIX'] = '[TalkTo] '
 #app.config['MAIL_SENDER'] = 'TalkTo Developers <lissy.reim@t-online.de>'
 #app.config['TALKTO_ADMIN'] = os.environ.get('TALKTO_ADMIN')
+
+
+
+
+
+
+
+#TODO: ändere Cookie Secure zu True 

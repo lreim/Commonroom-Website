@@ -48,10 +48,38 @@
 {% block scripts %}
 {{ super() }}
 {{ moment.include_moment() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const countdown = document.getElementById("session-timeout-countdown");
+  if (!countdown) {
+    return;
+  }
+
+  let remainingMinutes = Number(countdown.dataset.timeoutMinutes || 0);
+
+  function renderCountdown() {
+    countdown.textContent = "Timeout in " + Math.max(remainingMinutes, 0) + " min";
+  }
+
+  renderCountdown();
+
+  window.setInterval(function () {
+    remainingMinutes -= 2;
+    renderCountdown();
+  }, 120000);
+});
+</script>
 {% endblock %}
 
 {% block content %}
 <div class="container">
+  {% if current_user.is_authenticated and session_timeout_minutes %}
+  <div
+    id="session-timeout-countdown"
+    class="session-timeout-badge"
+    data-timeout-minutes="{{ session_timeout_minutes }}"
+  ></div>
+  {% endif %}
   {% for message in get_flashed_messages() %}
   <div class="alert alert-warning">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
