@@ -4,17 +4,77 @@ body {
   background-color: #f9f5e8;
 }
 
-.session-timeout-badge {
-  position: fixed;
-  top: 16px;
-  right: 16px;
+.profile-menu {
+  position: absolute;
+  top: 6px;
+  right: 15px;
+  margin: 0;
+}
+
+.profile-menu-trigger {
+  display: block;
+  padding: 0;
+  line-height: 1;
+}
+
+.profile-menu-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #d8c9a4;
+  object-fit: cover;
+}
+
+.profile-menu-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 220px;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #d7ccb4;
+  border-radius: 8px;
+  background: #fffdf7;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
   z-index: 2000;
-  padding: 8px 12px;
-  border: 1px solid #c7b78b;
-  border-radius: 6px;
-  background: #fff8e8;
-  color: #4b3b12;
-  font-size: 13px;
+}
+
+.profile-menu-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.profile-menu:hover .profile-menu-dropdown,
+.profile-menu:focus-within .profile-menu-dropdown {
+  display: block;
+}
+
+.profile-menu-dropdown a {
+  display: block;
+  margin-bottom: 10px;
+  color: #2d1d00;
+  text-decoration: none;
+}
+
+.profile-menu-dropdown a:last-child {
+  margin-bottom: 0;
+}
+
+.profile-menu-dropdown a:hover {
+  text-decoration: underline;
+}
+
+.profile-menu-timeout {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e3d9c5;
+  font-size: 12px;
+  color: #6d624e;
 }
 
 .layout {

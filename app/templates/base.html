@@ -26,18 +26,38 @@
         <li><a href="{{ url_for('main.index') }}">Home</a></li>
         <li><a href="{{ url_for('main.about') }}">About</a></li>   <!--in urls, nicht in paths -->
         <li><a href="{{ url_for('main.onboarding') }}">Onboarding</a></li>
-        <li><a href="#">test:auth={{ current_user.is_authenticated }} id={{ current_user.get_id() }}</a></li>
         <li><a href="{{ url_for('main.rules') }}">Rules</a></li>
         {%if current_user.is_authenticated %}    <!--current_user is defined by Flask-Login-->
-        <li><a href="{{ url_for('main.user', username=current_user.username) }}">User Profile</a></li>
         <li><a href="{{ url_for('main.tag_search') }}">Tagsearch</a></li>
         <li><a href="{{ url_for('main.post')}}"> Post</a></li>
-        <li><a href="{{ url_for('auth.logout')}}"> Sign Out</a></li>
         <li><a href="{{ url_for('chat.index')}}"> Chats Index</a></li>
         {%else%}
         <li><a href="{{ url_for('auth.login')}}"> Sign In</a></li>
         {%endif%}
       </ul>
+      {% if current_user.is_authenticated %}
+      <div class="nav navbar-nav navbar-right profile-menu">
+        <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
+          <img
+            src="{{ current_user.gravatar(size=40) }}"
+            alt="{{ current_user.username }}"
+            class="profile-menu-avatar"
+          >
+        </a>
+        <div class="profile-menu-dropdown">
+          {% if session_timeout_minutes %}
+          <div
+            id="session-timeout-countdown"
+            class="profile-menu-timeout"
+            data-timeout-minutes="{{ session_timeout_minutes }}"
+          ></div>
+          {% endif %}
+          <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
+          <a href="{{ url_for('auth.change_password') }}">Settings</a>
+          <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -62,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
   renderCountdown();
 
   window.setInterval(function () {
-    remainingMinutes -= 1;
+    remainingMinutes -= 2;
     renderCountdown();
   }, 120000);
 });
@@ -71,13 +91,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 {% block content %}
 <div class="container">
-  {% if current_user.is_authenticated and session_timeout_minutes %}
-  <div
-    id="session-timeout-countdown"
-    class="session-timeout-badge"
-    data-timeout-minutes="{{ session_timeout_minutes }}"
-  ></div>
-  {% endif %}
   {% for message in get_flashed_messages() %}
   <div class="alert alert-warning">
     <button type="button" class="close" data-dismiss="alert">&times;</button>

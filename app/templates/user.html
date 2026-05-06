@@ -38,6 +38,9 @@
     <p>
     <a class="btn btn-default" href="{{ url_for('auth.change_email_request') }}">Change Email</a>
     </p>
+    <p>
+    <a class="btn btn-default" href="{{ url_for('auth.logout')}}"> Sign Out</a>
+    </p>
   {% endif %}
   {% if current_user.is_authenticated and user != current_user %}
   <form method="post" action="{{ url_for('chat.start', user_id=user.id) }}" style="display:inline-block; margin-left: 8px;">
