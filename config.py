@@ -67,3 +67,5 @@ config = {
 
 #TODO: ändere Cookie Secure zu True
 #      mache form kästchen größer, sodass der graue placeholder text reinpasst 
+#      evtl timeout rausmachen und dann nur beim Browserschließen session rememberen oder beenden lassen. 
+#      change edit_profile form inputs, think of what is really important and necessary 

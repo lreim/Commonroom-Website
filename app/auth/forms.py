@@ -13,6 +13,15 @@ class LoginForm(FlaskForm):
 class EmailForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()], render_kw={"placeholder": "hello@blah.com"})
     submit = SubmitField("Send verification token to reset password")
+    def validate_email(self, field):
+        email = User.normalize_email(field.data)
+        domain = email.split("@")[-1]
+
+        if domain not in {"ethz.ch", "student.ethz.ch"}:
+            raise ValidationError("Please use a valid ETH email address.")
+
+        if User.query.filter_by(email=email).first():
+            raise ValidationError("Email already registered.")
 
 class ResetForm(FlaskForm):
     password = PasswordField(
@@ -40,8 +49,13 @@ class RegistrationForm(FlaskForm):
 
     def validate_email(self, field):
         email = User.normalize_email(field.data)
+        domain = email.split("@")[-1]
+
+        if domain not in {"ethz.ch", "student.ethz.ch"}:
+            raise ValidationError("Please use a valid ETH email address.")
+
         if User.query.filter_by(email=email).first():
-            raise ValidationError('Email already registered.')
+            raise ValidationError("Email already registered.")
     
     def validate_username(self, field):
         if User.query.filter_by(username=field.data).first():
@@ -60,7 +74,14 @@ class ChangeEmailForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Update Email Address')
 
+    #test valid ethz domain 
     def validate_email(self, field):
         email = User.normalize_email(field.data)
+        domain = email.split("@")[-1]
+
+        if domain not in {"ethz.ch", "student.ethz.ch"}:
+            raise ValidationError("Please use a valid ETH email address.")
+
         if User.query.filter_by(email=email).first():
-            raise ValidationError('Email already registered.')
+            raise ValidationError("Email already registered.")
+
