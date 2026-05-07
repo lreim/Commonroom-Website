@@ -137,7 +137,10 @@ def tag_search_api():
         tag = tag_map.get(match["name"])
         users = []
         if tag is not None:
-            tag_users = tag.users.order_by(User.username.asc()).limit(6).all()
+            tag_users = [
+                u for u in tag.users.order_by(User.username.asc()).all()
+                if not current_user.is_authenticated or u.id != current_user.id
+            ][:6]
             for u in tag_users:
                 user_tag_names = sorted(t.name for t in u.tags)
                 matching_tags = [name for name in user_tag_names if name in matched_tag_names]
@@ -183,5 +186,3 @@ def for_admins_only():
 @permission_required(Permission.MODERATE_COMMENTS)
 def for_moderators_only():
     return "For comment moderators!"
-
-#füge diesen ^ Block für jede neue Unterseite neu ein
