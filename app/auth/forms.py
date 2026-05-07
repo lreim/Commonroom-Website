@@ -37,10 +37,6 @@ class ResetForm(FlaskForm):
 
 class RegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(8, 64), Email()], render_kw={"placeholder": "hello@blah.com"})
-    
-    username = StringField('Username(TODO: given)', validators=[DataRequired(), Length(max=64), Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-                                                                                        'Usernames must have only letters, '
-                                                                                        'numbers, dots or underscores')], render_kw={"placeholder": "Usernames must have only letters, numbers, dots or underscores"})
     password = PasswordField('Password', validators=[DataRequired(), Length(8, 128),
         Regexp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$', message='Password must contain uppercase, lowercase, and a number.'), 
         EqualTo('password2', message='Passwords must match.')], render_kw={"placeholder": "8-128 characters, include upper/lowercase and a number"})

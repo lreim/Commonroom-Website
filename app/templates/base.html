@@ -86,6 +86,20 @@ document.addEventListener("DOMContentLoaded", function () {
   }, 120000);
 });
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  window.setTimeout(function () {
+    document.querySelectorAll(".alert").forEach(function (alert) {
+      alert.style.transition = "opacity 0.4s ease";
+      alert.style.opacity = "0";
+      window.setTimeout(function () {
+        alert.remove();
+      }, 400);
+    });
+  }, 5000);
+});
+</script>
+
 {% endblock %}
 
 {% block content %}

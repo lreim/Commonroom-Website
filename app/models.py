@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, AnonymousUserMixin
 from . import db, login_manager
 from sqlalchemy.orm import validates
-import hashlib 
+import hashlib, random 
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app, request
 from datetime import datetime, timezone 
@@ -69,6 +69,20 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
+    @staticmethod
+    def generate_username():
+        adjectives = ["quiet", "lucid", "steady", "subtle", "bright", "calm", "gentle", "keen", "vivid", "patient", 
+                      "hidden", "rapid", "silver", "amber", "curious", "clever", "atomic", "cosmic", "linear", "radial"]
+
+        science_nouns = ["vector", "tensor", "matrix", "scalar", "theorem", "lemma", "integral", "gradient", "eigen", "prime", "fractal", "vertex", "axis", "quark", "photon", "neutrino",
+                         "proton", "boson", "fermion", "plasma", "ion", "lattice", "pulse", "flux", "quasar", "nova", "comet", "nebula", "eclipse", "aurora", "isotope",
+                         "molecule", "atom", "genome", "catalyst", "crystal", "signal", "orbit", "spectrum", "cosmos"]
+
+        while True:
+            username = f"{random.choice(adjectives)}-{random.choice(science_nouns)}-{random.randint(1000, 9999)}"
+            if not User.query.filter_by(username=username).first():
+                return username
+            
     @staticmethod
     def normalize_email(email):
         return email.strip().lower() if email else email

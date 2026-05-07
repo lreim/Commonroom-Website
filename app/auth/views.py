@@ -72,10 +72,11 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(
-            email=User.normalize_email(form.email.data),
-            username=form.username.data,
-            password=form.password.data
-        )
+                email=User.normalize_email(form.email.data),
+                username=User.generate_username(),
+                password=form.password.data
+                )
+
         db.session.add(user)
         db.session.commit()
         token = user.generate_confirmation_token()
