@@ -258,11 +258,9 @@ class User(UserMixin, db.Model):
             chosen_tags = sample(tag_pool, randint(4, 7))
             about_line = f"{choice(intro_pool)} {choice(challenge_pool)} Interests: {', '.join(chosen_tags)}."
             u = User(email=forgery_py.internet.email_address(),
-                    username=forgery_py.internet.user_name(True),
+                    username=User.generate_username(),
                     password=forgery_py.lorem_ipsum.word(),
                     confirmed=True,
-                    name=forgery_py.name.full_name(),
-                    location=forgery_py.address.city(),
                     about_me=about_line,
                     member_since=forgery_py.date.date(True))
             db.session.add(u)

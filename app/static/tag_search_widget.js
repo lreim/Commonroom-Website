@@ -1,4 +1,71 @@
 (function () {
+  let globalPreviewCard = null;
+
+  function ensureGlobalPreviewCard() {
+    if (globalPreviewCard) return globalPreviewCard;
+    globalPreviewCard = document.createElement("div");
+    globalPreviewCard.className = "profile-preview-card";
+    globalPreviewCard.style.display = "none";
+    document.body.appendChild(globalPreviewCard);
+    return globalPreviewCard;
+  }
+
+  function positionGlobalPreviewCard(evt) {
+    if (!globalPreviewCard || globalPreviewCard.style.display === "none") return;
+    const x = evt.clientX + 14;
+    const y = evt.clientY + 14;
+    globalPreviewCard.style.left = `${x}px`;
+    globalPreviewCard.style.top = `${y}px`;
+  }
+
+  function hideGlobalPreviewCard() {
+    if (!globalPreviewCard) return;
+    globalPreviewCard.style.display = "none";
+    globalPreviewCard.innerHTML = "";
+  }
+
+  function showGlobalPreviewCard(user, evt) {
+    const previewCard = ensureGlobalPreviewCard();
+    const safeReason = user.match_reason || "Profile preview.";
+    const safeName = user.name || user.username;
+    const safeLocation = user.location ? `Location: ${user.location}` : "";
+    const safeAbout = user.about_me || "";
+    const safeTags = (user.matching_tags && user.matching_tags.length > 0)
+      ? user.matching_tags
+      : (user.tags || []);
+
+    previewCard.innerHTML = `
+      <div class="profile-preview-header">
+        <img class="profile-preview-avatar" src="${user.avatar_url || ""}" alt="${user.username}">
+        <div>
+          <div class="profile-preview-name">${safeName}</div>
+          <div class="profile-preview-username">@${user.username}</div>
+        </div>
+      </div>
+      <div class="profile-preview-reason">${safeReason}</div>
+      ${safeLocation ? `<div class="profile-preview-location">${safeLocation}</div>` : ""}
+      ${safeAbout ? `<div class="profile-preview-about">${safeAbout}</div>` : ""}
+      ${safeTags.length ? `<div class="profile-preview-tags">Tags: ${safeTags.join(", ")}</div>` : ""}
+    `;
+    previewCard.style.display = "block";
+    positionGlobalPreviewCard(evt);
+  }
+
+  function bindProfilePreviewLinks() {
+    document.querySelectorAll("[data-profile-preview]").forEach((link) => {
+      let user = null;
+      try {
+        user = JSON.parse(link.getAttribute("data-profile-preview") || "{}");
+      } catch (err) {
+        user = null;
+      }
+      if (!user || !user.username) return;
+      link.addEventListener("mouseenter", (evt) => showGlobalPreviewCard(user, evt));
+      link.addEventListener("mousemove", positionGlobalPreviewCard);
+      link.addEventListener("mouseleave", hideGlobalPreviewCard);
+    });
+  }
+
   function debounce(fn, wait) {
     let t = null;
     return function debounced(...args) {
@@ -46,52 +113,24 @@
 
     function ensurePreviewCard() {
       if (previewCard || mode === "picker") return;
-      previewCard = document.createElement("div");
-      previewCard.className = "profile-preview-card";
-      previewCard.style.display = "none";
-      document.body.appendChild(previewCard);
+      previewCard = ensureGlobalPreviewCard();
     }
 
     function positionPreviewCard(evt) {
-      if (!previewCard || previewCard.style.display === "none") return;
-      const x = evt.clientX + 14;
-      const y = evt.clientY + 14;
-      previewCard.style.left = `${x}px`;
-      previewCard.style.top = `${y}px`;
+      positionGlobalPreviewCard(evt);
     }
 
     function hidePreviewCard() {
-      if (!previewCard) return;
-      previewCard.style.display = "none";
-      previewCard.innerHTML = "";
+      hideGlobalPreviewCard();
     }
 
     function showPreviewCard(user, evt) {
       ensurePreviewCard();
       if (!previewCard) return;
-      const safeReason = user.match_reason || "Profile matches your search.";
-      const safeName = user.name || user.username;
-      const safeLocation = user.location ? `Location: ${user.location}` : "";
-      const safeAbout = user.about_me || "";
-      const safeTags = (user.matching_tags && user.matching_tags.length > 0)
-        ? user.matching_tags
-        : (user.tags || []);
-
-      previewCard.innerHTML = `
-        <div class="profile-preview-header">
-          <img class="profile-preview-avatar" src="${user.avatar_url || ""}" alt="${user.username}">
-          <div>
-            <div class="profile-preview-name">${safeName}</div>
-            <div class="profile-preview-username">@${user.username}</div>
-          </div>
-        </div>
-        <div class="profile-preview-reason">${safeReason}</div>
-        ${safeLocation ? `<div class="profile-preview-location">${safeLocation}</div>` : ""}
-        ${safeAbout ? `<div class="profile-preview-about">${safeAbout}</div>` : ""}
-        ${safeTags.length ? `<div class="profile-preview-tags">Tags: ${safeTags.join(", ")}</div>` : ""}
-      `;
-      previewCard.style.display = "block";
-      positionPreviewCard(evt);
+      showGlobalPreviewCard(
+        Object.assign({ match_reason: "Profile matches your search." }, user),
+        evt
+      );
     }
 
     if (mode === "picker") {
@@ -276,5 +315,6 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("[data-tag-widget]").forEach(initTagWidget);
+    bindProfilePreviewLinks();
   });
 })();

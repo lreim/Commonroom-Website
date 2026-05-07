@@ -25,6 +25,11 @@ body {
   object-fit: cover;
 }
 
+.profile-avatar-large {
+  display: block;
+  margin-bottom: 18px;
+}
+
 .profile-menu-dropdown {
   display: none;
   position: absolute;

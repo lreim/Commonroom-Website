@@ -73,3 +73,5 @@ config = {
 #      evtl das mailto für mich als admin rausnehmen, sodass ich nur im Notfall die emails aus der dabenbank lesen kann? 
 #      mir als Admin bei jeder neuen Registreierung eine email senden! 
 #      umami tracking einbauen? 
+#      evtl einbauen, dass mir schon profile vorgeschlagen werden? 
+#      evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )
