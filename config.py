@@ -71,3 +71,5 @@ config = {
 #      change edit_profile form inputs, think of what is really important and necessary 
 #      welche email adressen sollen funktionieren? (Nur die von studenten? oder auch von staff? oder dphys etc? oder muss man auch nur ethz.ch akzeptieren, wenn man student.ethz.ch akzeptiert?)
 #      evtl das mailto für mich als admin rausnehmen, sodass ich nur im Notfall die emails aus der dabenbank lesen kann? 
+#      mir als Admin bei jeder neuen Registreierung eine email senden! 
+#      umami tracking einbauen? 

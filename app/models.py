@@ -214,12 +214,10 @@ class User(UserMixin, db.Model):
     def tag_string(self):
         return ', '.join(sorted(tag.name for tag in self.tags))
 
-    #adding avatar on user profile
-    def gravatar(self, size=100, default='identicon', rating='g'):
-        email = (self.email or '').lower().encode('utf-8')
-        digest = hashlib.md5(email).hexdigest()
-        base = 'https://secure.gravatar.com/avatar' if request.is_secure else 'http://www.gravatar.com/avatar'
-        return f'{base}/{digest}?s={size}&d={default}&r={rating}'
+    # Keep the existing call sites, but serve DiceBear thumbs avatars instead.
+    def gravatar(self, size=100, default='robohash', rating='g'):
+        seed = str(self.id) if self.id is not None else (self.username or self.email or 'anonymous')
+        return f'https://api.dicebear.com/9.x/thumbs/svg?seed={seed}&size={size}'
     
     #generate fake users  (nur für development)
     @staticmethod
@@ -368,3 +366,22 @@ class Tag(db.Model):
 
     def __repr__(self):
         return f'<Tag {self.name}>'
+
+    @staticmethod
+    def seed_defaults():
+        tag_pool = [
+            'uni life', 'campus life', 'exam stress', 'exam anxiety', 'finals pressure',
+            'study strategy', 'study planning', 'focus', 'concentration', 'procrastination',
+            'mental load', 'overthinking', 'self doubt', 'motivation', 'burnout', 'imposter syndrome',
+            'stress management', 'sleep issues', 'loneliness', 'homesickness',
+            'friendship', 'making friends', 'social anxiety', 'belonging',
+            'time management', 'work life balance', 'financial stress', 'relationship stress',
+            'career uncertainty', 'panic feelings', 'household', 'finding internships',
+            'emotional support', 'coping skills'
+        ]
+
+        for name in tag_pool:
+            normalized_name = name.strip().lower()
+            if not Tag.query.filter_by(name=normalized_name).first():
+                db.session.add(Tag(name=normalized_name))
+        db.session.commit()

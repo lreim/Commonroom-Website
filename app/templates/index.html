@@ -1,5 +1,4 @@
 {% extends "base.html" %}  <!--greift auf base struktur zu-->
-{% import "bootstrap/wtf.html" as wtf %} <!--um forms zu rendern-->
 {% block title %}Home{% endblock %}
 
 {% block page_content %}
@@ -17,18 +16,17 @@
     <h1>
         Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %} Stranger {% endif %}! <!--unnecessary greeting-->
     </h1>
-    {% if not known %}
+    {% if current_user.is_authenticated %}
     <p> 
-        Pleased to meet you!
+        Happy to see you again! 
     </p>
     {% else %}
     <p>
-        Happy to see you again!
+        Pleased to meet you! Click <a href="{{ url_for('auth.register') }}">here</a>
+        to register as a new member of our lovely community and <a href="{{ url_for('auth.login') }}">there</a> to login. 
     </p>
     {% endif %}
 </div>
-{{wtf.quick_form(form)}}
-
 {% endblock %}
 <!-- oben wird die aktuelle Zeit angegeben, evtl in side bar oder top bar schreiben
  The format('LLL') format renders the date and time according to the time zone and

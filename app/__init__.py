@@ -58,7 +58,7 @@ def create_app(config_name):
     # attach routes and custom error pages here
     @app.shell_context_processor
     def make_shell_context():
-        from .models import User
-        return dict(db=db, User=User)
+        from .models import User, Tag
+        return dict(db=db, User=User, Tag=Tag)
 
     return app
