@@ -2,7 +2,9 @@
 {% block title %}User{% endblock %}
 {% block page_content %}
 <div class="page-header">
-  <h1>{{ user.username }}</h1>
+  <h1>
+    <a href="{{ url_for('main.settings') }}">{{ user.username }}</a>
+  </h1>
   <img src="{{ user.gravatar(size=100) }}" class="img-rounded profile-avatar-large">
   {% if user == current_user %}
     <p>
