@@ -129,7 +129,7 @@ def change_password():
             current_user.password = form.password.data
             db.session.commit()
             flash('Your password has been updated.')
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.settings'))
         flash('Invalid old password.')
     return render_template('auth/change_password.html', form=form)
 
@@ -148,7 +148,7 @@ def change_email_request():
                 token=token
             )
             flash('A confirmation email has been sent to your new address.')
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.settings'))
         flash('Invalid password.')
     return render_template('auth/change_email_request.html', form=form)
 
@@ -161,4 +161,4 @@ def change_email(token):
     else:
         flash('Invalid or expired link.')
         redirect(url_for('auth/change_email_request.html'))
-    return redirect(url_for('main.index'))
+    return redirect(url_for('main.settings'))

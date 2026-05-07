@@ -53,7 +53,7 @@
           ></div>
           {% endif %}
           <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
-          <a href="{{ url_for('auth.change_password') }}">Settings</a>
+          <a href="{{ url_for('main.settings') }}">Settings</a>
           <a href="{{ url_for('auth.logout') }}">Sign Out</a>
         </div>
       </div>
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
   renderCountdown();
 
   window.setInterval(function () {
-    remainingMinutes -= 2;
+    remainingMinutes -= 1;
     renderCountdown();
   }, 120000);
 });

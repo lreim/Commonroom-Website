@@ -65,4 +65,5 @@ config = {
 
 
 
-#TODO: ändere Cookie Secure zu True 
+#TODO: ändere Cookie Secure zu True
+#      mache form kästchen größer, sodass der graue placeholder text reinpasst 

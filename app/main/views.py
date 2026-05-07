@@ -40,6 +40,12 @@ def index():   #all das needed für form route
     #name und known werden jetzt zu Variablen im view, damit man im Template if else damit machen kann
     return render_template('index.html', form = form, name = session.get('name'), known = session.get('known', False), active_page='index', current_time=datetime.now(timezone.utc))
 
+@main.route('/settings')
+def settings():
+    user = current_user._get_current_object()
+    return render_template('settings.html', active_page='settings', user=user)
+
+
 @main.route('/about')
 def about():
     return render_template('about.html', active_page='about')
@@ -98,7 +104,7 @@ def edit_profile():
         db.session.add(current_user)
         db.session.commit()
         flash('Your profile has been updated.')
-        return redirect(url_for('.user', username=current_user.username))
+        return redirect(url_for('main.settings', username=current_user.username))
     form.name.data = current_user.name
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
@@ -125,7 +131,7 @@ def edit_profile_admin(id):
         db.session.add(user)
         db.session.commit()
         flash('The profile has been updated.')
-        return redirect(url_for('.user', username=user.username))
+        return redirect(url_for('main.settings', username=user.username))
 
     if request.method == 'GET':
         form.email.data = user.email
