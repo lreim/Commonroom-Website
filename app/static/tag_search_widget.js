@@ -145,8 +145,13 @@
     }
 
     function syncHidden() {
-      if (!hiddenInput) return;
-      hiddenInput.value = Array.from(selected).sort().join(", ");
+      const joined = Array.from(selected).sort().join(", ");
+      if (hiddenInput) {
+        hiddenInput.value = joined;
+      }
+      if (mode !== "picker" && input && selected.size > 0) {
+        input.value = joined;
+      }
     }
 
     function renderSelected() {
@@ -163,16 +168,17 @@
         .sort()
         .forEach((tag) => {
           const chip = createTagChip(tag, "label label-primary");
-          if (mode === "picker") {
-            chip.style.cursor = "pointer";
-            chip.title = "Click to remove";
-            chip.addEventListener("click", () => {
-              selected.delete(tag);
-              syncHidden();
-              renderSelected();
-              renderExisting();
-            });
-          }
+          chip.style.cursor = "pointer";
+          chip.title = "Click to remove";
+          chip.addEventListener("click", () => {
+            selected.delete(tag);
+            syncHidden();
+            renderSelected();
+            renderExisting();
+            if (mode !== "picker") {
+              runSearch();
+            }
+          });
           selectedEl.appendChild(chip);
         });
     }
@@ -185,18 +191,20 @@
         const chip = createTagChip(tag, active ? "label label-primary" : "label label-default");
         chip.style.cursor = "pointer";
         chip.addEventListener("click", () => {
+          const key = tag.toLowerCase();
+          if (selected.has(key)) {
+            selected.delete(key);
+          } else {
+            selected.add(key);
+          }
           if (mode === "picker") {
-            const key = tag.toLowerCase();
-            if (selected.has(key)) {
-              selected.delete(key);
-            } else {
-              selected.add(key);
-            }
             syncHidden();
             renderSelected();
             renderExisting();
-          } else if (input) {
-            input.value = tag;
+          } else {
+            syncHidden();
+            renderSelected();
+            renderExisting();
             runSearch();
           }
         });
@@ -223,18 +231,20 @@
         chip.style.cursor = "pointer";
         chip.title = mode === "picker" ? "Click to toggle selection" : "Click to search this tag";
         chip.addEventListener("click", () => {
+          const key = m.name.toLowerCase();
+          if (selected.has(key)) {
+            selected.delete(key);
+          } else {
+            selected.add(key);
+          }
           if (mode === "picker") {
-            const key = m.name.toLowerCase();
-            if (selected.has(key)) {
-              selected.delete(key);
-            } else {
-              selected.add(key);
-            }
             syncHidden();
             renderSelected();
             renderExisting();
-          } else if (input) {
-            input.value = m.name;
+          } else {
+            syncHidden();
+            renderSelected();
+            renderExisting();
             runSearch();
           }
         });
@@ -282,7 +292,7 @@
 
     async function runSearch() {
       if (!input) return;
-      const q = input.value.trim();
+      const q = selected.size > 0 ? Array.from(selected).sort().join(", ") : input.value.trim();
       if (!q) {
         if (statusEl) statusEl.textContent = "";
         renderResults([]);
@@ -306,7 +316,14 @@
 
     const debouncedSearch = debounce(runSearch, 220);
     if (input) {
-      input.addEventListener("input", debouncedSearch);
+      input.addEventListener("input", function () {
+        if (mode !== "picker" && selected.size > 0) {
+          selected.clear();
+          renderSelected();
+          renderExisting();
+        }
+        debouncedSearch();
+      });
     }
 
     syncHidden();

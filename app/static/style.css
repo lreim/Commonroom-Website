@@ -242,6 +242,10 @@ body {
   margin-top: 0;
 }
 
+.tag-list {
+  margin-bottom: 18px;
+}
+
 .tag-match-users {
   margin-top: 6px;
 }
