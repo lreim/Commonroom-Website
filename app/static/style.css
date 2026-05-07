@@ -31,7 +31,7 @@ body {
   top: 100%;
   right: 0;
   min-width: 220px;
-  margin-top: 8px;
+  margin-top: 14px;
   padding: 12px;
   border: 1px solid #d7ccb4;
   border-radius: 8px;
@@ -43,10 +43,10 @@ body {
 .profile-menu-dropdown::before {
   content: "";
   position: absolute;
-  top: -8px;
-  left: 0;
-  right: 0;
-  height: 8px;
+  top: -30px;
+  left: -14px;
+  right: -14px;
+  height: 30px;
 }
 
 .profile-menu:hover .profile-menu-dropdown,
