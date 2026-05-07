@@ -75,3 +75,5 @@ config = {
 #      umami tracking einbauen? 
 #      evtl einbauen, dass mir schon profile vorgeschlagen werden? 
 #      evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )
+#      go back auf manchen seiten einbauen (bei login/auth Seiten?) und das unten plazieren links 
+#      The Developers contact data unten auf jeder Seite haben? Oder unter About? 

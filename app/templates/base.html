@@ -36,6 +36,10 @@
       </ul>
       {% if current_user.is_authenticated %}
       <div class="nav navbar-nav navbar-right profile-menu">
+        <div class="profile-top-time">
+          <div class="profile-top-time-label">Local date and time</div>
+          <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+        </div>
         <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
           <img
             src="{{ current_user.gravatar(size=40) }}"
@@ -54,6 +58,13 @@
           <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
           <a href="{{ url_for('main.settings') }}">Settings</a>
           <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        </div>
+      </div>
+      {% else %}
+      <div class="nav navbar-nav navbar-right profile-menu profile-menu-anonymous">
+        <div class="profile-top-time">
+          <div class="profile-top-time-label">Local date and time</div>
+          <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
         </div>
       </div>
       {% endif %}

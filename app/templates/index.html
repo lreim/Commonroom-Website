@@ -6,12 +6,6 @@
 <p>Good seeing you here! 
     Let me give you a quick overview on what to do next. 
 </p>
-<p>
-    The local date and time is {{ moment(current_time).format('LLL') }}.
-</p>
-<p>
-    That was {{ moment(current_time).fromNow(refresh=True) }} <!--Idee: die Zeit evtl in der oberen Leiste anzeigen??-->
-</p>
 <div class="page-header">
     <h1>
         Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %} Stranger {% endif %}! <!--unnecessary greeting-->

@@ -13,13 +13,14 @@
         Click here to register
     </a>
 </p>
-<div class="col-md-4">
-    {{ wtf.quick_form(form) }}
-</div>
 <p>
     Forgot Password?
     <a href="{{ url_for('auth.reset_password_mail') }}">
         Click here to reset password
     </a>
 </p>
+<div class="col-md-4">
+    {{ wtf.quick_form(form) }}
+</div>
+
 {% endblock %}

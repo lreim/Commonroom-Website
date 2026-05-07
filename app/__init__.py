@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
@@ -53,7 +54,10 @@ def create_app(config_name):
     def inject_session_timeout():
         lifetime = app.config.get('PERMANENT_SESSION_LIFETIME')
         timeout_minutes = int(lifetime.total_seconds() // 60) if lifetime else 0
-        return dict(session_timeout_minutes=timeout_minutes)
+        return dict(
+            session_timeout_minutes=timeout_minutes,
+            current_time=datetime.now(timezone.utc)
+        )
     
     # attach routes and custom error pages here
     @app.shell_context_processor
