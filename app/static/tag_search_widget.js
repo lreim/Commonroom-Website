@@ -249,27 +249,30 @@
 
         if (mode !== "picker" && m.users && m.users.length > 0) {
           const usersWrap = document.createElement("div");
-          usersWrap.style.marginTop = "6px";
+          usersWrap.className = "tag-match-users";
 
           const usersLabel = document.createElement("small");
-          usersLabel.className = "text-muted";
+          usersLabel.className = "text-muted tag-match-users-label";
           usersLabel.textContent = "Matching profiles: ";
           usersWrap.appendChild(usersLabel);
 
-          m.users.forEach((u, idx) => {
+          const usersList = document.createElement("div");
+          usersList.className = "tag-match-users-list";
+
+          m.users.forEach((u) => {
             const link = document.createElement("a");
             link.href = u.profile_url;
             link.textContent = u.username;
+            link.className = "tag-match-user-link";
             if (mode !== "picker") {
               link.addEventListener("mouseenter", (evt) => showPreviewCard(u, evt));
               link.addEventListener("mousemove", positionPreviewCard);
               link.addEventListener("mouseleave", hidePreviewCard);
             }
-            usersWrap.appendChild(link);
-            if (idx < m.users.length - 1) {
-              usersWrap.appendChild(document.createTextNode(", "));
-            }
+            usersList.appendChild(link);
           });
+
+          usersWrap.appendChild(usersList);
           row.appendChild(usersWrap);
         }
 

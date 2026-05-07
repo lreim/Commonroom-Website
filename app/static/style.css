@@ -219,6 +219,59 @@ body {
   line-height: 1.45;
 }
 
+.tag-two-column-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.tag-main-column {
+  min-width: 0;
+}
+
+.tag-side-column {
+  padding: 18px 20px;
+  border: 1px solid #ddd4bc;
+  border-radius: 10px;
+  background: #fffdf7;
+}
+
+.tag-side-column h4,
+.tag-side-column h5 {
+  margin-top: 0;
+}
+
+.tag-match-users {
+  margin-top: 6px;
+}
+
+.tag-match-users-label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.tag-match-users-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.tag-match-user-link {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .tag-two-column-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tag-side-column {
+    order: 2;
+  }
+}
+
 .chat-page {
   max-width: 860px;
   margin: 0 auto;

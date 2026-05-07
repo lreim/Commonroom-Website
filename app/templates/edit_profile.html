@@ -7,50 +7,50 @@
   <h1>{% if is_admin_edit %}Edit Profile (Admin){% else %}Edit Your Profile{% endif %}</h1>
 </div>
 
-<div class="col-md-8">
-  <form method="post" novalidate>
-    {{ form.hidden_tag() }}
+<form method="post" novalidate>
+  {{ form.hidden_tag() }}
+  <div
+    id="tag-picker-widget"
+    class="tag-two-column-layout"
+    data-tag-widget="picker"
+    data-search-endpoint="{{ url_for('main.tag_search_api') }}"
+    data-all-tags='{{ all_tags|tojson }}'
+    data-hidden-input-id="tags-hidden-input"
+  >
+    {{ form.tags(id="tags-hidden-input", type="hidden") }}
 
-    {% if form.email is defined %}
-    <div class="form-group">
-      {{ form.email.label(class="control-label") }}
-      {{ form.email(class="form-control") }}
-    </div>
-    {% endif %}
+    <div class="tag-main-column">
+      {% if form.email is defined %}
+      <div class="form-group">
+        {{ form.email.label(class="control-label") }}
+        {{ form.email(class="form-control") }}
+      </div>
+      {% endif %}
 
-    {% if form.username is defined %}
-    <div class="form-group">
-      {{ form.username.label(class="control-label") }}
-      {{ form.username(class="form-control") }}
-    </div>
-    {% endif %}
+      {% if form.username is defined %}
+      <div class="form-group">
+        {{ form.username.label(class="control-label") }}
+        {{ form.username(class="form-control") }}
+      </div>
+      {% endif %}
 
-    {% if form.confirmed is defined %}
-    <div class="checkbox">
-      <label>{{ form.confirmed() }} {{ form.confirmed.label.text }}</label>
-    </div>
-    {% endif %}
+      {% if form.confirmed is defined %}
+      <div class="checkbox">
+        <label>{{ form.confirmed() }} {{ form.confirmed.label.text }}</label>
+      </div>
+      {% endif %}
 
-    {% if form.role is defined %}
-    <div class="form-group">
-      {{ form.role.label(class="control-label") }}
-      {{ form.role(class="form-control") }}
-    </div>
-    {% endif %}
+      {% if form.role is defined %}
+      <div class="form-group">
+        {{ form.role.label(class="control-label") }}
+        {{ form.role(class="form-control") }}
+      </div>
+      {% endif %}
 
-    <div class="form-group">
-      {{ form.about_me.label(class="control-label") }}
-      {{ form.about_me(class="form-control", rows="4") }}
-    </div>
-
-    <div
-      id="tag-picker-widget"
-      data-tag-widget="picker"
-      data-search-endpoint="{{ url_for('main.tag_search_api') }}"
-      data-all-tags='{{ all_tags|tojson }}'
-      data-hidden-input-id="tags-hidden-input"
-    >
-      {{ form.tags(id="tags-hidden-input", type="hidden") }}
+      <div class="form-group">
+        {{ form.about_me.label(class="control-label") }}
+        {{ form.about_me(class="form-control", rows="4") }}
+      </div>
 
       <div class="form-group">
         <label class="control-label">Tags</label>
@@ -64,13 +64,15 @@
       <h5>Matches</h5>
       <div id="tag-search-results" class="tag-results"></div>
 
-      <h5>Existing Tags</h5>
-      <div id="tag-existing-list" class="tag-list"></div>
+      {{ form.submit(class="btn btn-primary") }}
     </div>
 
-    {{ form.submit(class="btn btn-primary") }}
-  </form>
-</div>
+    <aside class="tag-side-column">
+      <h5>Existing Tags</h5>
+      <div id="tag-existing-list" class="tag-list"></div>
+    </aside>
+  </div>
+</form>
 {% endblock %}
 
 {% block scripts %}

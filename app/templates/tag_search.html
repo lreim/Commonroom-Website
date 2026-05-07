@@ -10,20 +10,24 @@
 
 <div
   id="tag-search-widget"
+  class="tag-two-column-layout"
   data-tag-widget="search"
   data-search-endpoint="{{ url_for('main.tag_search_api') }}"
   data-all-tags='{{ all_tags|tojson }}'
 >
-  <div class="form-group">
-    <input id="tag-search-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, loneliness, study strategy, making friends)">
+  <div class="tag-main-column">
+    <div class="form-group">
+      <input id="tag-search-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, loneliness, study strategy, making friends)">
+    </div>
+
+    <h4>Matches</h4>
+    <div id="tag-search-results" class="tag-results"></div>
   </div>
 
-  <h4>Matches</h4>
-  <div id="tag-search-results" class="tag-results"></div>
-
-  <hr>
-  <h4>Existing Tags</h4>
-  <div id="tag-existing-list" class="tag-list"></div>
+  <aside class="tag-side-column">
+    <h4>Existing Tags</h4>
+    <div id="tag-existing-list" class="tag-list"></div>
+  </aside>
 </div>
 {% endblock %}
 
