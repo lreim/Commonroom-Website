@@ -4,43 +4,71 @@
 {% block title %}Chats{% endblock %}
 
 {% block page_content %}
-<h2>Private Chats</h2>
-
-<hr>
+<div class="chat-index-header">
+  <h2>Private Chats</h2>
+  <p>Browse existing conversations or start a new one.</p>
+</div>
 
 <h4>Your Chats</h4>
-<ul class="chat-list">
+<ul class="chat-conversation-list">
   {% for item in items %}
-    <li>
-      <a href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}">Chat mit {{ item.other.username }}</a>
-      {% if item.last_msg %}
-        - {{ item.last_msg.body }}
-      {% endif %}
+    <li class="chat-conversation-card">
+      <a class="chat-conversation-link" href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}">
+        <img
+          class="chat-conversation-avatar"
+          src="{{ item.other.gravatar(size=56) }}"
+          alt="{{ item.other.username }}"
+        >
+        <div class="chat-conversation-meta">
+          <div class="chat-conversation-name">{{ item.other.username }}</div>
+        </div>
+        <div class="chat-conversation-bubble">
+          {% if item.last_msg %}
+            {{ item.last_msg.body[:140] }}{% if item.last_msg.body|length > 140 %}...{% endif %}
+          {% else %}
+            No messages yet.
+          {% endif %}
+        </div>
+      </a>
     </li>
+  {% else %}
+    <li class="chat-empty-state">No chats yet.</li>
   {% endfor %}
 </ul>
 
-<h4>Start Chat</h4>
-<form method="get" action="{{ url_for('chat.index') }}" style="margin-bottom: 12px;">
-  <input type="text" name="q" value="{{ q or '' }}" placeholder="search for username">
-  <button type="submit">Search</button>
-</form>
+<div class="chat-search-panel">
+  <h4>Start Chat</h4>
+  <form method="get" action="{{ url_for('chat.index') }}" class="chat-search-form">
+    <input type="text" name="q" value="{{ q or '' }}" placeholder="Search for username">
+    <button type="submit">Search</button>
+  </form>
 
-{% if q %}
-  <ul class="chat-list">
-  {% for u in users %}
-    <li>
-      <form method="post" action="{{ url_for('chat.start', user_id=u.id) }}" style="margin-bottom:8px;">
-        <button type="submit">Chat with {{ user_link(u) }}</button>
-      </form>
-    </li>
-  {% endfor %}
-  </ul>
-  {% if not users %}
-    <p>No user found.</p>
+  {% if q %}
+    <ul class="chat-conversation-list chat-search-results">
+    {% for u in users %}
+      <li class="chat-conversation-card">
+        <form method="post" action="{{ url_for('chat.start', user_id=u.id) }}">
+          <button type="submit" class="chat-conversation-link chat-start-button">
+            <img
+              class="chat-conversation-avatar"
+              src="{{ u.gravatar(size=56) }}"
+              alt="{{ u.username }}"
+            >
+            <div class="chat-conversation-meta">
+              <div class="chat-conversation-name">{{ u.username }}</div>
+            </div>
+            <div class="chat-conversation-bubble">Start a conversation</div>
+          </button>
+        </form>
+      </li>
+    {% endfor %}
+    </ul>
+    {% if not users %}
+      <p class="chat-empty-state">No user found.</p>
+    {% endif %}
+  {% else %}
+    <p class="chat-empty-state">Search for a user to start a chat.</p>
   {% endif %}
-{% else %}
-  <p>Search for a user to start a chat.</p>
-{% endif %}
+</div>
 
 {% endblock %}
