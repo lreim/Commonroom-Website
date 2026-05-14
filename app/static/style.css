@@ -434,6 +434,29 @@ body {
   color: #2d1d00;
 }
 
+.chat-conversation-last-time {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #6d624e;
+  white-space: nowrap;
+}
+
+.chat-conversation-matching-tags {
+  margin-top: 4px;
+  max-width: 180px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #5b4a1a;
+}
+
+.chat-conversation-message-count {
+  margin-top: 4px;
+  max-width: 180px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #5b4a1a;
+}
+
 .chat-conversation-bubble {
   position: relative;
   flex: 1;
@@ -443,6 +466,7 @@ body {
   color: #35226b;
   line-height: 1.3;
   font-size: 13px;
+  text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

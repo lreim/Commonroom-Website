@@ -8,8 +8,20 @@
   <h2>Private Chats</h2>
   <p>Browse existing conversations or start a new one.</p>
 </div>
-
 <h4>Your Chats</h4>
+
+
+<div style="margin-bottom: 50px;">
+  <form method="get">
+    <select name="sort" style="padding: 12px 16px; font-size: 16px; min-width: 150px;" 
+      onchange="this.form.submit()">
+      <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Most Recent</option>
+      <option value="most_active" {% if sort_by == "most_active" %}selected{% endif %}>Most Active</option>
+      <option value="most_matching_tags" {% if sort_by == "most_matching_tags" %}selected{% endif %}>Most Matching Tags</option>
+    </select>
+  </form>
+</div>
+
 <ul class="chat-conversation-list">
   {% for item in items %}
     <li class="chat-conversation-card">
@@ -21,6 +33,24 @@
         >
         <div class="chat-conversation-meta">
           <div class="chat-conversation-name">{{ item.other.username }}</div>
+          {% if sort_by == "most_recent" and item.last_msg %}
+          <div class="chat-conversation-last-time">{{ moment(item.last_msg.created_at).fromNow() }}</div>
+          {% endif %}
+          {% if sort_by == "most_matching_tags" and item.matching_tags %}
+          <div class="chat-conversation-matching-tags">
+          Matches: {{ item.matching_tags|join(", ") }}
+          </div>
+          {% endif %}
+          {% if sort_by == "most_matching_tags" and not item.matching_tags %}
+          <div class="chat-conversation-matching-tags">
+          Matches: No matching tags
+          </div>
+          {% endif %}
+          {% if sort_by == "most_active" %}
+          <div class="chat-conversation-message-count">
+          messages: {{ item.message_count }}
+          </div>
+          {% endif %}
         </div>
         <div class="chat-conversation-bubble">
           {% if item.last_msg %}
