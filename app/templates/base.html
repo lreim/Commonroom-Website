@@ -5,6 +5,15 @@
 
 {% block head %}
   {{ super() }} <!--hier: added content zu bootstrap content-->
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem("theme") === "dark") {
+          document.documentElement.classList.add("dark-mode");
+        }
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 {% endblock %}
 
@@ -21,6 +30,10 @@
       </button>
       <a class="navbar-brand" href="/">TalkTo</a>
     </div>
+    <label class="theme-switch">
+      <input type="checkbox" id="theme-toggle">
+      <span class="theme-slider"></span>
+    </label>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li><a href="{{ url_for('main.about') }}">About</a></li>   <!--in urls, nicht in paths -->
@@ -76,6 +89,35 @@
 {% block scripts %}
 {{ super() }}
 {{ moment.include_moment() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const toggle = document.getElementById("theme-toggle");
+  const root = document.documentElement;
+  if (!toggle) {
+    return;
+  }
+
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    root.classList.add("dark-mode");
+    toggle.checked = true;
+  }
+
+  toggle.addEventListener("change", function () {
+    if (toggle.checked) {
+      root.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark");
+    } else {
+      root.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light");
+    }
+  });
+
+  requestAnimationFrame(function () {
+    root.classList.add("theme-toggle-ready");
+  });
+});
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const countdown = document.getElementById("session-timeout-countdown");

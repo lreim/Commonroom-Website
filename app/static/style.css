@@ -2,20 +2,75 @@ body {
   margin: 0;
   font-family: Georgia, serif;
   background-color: #f9f5e8;
+  color: #2d1d00;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.theme-switch {
+  position: absolute;
+  top: 50%;
+  right: 220px;
+  z-index: 2100;
+  display: inline-block;
+  width: 26px;
+  height: 14px;
+  transform: translateY(-50%);
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.theme-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #d8c9a4;
+  cursor: pointer;
+}
+
+.theme-slider::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fffdf7;
+}
+
+html.theme-toggle-ready .theme-slider {
+  transition: background-color 0.25s ease;
+}
+
+html.theme-toggle-ready .theme-slider::before {
+  transition: transform 0.25s ease;
+}
+
+.theme-switch input:checked + .theme-slider {
+  background: #7d6be3;
+}
+
+.theme-switch input:checked + .theme-slider::before {
+  transform: translateX(12px);
 }
 
 .profile-menu {
   position: absolute;
-  top: 6px;
   right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
   margin: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
 }
 
 .profile-menu-anonymous {
-  top: 10px;
+  top: 50%;
 }
 
 .profile-top-time {
@@ -217,6 +272,10 @@ body {
 .post-body {
   white-space: pre-wrap;
   line-height: 1.45;
+}
+
+.post-form-wrap {
+  margin-bottom: 24px;
 }
 
 .tag-two-column-layout {
@@ -528,6 +587,68 @@ body {
 
 .chat-empty-state {
   color: #6d624e;
+}
+
+html.dark-mode body {
+  background-color: #1f1a16;
+  color: #f1ebdd;
+}
+
+html.dark-mode .navbar,
+html.dark-mode .navbar-inverse {
+  background: #2a241d;
+  border-color: #43382c;
+}
+
+html.dark-mode .navbar-inverse .navbar-brand,
+html.dark-mode .navbar-inverse .navbar-nav > li > a,
+html.dark-mode .chat-conversation-link,
+html.dark-mode .chat-conversation-name,
+html.dark-mode .profile-menu-dropdown a,
+html.dark-mode .post-author a {
+  color: #f1ebdd;
+}
+
+html.dark-mode .profile-top-time,
+html.dark-mode .profile-top-time-label,
+html.dark-mode .profile-top-time-value,
+html.dark-mode .chat-index-header p,
+html.dark-mode .chat-empty-state,
+html.dark-mode .chat-conversation-last-time,
+html.dark-mode .chat-conversation-matching-tags,
+html.dark-mode .chat-conversation-message-count,
+html.dark-mode .post-date,
+html.dark-mode .profile-preview-username {
+  color: #cbbfa8;
+}
+
+html.dark-mode .profile-menu-dropdown,
+html.dark-mode .tag-side-column,
+html.dark-mode .chat-conversation-link,
+html.dark-mode .chat-search-form input,
+html.dark-mode .form-control,
+html.dark-mode .profile-preview-card {
+  background: #2c261f;
+  border-color: #4c4134;
+  color: #f1ebdd;
+}
+
+html.dark-mode .chat-conversation-bubble,
+html.dark-mode .chat-conversation-bubble::before {
+  background: #3b3257;
+  color: #f1ebdd;
+}
+
+html.dark-mode .chat-search-form button,
+html.dark-mode .btn-primary {
+  background: #6e5ab7;
+  border-color: #6e5ab7;
+}
+
+html.dark-mode .posts,
+html.dark-mode .post,
+html.dark-mode .profile-menu-timeout {
+  border-color: #43382c;
 }
 
 .profile-preview-card {

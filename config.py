@@ -81,9 +81,9 @@ config = {
 
 
 #Brainstorming on what to still do:
-# - for the chat index of a user, maybe implement a scoring or a filter, to change the scoring of the chats (last messages/most active chat, most recent chat, most overlap of tags?)
+# - for the chat index of a user, maybe implement a scoring or a filter, to change the scoring of the chats (last messages/most active chat, most recent chat, most overlap of tags?)  ---done
 # - implement email notification for new messages and maybe also reminders to stay active? (think about the usecase and atmosphere this app should convey)
 # - think of a vibe and style (minimalistic or cozy or what vibe should it give off)
-# - move the tags maybe to the right side of the window and not below the matches 
+# - move the tags maybe to the right side of the window and not below the matches --- done 
 # - maybe change names of users to something more serious
-
+# - dark mode color scheme machen 
