@@ -22,16 +22,23 @@ def index():     #Zeigt Übersicht aller Chats, in denen current_user involviert
     for c in conversations:
         other = c.other_user(current_user.id)
         last_msg = c.messages.order_by(Message.created_at.desc()).first()
-        items.append({"conversation": c, "other": other, "last_msg": last_msg})
-
-    q = request.args.get("q", "", type=str).strip()
+        most_recent = last_msg.created_at if last_msg else c.created_at
+        message_count = c.messages.count()
+        current_tags = {t.name for t in current_user.tags}
+        other_tags = {t.name for t in other.tags}
+        match_count = len(current_tags & other_tags)
+        items.append({"conversation": c, "other": other, "last_msg": last_msg, "most_recent": most_recent, "message_count": message_count, "match_count": match_count})  #alles in items in dictinary packen
+    
+    most_messages = items.sort("messages_count")
+    most_matching_tags = items.sort("match_count")
+    q = request.args.get("q", "", type=str).strip()    #q ist der Suchtext 
     users = []
     if q:
         users = User.query.filter(
             User.id != current_user.id,
-            or_(User.username.ilike(f"%{q}%"), User.email.ilike(f"%{q}%"))
-        ).order_by(User.username.asc()).limit(25).all()
-    return render_template("chat/list.html", items=items, users=users, q=q)
+            or_(User.username.ilike(f"%{q}%"), User.email.ilike(f"%{q}%"))  #Suchtext darf irgendwo im String stehen, 
+        ).order_by(User.username.asc()).limit(25).all()     #auf 25 Treffer begrenzen
+    return render_template("chat/list.html", items=items, users=users, q=q, most_messages = most_messages, match_count=match_count)
 
 
 @chat.route("/start/<int:user_id>", methods=["POST"])
