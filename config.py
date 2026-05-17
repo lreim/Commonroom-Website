@@ -87,3 +87,14 @@ config = {
 # - move the tags maybe to the right side of the window and not below the matches --- done 
 # - maybe change names of users to something more serious
 # - dark mode color scheme machen 
+
+
+# - mehr persönliche Sachen
+# - nsch der Anfrage icebreaker frage stellen (send an icebreaker), ich gebe icebreaker vor, ich gebe bei der Anfrage mitgeben (das ist eher, um sich wohler zu fühlen)
+# - Liste herausgeben an no-gos, die man nicht sharen sollte, in das about me feld ein screening einbauen bei keywords 
+# - reports machen können von den usern 
+# - neue message über Telefon sende evtl?
+# - andere email für die nachrichten botification nehmen
+# - oder nur push nachrichten im Browser 
+# - nightline und 321 verlinken 
+# - den chat nicht screenen, weil das zu sensible daten sind 

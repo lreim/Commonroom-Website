@@ -30,10 +30,6 @@
       </button>
       <a class="navbar-brand" href="/">TalkTo</a>
     </div>
-    <label class="theme-switch">
-      <input type="checkbox" id="theme-toggle">
-      <span class="theme-slider"></span>
-    </label>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li><a href="{{ url_for('main.about') }}">About</a></li>   <!--in urls, nicht in paths -->
@@ -47,40 +43,46 @@
         <li><a href="{{ url_for('auth.login')}}"> Sign In</a></li>
         {%endif%}
       </ul>
-      {% if current_user.is_authenticated %}
-      <div class="nav navbar-nav navbar-right profile-menu">
-        <div class="profile-top-time">
-          <div class="profile-top-time-label">Local date and time</div>
-          <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+      <div class="navbar-right-controls">
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle">
+          <span class="theme-slider"></span>
+        </label>
+        {% if current_user.is_authenticated %}
+        <div class="profile-menu">
+          <div class="profile-top-time">
+            <div class="profile-top-time-label">Local date and time</div>
+            <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+          </div>
+          <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
+            <img
+              src="{{ current_user.gravatar(size=40) }}"
+              alt="{{ current_user.username }}"
+              class="profile-menu-avatar"
+            >
+          </a>
+          <div class="profile-menu-dropdown">
+            {% if session_timeout_minutes %}
+            <div
+              id="session-timeout-countdown"
+              class="profile-menu-timeout"
+              data-timeout-minutes="{{ session_timeout_minutes }}"
+            ></div>
+            {% endif %}
+            <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
+            <a href="{{ url_for('main.settings') }}">Settings</a>
+            <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+          </div>
         </div>
-        <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
-          <img
-            src="{{ current_user.gravatar(size=40) }}"
-            alt="{{ current_user.username }}"
-            class="profile-menu-avatar"
-          >
-        </a>
-        <div class="profile-menu-dropdown">
-          {% if session_timeout_minutes %}
-          <div
-            id="session-timeout-countdown"
-            class="profile-menu-timeout"
-            data-timeout-minutes="{{ session_timeout_minutes }}"
-          ></div>
-          {% endif %}
-          <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
-          <a href="{{ url_for('main.settings') }}">Settings</a>
-          <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+        {% else %}
+        <div class="profile-menu profile-menu-anonymous">
+          <div class="profile-top-time">
+            <div class="profile-top-time-label">Local date and time</div>
+            <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+          </div>
         </div>
+        {% endif %}
       </div>
-      {% else %}
-      <div class="nav navbar-nav navbar-right profile-menu profile-menu-anonymous">
-        <div class="profile-top-time">
-          <div class="profile-top-time-label">Local date and time</div>
-          <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
-        </div>
-      </div>
-      {% endif %}
     </div>
   </div>
 </div>

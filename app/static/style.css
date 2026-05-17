@@ -6,15 +6,24 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-.theme-switch {
+.navbar-right-controls {
   position: absolute;
   top: 50%;
-  right: 220px;
+  right: 15px;
   z-index: 2100;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  transform: translateY(-50%);
+}
+
+.theme-switch {
+  position: relative;
   display: inline-block;
   width: 26px;
   height: 14px;
-  transform: translateY(-50%);
+  flex: 0 0 auto;
+  opacity: 0;
 }
 
 .theme-switch input {
@@ -50,6 +59,10 @@ html.theme-toggle-ready .theme-slider::before {
   transition: transform 0.25s ease;
 }
 
+html.theme-toggle-ready .theme-switch {
+  opacity: 1;
+}
+
 .theme-switch input:checked + .theme-slider {
   background: #7d6be3;
 }
@@ -59,10 +72,7 @@ html.theme-toggle-ready .theme-slider::before {
 }
 
 .profile-menu {
-  position: absolute;
-  right: 15px;
-  top: 50%;
-  transform: translateY(-50%);
+  position: relative;
   margin: 0;
   display: flex;
   align-items: center;
@@ -70,7 +80,7 @@ html.theme-toggle-ready .theme-slider::before {
 }
 
 .profile-menu-anonymous {
-  top: 50%;
+  position: relative;
 }
 
 .profile-top-time {
