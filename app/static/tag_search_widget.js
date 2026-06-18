@@ -145,13 +145,14 @@
         .forEach((t) => selected.add(t));
     }
 
+    function getSearchQuery() {
+      return input ? input.value.trim() : "";
+    }
+
     function syncHidden() {
       const joined = Array.from(selected).sort().join(", ");
       if (hiddenInput) {
         hiddenInput.value = joined;
-      }
-      if (mode !== "picker" && input && selected.size > 0) {
-        input.value = joined;
       }
     }
 
@@ -189,9 +190,19 @@
     function renderExisting() {
       if (!existingEl) return;
       existingEl.innerHTML = "";
+      const matchedTagNames = new Set(
+        currentMatches.map((match) => match.name.toLowerCase())
+      );
       allTags.forEach((tag) => {
         const active = selected.has(tag.toLowerCase());
-        const chip = createTagChip(tag, active ? "label label-primary" : "label label-default");
+        const isMatched = matchedTagNames.has(tag.toLowerCase());
+        let chipClass = "label label-default";
+        if (active) {
+          chipClass = "label label-primary";
+        } else if (isMatched) {
+          chipClass = "label label-default tag-existing-match";
+        }
+        const chip = createTagChip(tag, chipClass);
         chip.style.cursor = "pointer";
         chip.addEventListener("click", () => {
           const key = tag.toLowerCase();
@@ -219,6 +230,7 @@
     function renderResults(matches) {
       if (!resultsEl) return;
       currentMatches = matches || [];
+      renderExisting();
       resultsEl.innerHTML = "";
       const visibleMatches = mode === "picker"
         ? currentMatches.filter((m) => !selected.has(m.name.toLowerCase()))
@@ -302,7 +314,7 @@
 
     async function runSearch() {
       if (!input) return;
-      const q = selected.size > 0 ? Array.from(selected).sort().join(", ") : input.value.trim();
+      const q = getSearchQuery();
       if (!q) {
         if (statusEl) statusEl.textContent = "";
         renderResults([]);
@@ -327,11 +339,6 @@
     const debouncedSearch = debounce(runSearch, 220);
     if (input) {
       input.addEventListener("input", function () {
-        if (mode !== "picker" && selected.size > 0) {
-          selected.clear();
-          renderSelected();
-          renderExisting();
-        }
         debouncedSearch();
       });
     }

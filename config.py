@@ -66,27 +66,27 @@ config = {
 
 
 #TODO: ändere Cookie Secure zu True
-#      mache form kästchen größer, sodass der graue placeholder text reinpasst 
+#      --- done mache form kästchen größer, sodass der graue placeholder text reinpasst --- done 
 #      evtl timeout rausmachen und dann nur beim Browserschließen session rememberen oder beenden lassen. 
 #      change edit_profile form inputs, think of what is really important and necessary 
-#      welche email adressen sollen funktionieren? (Nur die von studenten? oder auch von staff? oder dphys etc? oder muss man auch nur ethz.ch akzeptieren, wenn man student.ethz.ch akzeptiert?)
+#      --- egal/done welche email adressen sollen funktionieren? (Nur die von studenten? oder auch von staff? oder dphys etc? oder muss man auch nur ethz.ch akzeptieren, wenn man student.ethz.ch akzeptiert?)  --- egal/done
 #      evtl das mailto für mich als admin rausnehmen, sodass ich nur im Notfall die emails aus der dabenbank lesen kann? 
 #      mir als Admin bei jeder neuen Registreierung eine email senden! 
 #      umami tracking einbauen? 
-#      evtl einbauen, dass mir schon profile vorgeschlagen werden? 
-#      evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )
+#      --- done evtl einbauen, dass mir schon profile vorgeschlagen werden? 
+#      fast done evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )  --- fast done
 #      go back auf manchen seiten einbauen (bei login/auth Seiten?) und das unten plazieren links 
 #      The Developers contact data unten auf jeder Seite haben? Oder unter About? 
-#      wenn ich auf dem profil nach tags suche ode auf der tagseite, dann sollen die matching tags in den existing tags farblich anlaufen? 
+#      --- done wenn ich auf dem profil nach tags suche ode auf der tagseite, dann sollen die matching tags in den existing tags farblich anlaufen? 
 
 
 #Brainstorming on what to still do:
-# - for the chat index of a user, maybe implement a scoring or a filter, to change the scoring of the chats (last messages/most active chat, most recent chat, most overlap of tags?)  ---done
+# - ---done for the chat index of a user, maybe implement a scoring or a filter, to change the scoring of the chats (last messages/most active chat, most recent chat, most overlap of tags?)  ---done
 # - implement email notification for new messages and maybe also reminders to stay active? (think about the usecase and atmosphere this app should convey)
 # - think of a vibe and style (minimalistic or cozy or what vibe should it give off)
-# - move the tags maybe to the right side of the window and not below the matches --- done 
+# - --- done move the tags maybe to the right side of the window and not below the matches --- done 
 # - maybe change names of users to something more serious
-# - dark mode color scheme machen ---done halb 
+# - ---done halb dark mode color scheme machen ---done halb 
 # - bei den forms den grauen Text in die Kästchen reinpassen lassen 
 
 

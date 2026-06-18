@@ -63,7 +63,41 @@ def post():
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     posts = user.posts.order_by(Post.timestamp.desc()).all()
-    return render_template('user.html', user=user, posts=posts)
+    recommend_profiles = request.args.get('recommend', 0, type=int) == 1
+    recommended_users = []
+
+    if (
+        recommend_profiles
+        and current_user.is_authenticated
+        and user.id == current_user.id
+    ):
+        current_tag_names = {tag.name for tag in current_user.tags}
+        if current_tag_names:
+            candidates = User.query.filter(User.id != current_user.id).all()
+            scored_users = []
+            for candidate in candidates:
+                candidate_tag_names = {tag.name for tag in candidate.tags}
+                matching_tags = sorted(current_tag_names & candidate_tag_names)
+                if matching_tags:
+                    scored_users.append(
+                        {
+                            "user": candidate,
+                            "matching_tags": matching_tags,
+                            "match_count": len(matching_tags),
+                        }
+                    )
+            scored_users.sort(
+                key=lambda item: (-item["match_count"], item["user"].username.lower())
+            )
+            recommended_users = scored_users[:4]
+
+    return render_template(
+        'user.html',
+        user=user,
+        posts=posts,
+        recommend_profiles=recommend_profiles,
+        recommended_users=recommended_users,
+    )
 
 
 @main.route('/edit-profile', methods=['GET', 'POST'])

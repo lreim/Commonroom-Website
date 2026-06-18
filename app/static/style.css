@@ -230,6 +230,24 @@ html.theme-toggle-ready .theme-switch {
   font-weight: 600;
 }
 
+.form-control,
+.chat-search-form input,
+.chat-form input {
+  min-height: 46px;
+  padding: 12px 14px;
+  font-size: 15px;
+}
+
+textarea.form-control {
+  min-height: 120px;
+}
+
+.form-control::placeholder,
+.chat-search-form input::placeholder,
+.chat-form input::placeholder {
+  font-size: 14px;
+}
+
 .logo {
   height: 1px;
   width: 1px;
@@ -288,6 +306,56 @@ html.theme-toggle-ready .theme-switch {
   margin-bottom: 24px;
 }
 
+.profile-recommendations {
+  margin: 28px 0 32px;
+}
+
+.profile-recommendation-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.profile-recommendation-card {
+  margin-bottom: 12px;
+}
+
+.profile-recommendation-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  padding: 12px 14px;
+  border: 1px solid #ddd4bc;
+  border-radius: 14px;
+  background: #fffdf7;
+  color: #2d1d00;
+  text-decoration: none;
+}
+
+.profile-recommendation-link:hover {
+  text-decoration: none;
+  border-color: #cdbf9d;
+}
+
+.profile-recommendation-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #d9cfbb;
+}
+
+.profile-recommendation-name {
+  font-weight: 700;
+}
+
+.profile-recommendation-tags,
+.profile-recommendation-hint {
+  font-size: 13px;
+  color: #6d624e;
+}
+
 .tag-two-column-layout {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
@@ -313,6 +381,12 @@ html.theme-toggle-ready .theme-switch {
 
 .tag-list {
   margin-bottom: 18px;
+}
+
+.tag-existing-match {
+  background-color: #d9f0ff;
+  border: 1px solid #97d0f3;
+  color: #1a5778;
 }
 
 .tag-match-users {
