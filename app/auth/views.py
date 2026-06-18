@@ -1,25 +1,49 @@
 from flask import render_template, redirect, request, url_for, flash, session 
 from flask_login import login_user, login_required, logout_user, current_user
 from . import auth     #importiert auth object aus __init__.py
-from ..models import User 
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm
+from ..models import User
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
 from .. import db 
 from ..email import send_email
+from datetime import datetime, timezone, timedelta
+
 
 
 @auth.route('/login', methods=['GET', 'POST'])
-def login():
+def login():   
     form = LoginForm()
     if form.validate_on_submit():
-        email = User.normalize_email(form.email.data)
+        email = canonicalize_eth_email(form.email.data)
         user = User.query.filter_by(email=email).first()
-        if user is not None and user.verify_password(form.password.data):
-            login_user(user, form.remember_me.data)       #remember_me cookie wird gesetzt. 
-            session.permanent = True
-            flash(f"{user.username} is now locked in!")
-            return redirect(request.args.get('next') or url_for('main.index'))
+
+        if user is not None:
+            now = datetime.now(timezone.utc)
+
+            if user.login_locked_until is not None and user.login_locked_until <= now:
+                user.login_locked_until = None
+                user.failed_login_attempts = 0
+
+            if user.login_locked_until is not None and user.login_locked_until > now:
+                flash("Too many failed login attempts. Please try again later.")
+                return render_template('index.html')
+
+            if user.verify_password(form.password.data):
+                user.failed_login_attempts = 0
+                user.login_locked_until = None
+                db.session.commit()
+
+                login_user(user, form.remember_me.data)
+                session.permanent = True
+                flash(f"{user.username} is now locked in!")
+                return redirect(request.args.get('next') or url_for('main.index'))
+
+            user.failed_login_attempts += 1
+            if user.failed_login_attempts >= 6:
+                user.login_locked_until = now + timedelta(minutes=10)
+            db.session.commit()
         flash('Welp, invalid username or password, my friend.')
     return render_template('auth/login.html', form=form)
+
 
 @auth.route('/logout')
 @login_required
@@ -35,7 +59,7 @@ def reset_password_mail():
         return redirect(url_for('main.index'))
     form = form = EmailForm()
     if form.validate_on_submit():
-        email = User.normalize_email(form.email.data)
+        email = canonicalize_eth_email(form.email.data)
         user = User.query.filter_by(email=email).first()
         if user is not None:
             token = user.generate_reset_token()
@@ -72,7 +96,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(
-                email=User.normalize_email(form.email.data),
+                email=canonicalize_eth_email(form.email.data),
                 username=User.generate_username(),
                 password=form.password.data
                 )
@@ -140,9 +164,9 @@ def change_email_request():
     form = ChangeEmailForm()
     if form.validate_on_submit():
         if current_user.verify_password(form.password.data):
-            token = current_user.generate_email_change_token(form.email.data)
+            token = current_user.generate_email_change_token(canonicalize_eth_email(form.email.data))
             send_email(
-                form.email.data,
+                canonicalize_eth_email(form.email.data),
                 'Confirm your email address',
                 'auth/email/change_email',
                 user=current_user,

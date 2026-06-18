@@ -86,7 +86,8 @@ config = {
 # - think of a vibe and style (minimalistic or cozy or what vibe should it give off)
 # - move the tags maybe to the right side of the window and not below the matches --- done 
 # - maybe change names of users to something more serious
-# - dark mode color scheme machen 
+# - dark mode color scheme machen ---done halb 
+# - bei den forms den grauen Text in die Kästchen reinpassen lassen 
 
 
 # - mehr persönliche Sachen

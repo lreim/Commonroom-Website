@@ -4,24 +4,34 @@ from wtforms.validators import DataRequired, Email, Length, Regexp, EqualTo
 from wtforms import ValidationError 
 from ..models import User 
 
+
+def canonicalize_eth_email(email):
+    email = User.canonicalize_eth_email(email)
+    if not email or "@" not in email:
+        raise ValidationError("Please use a valid ETH email address.")
+    local, domain = email.split("@", 1)
+
+    if domain not in {"ethz.ch", "student.ethz.ch"}:
+        if domain != "ethz.ch":
+            raise ValidationError("Please use a valid ETH email address.")
+
+    return f"{local}@ethz.ch"
+
+
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Password", validators=[DataRequired()])
     remember_me = BooleanField("Keep me logged in")
     submit = SubmitField("Let's Lock in ;)")
 
+    def validate_email(self, field):
+        canonicalize_eth_email(field.data)
+
 class EmailForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()], render_kw={"placeholder": "hello@blah.com"})
     submit = SubmitField("Send verification token to reset password")
     def validate_email(self, field):
-        email = User.normalize_email(field.data)
-        domain = email.split("@")[-1]
-
-        if domain not in {"ethz.ch", "student.ethz.ch"}:
-            raise ValidationError("Please use a valid ETH email address.")
-
-        if User.query.filter_by(email=email).first():
-            raise ValidationError("Email already registered.")
+        canonicalize_eth_email(field.data)
 
 class ResetForm(FlaskForm):
     password = PasswordField(
@@ -44,12 +54,7 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Register and join the community! ')
 
     def validate_email(self, field):
-        email = User.normalize_email(field.data)
-        domain = email.split("@")[-1]
-
-        if domain not in {"ethz.ch", "student.ethz.ch"}:
-            raise ValidationError("Please use a valid ETH email address.")
-
+        email = canonicalize_eth_email(field.data)
         if User.query.filter_by(email=email).first():
             raise ValidationError("Email already registered.")
     
@@ -72,12 +77,6 @@ class ChangeEmailForm(FlaskForm):
 
     #test valid ethz domain 
     def validate_email(self, field):
-        email = User.normalize_email(field.data)
-        domain = email.split("@")[-1]
-
-        if domain not in {"ethz.ch", "student.ethz.ch"}:
-            raise ValidationError("Please use a valid ETH email address.")
-
+        email = canonicalize_eth_email(field.data)
         if User.query.filter_by(email=email).first():
             raise ValidationError("Email already registered.")
-

@@ -65,6 +65,9 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     tags = db.relationship('Tag', secondary=user_tags, back_populates='users', lazy='subquery')
+    failed_login_attempts = 0
+    login_locked_until = None
+    
     
     def __repr__(self):
         return '<User %r>' % self.username
@@ -86,6 +89,16 @@ class User(UserMixin, db.Model):
     @staticmethod
     def normalize_email(email):
         return email.strip().lower() if email else email
+
+    @staticmethod
+    def canonicalize_eth_email(email):
+        email = User.normalize_email(email)
+        if not email or "@" not in email:
+            return email
+        local, domain = email.split("@", 1)
+        if domain in {"ethz.ch", "student.ethz.ch"}:
+            return f"{local}@ethz.ch"
+        return email
 
     @validates('email')
     def _normalize_email(self, key, email):
@@ -135,7 +148,7 @@ class User(UserMixin, db.Model):
         new_email = data.get('new_email')
         if not new_email:
             return False
-        new_email = self.normalize_email(new_email)
+        new_email = self.canonicalize_eth_email(new_email)
         if User.query.filter_by(email=new_email).first():
             return False
 
