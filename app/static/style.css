@@ -588,10 +588,61 @@ html.theme-toggle-ready .theme-switch {
   cursor: pointer;
 }
 
+.chat-search-result-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 50%;
+  min-width: 420px;
+}
+
+.chat-search-profile-link {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-search-start-form {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.chat-start-action-button {
+  display: inline-block;
+  padding: 8px 10px;
+  border: 1px solid #d5cfc1;
+  border-radius: 10px;
+  background: #7459aa;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chat-start-action-button:hover {
+  background: #644a9e;
+}
+
 @media (max-width: 900px) {
   .chat-conversation-link {
     width: 100%;
     min-width: 0;
+  }
+
+  .chat-search-result-card {
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .chat-search-start-form {
+    width: 100%;
+  }
+
+  .chat-start-action-button {
+    width: 100%;
   }
 }
 
@@ -653,6 +704,12 @@ html.dark-mode .chat-search-form button,
 html.dark-mode .btn-primary {
   background: #6e5ab7;
   border-color: #6e5ab7;
+}
+
+html.dark-mode .chat-start-action-button {
+  background: #6e5ab7;
+  border-color: #6e5ab7;
+  color: #f1ebdd;
 }
 
 html.dark-mode .posts,

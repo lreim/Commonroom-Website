@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, abort
+from flask import render_template, redirect, url_for, request, abort, jsonify
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 
@@ -47,6 +47,32 @@ def index():     #Zeigt Übersicht aller Chats, in denen current_user involviert
             or_(User.username.ilike(f"%{q}%"), User.email.ilike(f"%{q}%"))  #Suchtext darf irgendwo im String stehen, 
         ).order_by(User.username.asc()).limit(25).all()     #auf 25 Treffer begrenzen
     return render_template("chat/list.html", items=items, users=users, q=q, sort_by=sort_by)
+
+
+@chat.route("/search_users")
+@login_required
+def search_users():
+    q = request.args.get("q", "", type=str).strip()
+    users = []
+    if q:
+        users = User.query.filter(
+            User.id != current_user.id,
+            or_(User.username.ilike(f"%{q}%"), User.email.ilike(f"%{q}%"))
+        ).order_by(User.username.asc()).limit(25).all()
+
+    return jsonify({
+        "query": q,
+        "users": [
+            {
+                "id": u.id,
+                "username": u.username,
+                "avatar_url": u.gravatar(size=56),
+                "profile_url": url_for("main.user", username=u.username),
+                "start_url": url_for("chat.start", user_id=u.id),
+            }
+            for u in users
+        ],
+    })
 
 
 @chat.route("/start/<int:user_id>", methods=["POST"])

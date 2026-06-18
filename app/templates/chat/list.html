@@ -68,17 +68,32 @@
 
 <div class="chat-search-panel">
   <h4>Start Chat</h4>
-  <form method="get" action="{{ url_for('chat.index') }}" class="chat-search-form">
-    <input type="text" name="q" value="{{ q or '' }}" placeholder="Search for username">
+  <form method="get" action="{{ url_for('chat.index') }}" class="chat-search-form" id="chat-search-form">
+    <input
+      type="text"
+      name="q"
+      id="chat-search-input"
+      value="{{ q or '' }}"
+      placeholder="Search for username"
+      autocomplete="off"
+      data-search-endpoint="{{ url_for('chat.search_users') }}"
+    >
     <button type="submit">Search</button>
   </form>
 
-  {% if q %}
-    <ul class="chat-conversation-list chat-search-results">
+  <div id="chat-search-empty" class="chat-empty-state"{% if q and users %} style="display:none;"{% endif %}>
+    {% if q %}
+      {% if not users %}No user found.{% else %}Search for a user to start a chat.{% endif %}
+    {% else %}
+      Search for a user to start a chat.
+    {% endif %}
+  </div>
+
+  <ul id="chat-search-results" class="chat-conversation-list chat-search-results"{% if not q or not users %} style="display:none;"{% endif %}>
     {% for u in users %}
       <li class="chat-conversation-card">
-        <form method="post" action="{{ url_for('chat.start', user_id=u.id) }}">
-          <button type="submit" class="chat-conversation-link chat-start-button">
+        <div class="chat-search-result-card">
+          <a class="chat-conversation-link chat-search-profile-link" href="{{ url_for('main.user', username=u.username) }}">
             <img
               class="chat-conversation-avatar"
               src="{{ u.gravatar(size=56) }}"
@@ -87,18 +102,97 @@
             <div class="chat-conversation-meta">
               <div class="chat-conversation-name">{{ u.username }}</div>
             </div>
-            <div class="chat-conversation-bubble">Start a conversation</div>
-          </button>
-        </form>
+          </a>
+          <form method="post" action="{{ url_for('chat.start', user_id=u.id) }}" class="chat-search-start-form">
+            <button type="submit" class="chat-start-action-button">Start a conversation</button>
+          </form>
+        </div>
       </li>
     {% endfor %}
-    </ul>
-    {% if not users %}
-      <p class="chat-empty-state">No user found.</p>
-    {% endif %}
-  {% else %}
-    <p class="chat-empty-state">Search for a user to start a chat.</p>
-  {% endif %}
+  </ul>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const input = document.getElementById("chat-search-input");
+  const results = document.getElementById("chat-search-results");
+  const empty = document.getElementById("chat-search-empty");
+  const form = document.getElementById("chat-search-form");
+  if (!input || !results || !empty || !form) {
+    return;
+  }
+
+  let timer = null;
+
+  function renderUsers(users) {
+    results.innerHTML = "";
+    users.forEach(function (user) {
+      const li = document.createElement("li");
+      li.className = "chat-conversation-card";
+      li.innerHTML = `
+        <div class="chat-search-result-card">
+          <a class="chat-conversation-link chat-search-profile-link" href="${user.profile_url}">
+            <img class="chat-conversation-avatar" src="${user.avatar_url}" alt="${user.username}">
+            <div class="chat-conversation-meta">
+              <div class="chat-conversation-name">${user.username}</div>
+            </div>
+          </a>
+          <form method="post" action="${user.start_url}" class="chat-search-start-form">
+            <button type="submit" class="chat-start-action-button">Start a conversation</button>
+          </form>
+        </div>
+      `;
+      results.appendChild(li);
+    });
+  }
+
+  async function runSearch() {
+    const q = input.value.trim();
+    if (!q) {
+      results.style.display = "none";
+      results.innerHTML = "";
+      empty.style.display = "block";
+      empty.textContent = "Search for a user to start a chat.";
+      return;
+    }
+
+    try {
+      const endpoint = input.dataset.searchEndpoint;
+      const response = await fetch(`${endpoint}?q=${encodeURIComponent(q)}`, {
+        headers: { Accept: "application/json" }
+      });
+      const data = await response.json();
+      if (data.users && data.users.length > 0) {
+        renderUsers(data.users);
+        results.style.display = "block";
+        empty.style.display = "none";
+      } else {
+        results.style.display = "none";
+        results.innerHTML = "";
+        empty.style.display = "block";
+        empty.textContent = "No user found.";
+      }
+    } catch (err) {
+      results.style.display = "none";
+      results.innerHTML = "";
+      empty.style.display = "block";
+      empty.textContent = "Search failed.";
+    }
+  }
+
+  input.addEventListener("input", function () {
+    clearTimeout(timer);
+    timer = window.setTimeout(runSearch, 180);
+  });
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    runSearch();
+  });
+});
+</script>
 {% endblock %}

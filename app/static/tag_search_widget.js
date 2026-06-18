@@ -110,6 +110,7 @@
     let hiddenInput = null;
     let selected = new Set();
     let previewCard = null;
+    let currentMatches = [];
 
     function ensurePreviewCard() {
       if (previewCard || mode === "picker") return;
@@ -175,7 +176,9 @@
             syncHidden();
             renderSelected();
             renderExisting();
-            if (mode !== "picker") {
+            if (mode === "picker") {
+              renderResults(currentMatches);
+            } else {
               runSearch();
             }
           });
@@ -201,6 +204,7 @@
             syncHidden();
             renderSelected();
             renderExisting();
+            renderResults(currentMatches);
           } else {
             syncHidden();
             renderSelected();
@@ -214,8 +218,13 @@
 
     function renderResults(matches) {
       if (!resultsEl) return;
+      currentMatches = matches || [];
       resultsEl.innerHTML = "";
-      if (!matches || matches.length === 0) {
+      const visibleMatches = mode === "picker"
+        ? currentMatches.filter((m) => !selected.has(m.name.toLowerCase()))
+        : currentMatches;
+
+      if (!visibleMatches || visibleMatches.length === 0) {
         const p = document.createElement("p");
         p.className = "text-muted";
         p.textContent = "No matches yet.";
@@ -223,7 +232,7 @@
         return;
       }
 
-      matches.forEach((m) => {
+      visibleMatches.forEach((m) => {
         const row = document.createElement("div");
         row.style.marginBottom = "12px";
 
@@ -241,6 +250,7 @@
             syncHidden();
             renderSelected();
             renderExisting();
+            renderResults(currentMatches);
           } else {
             syncHidden();
             renderSelected();
