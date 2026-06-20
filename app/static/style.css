@@ -6,6 +6,11 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+.page-body-container {
+  width: auto;
+  max-width: calc(1170px - 6cm);
+}
+
 .navbar-right-controls {
   position: absolute;
   top: 50%;
@@ -235,7 +240,7 @@ html.theme-toggle-ready .theme-switch {
 .chat-form input {
   min-height: 46px;
   padding: 12px 14px;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 textarea.form-control {
@@ -251,6 +256,15 @@ textarea.form-control {
 .logo {
   height: 1px;
   width: 1px;
+}
+
+.reading-page {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.reading-page p {
+  margin-bottom: 18px;
 }
 
 .sidebar-footer {
@@ -410,6 +424,10 @@ textarea.form-control {
 }
 
 @media (max-width: 900px) {
+  .page-body-container {
+    max-width: none;
+  }
+
   .tag-two-column-layout {
     grid-template-columns: 1fr;
   }
