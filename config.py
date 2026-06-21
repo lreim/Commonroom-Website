@@ -93,6 +93,7 @@ config = {
     # (evtl mit emailvorlage? oder dass man ein Kontaktformular ausfüllt auf der Webseite?)  und dann soll pending unter den chats hinzugefügt werden. Und der User wird aufgefordert (Glocke), die Anfrage nach einer Woche erneut zu senden
 # - baue eine Glocke ein mit Benachrichtigungen zu Chats und Anfragen und Updates etc., (oder direkt im Chat Index? ODer im Userprofile?)
 # - baue eine Datenschutz seite ein, auf der du erklärt, was du eingebaut hast und warum und wie die Daten geschützt sind. 
+# - add a block button for a chat you want to end and block.
 
 
 
