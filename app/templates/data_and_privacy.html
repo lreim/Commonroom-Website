@@ -1,7 +1,17 @@
-Wie rechtfertige ich die Benutzung der Daten meiner User? 
+{% extends "base.html" %}
+
+{% block title %}Data and Privacy{% endblock %}
+
+{% block page_content %}
+<div class="reading-page">
+Since this website is mostly selfmade, I want to share a few information about what I implemented and how you data is savely handled securing your privacy. 
+<p>
+    Wie rechtfertige ich die Benutzung der Daten meiner User? 
 Wie sorge ich für Datenschutz?
+</p>
 
 Which Data am I using, which data are required to be shared?
+<p>
 - Email
 - Passwort-Hash
 - Username (generated)
@@ -9,15 +19,16 @@ Which Data am I using, which data are required to be shared?
 - Profiletext
 - Chat-Messages
 - IP-/Server-Logs ??
-- Notification Data?
-
+- Notification Data? </p>
+<p>
 My motto is: as simple as possible, but not simpler. And as little as possible data publicly or storaged 
              but not less than required for safety and functionality. 
 
 This means that I want to create a safe space in which as little data as possible data is given from the users
 but simultaneously as much data and code tracking activity as I need to secure a safe space and prevent abuse.
 You can always reach out to me anonymously and request information about your data storage. 
-
+</p>
+<p>
 I need your email to verify that you are an eth student and also to log you in. (To use ETH login is difficult.)
 Its also necessary to being able to reach out to you for notifications, for issues or for resetting your passwort. 
 I cannot storage your email as a hash therefore. 
@@ -31,35 +42,39 @@ Your email is stored hashed and only the app has the key. Thus, no one can read 
     Wenn deine App später deployt wird, könntest du statt einer .env zum Beispiel einen Dienst wie AWS Secrets Manager, Google Secret Manager, 
     Azure Key Vault oder HashiCorp Vault benutzen. Dann liegt dein Mail-Passwort oder dein Email-Verschlüsselungsschlüssel nicht mehr einfach in 
     einer Datei auf dem Server, sondern in einem dafür gebauten Dienst.)
-
+</p>
 Your passwort is completely unknown, since it is hashed in my database. 
-
+<p>
 To build more anonymity I let your username be generated. Thus, no one can associate a person with his username through
 personal hints or identify the gender, age or any personality traits. 
-
+</p>
 What you write into your about_me box is up to you. 
 Don't present information which could identify you easily like special interests or where you live. 
 It is just another option for you to say something about your issues, situations you were in and what special insights you could give somone
 in more detail.
-
+<p>
 The tags are managed by myself. 
 This is to not have similar, too many or inappropriate tags. This also prevents you from being identified due to special and personal tags you assign yourself.
 If you need additional tags, please reach out to me. 
 I am also tracking looked for tags to add new ones if they are requested a lot. 
-
+</p>
+<p>
 The chat messages include the most sensible data on this website. 
 Therefore I apply strict rules to the use of the chat and use a screening of the semantic used and inappropriate keywords. 
 Due to the fact that you should be able to read the messages even if the other person is offline, I need to storage the messages
 for a specific amount of time. 
 !!!!!Still to be discussed how to secure here!!!!!
-
+</p>
+<p>
 To secure that your session is save, a logout time is default. You can deactivate it when preferred, but it is detault
 to give you more safety when letting your tab open when leaving. The remember_me can also be deactivated, so that when closing the
 browser your session really ends. Nevertheless the timeout will end it after 20 minutes in any case when not deactivated. 
-
+</p>
+<p>
 A bit of trust is necessary for this website to work. I am the person you need to trust.
 I am sure you can trust me since I made this website for a purpose. I would not have spent
 this many hours coding this project if I didnt want to make it a space for YOU, not for me gathering your data. 
+</p>
 
-
-
+</div>
+{% endblock %}

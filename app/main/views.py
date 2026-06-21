@@ -31,14 +31,16 @@ def about():
     return render_template('about.html', active_page='about')
 
 @main.route('/onboarding')
-@login_required
 def onboarding():
     return render_template('onboarding.html', active_page='onboarding')
 
 @main.route('/rules')
-@login_required
 def rules():
     return render_template('rules.html', active_page='rules')
+
+@main.route('/data-and-privacy')
+def data_and_privacy():
+    return render_template('data_and_privacy.html', active_page='data_and_privacy')
 
 @main.route('/post', methods=['GET', 'POST'])
 @login_required
