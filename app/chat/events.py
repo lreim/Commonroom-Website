@@ -41,6 +41,11 @@ def send_message(data):
         emit("chat_error", {"message": "No access"})
         return
 
+    other = conversation.other_user(current_user.id)
+    if current_user.has_block_relationship(other):
+        emit("chat_error", {"message": "You cannot send messages in this chat."})
+        return
+
     msg = Message(conversation_id=conversation_id, author_id=current_user.id, body=body)
     db.session.add(msg)
     db.session.commit()

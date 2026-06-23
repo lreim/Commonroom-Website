@@ -1,0 +1,15 @@
+Hi {{ requested.username }},
+
+{{ requester.username }} would like to start a conversation with you on TalkTo.
+
+Request message:
+{{ chat_request.message }}
+
+If you would like to accept this request, open this link:
+{{ accept_url }}
+
+If you would like to reject this request, open this link:
+{{ reject_url }}
+
+You can ignore this email if you do not want to respond right now. We appreciate your time and help for your peers!
+Help and be helped.

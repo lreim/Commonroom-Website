@@ -1,14 +1,57 @@
-from flask import render_template, redirect, url_for, request, abort, jsonify
+from datetime import datetime, timezone
+
+from flask import render_template, redirect, url_for, request, abort, jsonify, flash
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 
 from . import chat
 from .. import db
-from ..models import User, Conversation, Message
+from ..email import send_email
+from ..models import User, Conversation, Message, UserBlock, ChatRequest
 
 
 def _pair_ids(user1_id, user2_id):
     return (user1_id, user2_id) if user1_id < user2_id else (user2_id, user1_id)
+
+
+def _blocked_message(current_user, other_user):
+    if current_user.has_blocked(other_user):
+        return "You blocked this user. Unblock them to continue chatting."
+    if current_user.is_blocked_by(other_user):
+        return "You cannot chat with this user."
+    return "Chat is unavailable."
+
+
+def _pending_request_between(user_a_id, user_b_id):
+    return ChatRequest.query.filter(
+        ChatRequest.status == ChatRequest.STATUS_PENDING,
+        (
+            ((ChatRequest.requester_id == user_a_id) & (ChatRequest.requested_id == user_b_id)) |
+            ((ChatRequest.requester_id == user_b_id) & (ChatRequest.requested_id == user_a_id))
+        ),
+    ).first()
+
+
+def _create_or_get_conversation(user_a_id, user_b_id):
+    a_id, b_id = _pair_ids(user_a_id, user_b_id)
+    conversation = Conversation.query.filter_by(user_a_id=a_id, user_b_id=b_id).first()
+    if conversation is None:
+        conversation = Conversation(user_a_id=a_id, user_b_id=b_id)
+        db.session.add(conversation)
+        db.session.commit()
+    return conversation
+
+
+def _serialize_chat_candidate(user):
+    pending_request = _pending_request_between(current_user.id, user.id)
+    return {
+        "id": user.id,
+        "username": user.username,
+        "avatar_url": user.gravatar(size=56),
+        "profile_url": url_for("main.user", username=user.username),
+        "has_pending_request": pending_request is not None,
+        "pending_status_url": url_for("chat.pending_request_notice", user_id=user.id),
+    }
 
 
 @chat.route("/")
@@ -39,14 +82,53 @@ def index():     #Zeigt Übersicht aller Chats, in denen current_user involviert
     else:
         items.sort(key=lambda x: x["last_activity"], reverse=True)
 
+    active_items = []
+    blocked_items = []
+    for item in items:
+        if current_user.has_block_relationship(item["other"]):
+            blocked_items.append(item)
+        else:
+            active_items.append(item)
+
+    requested_items = []
+    pending_requests = ChatRequest.query.filter(
+        ChatRequest.status == ChatRequest.STATUS_PENDING,
+        (
+            (ChatRequest.requester_id == current_user.id) |
+            (ChatRequest.requested_id == current_user.id)
+        ),
+    ).order_by(ChatRequest.created_at.desc()).all()
+    for chat_request in pending_requests:
+        other = chat_request.other_user(current_user.id)
+        requested_items.append(
+            {
+                "request": chat_request,
+                "other": other,
+                "direction": chat_request.direction_for(current_user.id),
+            }
+        )
+
     q = request.args.get("q", "", type=str).strip()    #q ist der Suchtext 
     users = []
     if q:
-        users = User.query.filter(
+        candidate_users = User.query.filter(
             User.id != current_user.id,
             or_(User.username.ilike(f"%{q}%"), User.email.ilike(f"%{q}%"))  #Suchtext darf irgendwo im String stehen, 
         ).order_by(User.username.asc()).limit(25).all()     #auf 25 Treffer begrenzen
-    return render_template("chat/list.html", items=items, users=users, q=q, sort_by=sort_by)
+        users = [
+            _serialize_chat_candidate(u)
+            for u in candidate_users
+            if not current_user.has_block_relationship(u)
+        ]
+    return render_template(
+        "chat/list.html",
+        items=active_items,
+        blocked_items=blocked_items,
+        requested_items=requested_items,
+        users=users,
+        q=q,
+        sort_by=sort_by,
+    )
 
 
 @chat.route("/search_users")
@@ -55,42 +137,93 @@ def search_users():
     q = request.args.get("q", "", type=str).strip()
     users = []
     if q:
-        users = User.query.filter(
+        candidate_users = User.query.filter(
             User.id != current_user.id,
             or_(User.username.ilike(f"%{q}%"), User.email.ilike(f"%{q}%"))
         ).order_by(User.username.asc()).limit(25).all()
+        users = [
+            _serialize_chat_candidate(u)
+            for u in candidate_users
+            if not current_user.has_block_relationship(u)
+        ]
 
     return jsonify({
         "query": q,
-        "users": [
-            {
-                "id": u.id,
-                "username": u.username,
-                "avatar_url": u.gravatar(size=56),
-                "profile_url": url_for("main.user", username=u.username),
-                "start_url": url_for("chat.start", user_id=u.id),
-            }
-            for u in users
-        ],
+        "users": users,
     })
 
 
 @chat.route("/start/<int:user_id>", methods=["POST"])
 @login_required
 def start(user_id):
-    if user_id == current_user.id:
-        abort(400)
+    flash("Use the chat request form to start a new conversation.")
+    return redirect(url_for("chat.index"))
 
+
+@chat.route("/request/pending/<int:user_id>")
+@login_required
+def pending_request_notice(user_id):
     other = User.query.get_or_404(user_id)
-    a_id, b_id = _pair_ids(current_user.id, other.id)
+    if _pending_request_between(current_user.id, other.id) is not None:
+        flash("There is already a pending chat request between you and this user.")
+    return redirect(url_for("chat.index"))
 
-    conversation = Conversation.query.filter_by(user_a_id=a_id, user_b_id=b_id).first()
-    if conversation is None:
-        conversation = Conversation(user_a_id=a_id, user_b_id=b_id)
-        db.session.add(conversation)
-        db.session.commit()
 
-    return redirect(url_for("chat.detail", conversation_id=conversation.id))
+@chat.route("/request", methods=["POST"])
+@login_required
+def request_chat():
+    requested_id = request.form.get("requested_user_id", type=int)
+    body = (request.form.get("message") or "").strip()
+
+    if not requested_id:
+        abort(400)
+    if requested_id == current_user.id:
+        abort(400)
+    if not body:
+        flash("Please write a short request message first.")
+        return redirect(url_for("chat.index"))
+
+    other = User.query.get_or_404(requested_id)
+    if current_user.has_block_relationship(other):
+        abort(403)
+
+    existing_conversation = Conversation.query.filter(
+        ((Conversation.user_a_id == current_user.id) & (Conversation.user_b_id == other.id)) |
+        ((Conversation.user_a_id == other.id) & (Conversation.user_b_id == current_user.id))
+    ).first()
+    if existing_conversation is not None:
+        flash("You already have an active chat with this user.")
+        return redirect(url_for("chat.detail", conversation_id=existing_conversation.id))
+
+    pending_request = _pending_request_between(current_user.id, other.id)
+    if pending_request is not None:
+        flash("There is already a pending chat request between you and this user.")
+        return redirect(url_for("chat.index"))
+
+    chat_request = ChatRequest(
+        requester_id=current_user.id,
+        requested_id=other.id,
+        message=body,
+        status=ChatRequest.STATUS_PENDING,
+    )
+    db.session.add(chat_request)
+    db.session.commit()
+
+    accept_token = chat_request.generate_response_token("accept")
+    reject_token = chat_request.generate_response_token("reject")
+    send_email(
+        other.email,
+        "New chat request",
+        "chat/email/request_chat",
+        chat_request=chat_request,
+        requester=current_user,
+        requested=other,
+        accept_url=url_for("chat.accept_request", token=accept_token, _external=True),
+        reject_url=url_for("chat.reject_request", token=reject_token, _external=True),
+    )
+
+    flash("Your chat request has been sent by email.")
+    return redirect(url_for("chat.index"))
 
 
 @chat.route("/<int:conversation_id>")
@@ -106,6 +239,8 @@ def detail(conversation_id):    #lädt Konversation
     )
     messages = list(reversed(pagination.items))
     other = conversation.other_user(current_user.id)
+    is_blocked = current_user.has_block_relationship(other)
+    blocked_message = _blocked_message(current_user, other) if is_blocked else None
 
     return render_template(
         "chat/detail.html",
@@ -113,4 +248,113 @@ def detail(conversation_id):    #lädt Konversation
         other=other,
         messages=messages,
         pagination=pagination,
+        is_blocked=is_blocked,
+        blocked_message=blocked_message,
     )
+
+
+@chat.route("/request/accept/<token>")
+def accept_request(token):
+    chat_request = ChatRequest.resolve_response_token(token, expected_action="accept")
+    if chat_request is None:
+        return render_template("chat/request_response.html", status="invalid", action="accept")
+
+    if chat_request.status != ChatRequest.STATUS_PENDING:
+        return render_template(
+            "chat/request_response.html",
+            status="already_processed",
+            action="accept",
+            chat_request=chat_request,
+        )
+
+    if chat_request.requester.has_block_relationship(chat_request.requested):
+        chat_request.status = ChatRequest.STATUS_REJECTED
+        chat_request.responded_at = datetime.now(timezone.utc)
+        db.session.add(chat_request)
+        db.session.commit()
+        return render_template(
+            "chat/request_response.html",
+            status="blocked",
+            action="accept",
+            chat_request=chat_request,
+        )
+
+    conversation = _create_or_get_conversation(chat_request.requester_id, chat_request.requested_id)
+    chat_request.status = ChatRequest.STATUS_ACCEPTED
+    chat_request.responded_at = datetime.now(timezone.utc)
+    db.session.add(chat_request)
+    db.session.commit()
+    return render_template(
+        "chat/request_response.html",
+        status="accepted",
+        action="accept",
+        chat_request=chat_request,
+        conversation=conversation,
+    )
+
+
+@chat.route("/request/reject/<token>")
+def reject_request(token):
+    chat_request = ChatRequest.resolve_response_token(token, expected_action="reject")
+    if chat_request is None:
+        return render_template("chat/request_response.html", status="invalid", action="reject")
+
+    if chat_request.status != ChatRequest.STATUS_PENDING:
+        return render_template(
+            "chat/request_response.html",
+            status="already_processed",
+            action="reject",
+            chat_request=chat_request,
+        )
+
+    chat_request.status = ChatRequest.STATUS_REJECTED
+    chat_request.responded_at = datetime.now(timezone.utc)
+    db.session.add(chat_request)
+    db.session.commit()
+    return render_template(
+        "chat/request_response.html",
+        status="rejected",
+        action="reject",
+        chat_request=chat_request,
+    )
+
+
+@chat.route("/block/<int:user_id>", methods=["POST"])
+@login_required
+def block_user(user_id):
+    if user_id == current_user.id:
+        abort(400)
+
+    other = User.query.get_or_404(user_id)
+    if not current_user.has_blocked(other):
+        db.session.add(UserBlock(blocker_id=current_user.id, blocked_id=other.id))
+        db.session.commit()
+
+    conversation = Conversation.query.filter(
+        ((Conversation.user_a_id == current_user.id) & (Conversation.user_b_id == other.id)) |
+        ((Conversation.user_a_id == other.id) & (Conversation.user_b_id == current_user.id))
+    ).first()
+    if conversation is not None:
+        return redirect(url_for("chat.detail", conversation_id=conversation.id))
+    return redirect(url_for("chat.index"))
+
+
+@chat.route("/unblock/<int:user_id>", methods=["POST"])
+@login_required
+def unblock_user(user_id):
+    if user_id == current_user.id:
+        abort(400)
+
+    other = User.query.get_or_404(user_id)
+    block = UserBlock.query.filter_by(blocker_id=current_user.id, blocked_id=other.id).first()
+    if block is not None:
+        db.session.delete(block)
+        db.session.commit()
+
+    conversation = Conversation.query.filter(
+        ((Conversation.user_a_id == current_user.id) & (Conversation.user_b_id == other.id)) |
+        ((Conversation.user_a_id == other.id) & (Conversation.user_b_id == current_user.id))
+    ).first()
+    if conversation is not None:
+        return redirect(url_for("chat.detail", conversation_id=conversation.id))
+    return redirect(url_for("chat.index"))

@@ -66,6 +66,76 @@
   {% endfor %}
 </ul>
 
+{% if requested_items %}
+<h4>Requested Chats</h4>
+<ul class="chat-conversation-list">
+  {% for item in requested_items %}
+    <li class="chat-conversation-card">
+      <a class="chat-conversation-link chat-search-profile-link chat-request-card" href="{{ url_for('main.user', username=item.other.username) }}">
+          <img
+            class="chat-conversation-avatar"
+            src="{{ item.other.gravatar(size=56) }}"
+            alt="{{ item.other.username }}"
+          >
+          <div class="chat-conversation-meta">
+            <div class="chat-conversation-name">{{ item.other.username }}</div>
+            <div class="chat-conversation-last-time">
+              {% if item.direction == "outgoing" %}Outgoing request{% else %}Incoming request{% endif %}
+              · {{ moment(item.request.created_at).fromNow() }}
+            </div>
+            <div class="chat-conversation-message-count">Awaiting email response</div>
+          </div>
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if blocked_items %}
+<h4>Blocked Chats</h4>
+<ul class="chat-conversation-list">
+  {% for item in blocked_items %}
+    <li class="chat-conversation-card">
+      <a class="chat-conversation-link" href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}">
+        <img
+          class="chat-conversation-avatar"
+          src="{{ item.other.gravatar(size=56) }}"
+          alt="{{ item.other.username }}"
+        >
+        <div class="chat-conversation-meta">
+          <div class="chat-conversation-name">{{ item.other.username }}</div>
+          {% if sort_by == "most_recent" and item.last_msg %}
+          <div class="chat-conversation-last-time">{{ moment(item.last_msg.created_at).fromNow() }}</div>
+          {% endif %}
+          {% if sort_by == "most_matching_tags" and item.matching_tags %}
+          <div class="chat-conversation-matching-tags">
+          Matches: {{ item.matching_tags|join(", ") }}
+          </div>
+          {% endif %}
+          {% if sort_by == "most_matching_tags" and not item.matching_tags %}
+          <div class="chat-conversation-matching-tags">
+          Matches: No matching tags
+          </div>
+          {% endif %}
+          {% if sort_by == "most_active" %}
+          <div class="chat-conversation-message-count">
+          messages: {{ item.message_count }}
+          </div>
+          {% endif %}
+        </div>
+        <div class="chat-conversation-bubble">
+          {% if item.last_msg %}
+            {{ item.last_msg.body[:140] }}{% if item.last_msg.body|length > 140 %}...{% endif %}
+          {% else %}
+            No messages yet.
+          {% endif %}
+        </div>
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
 <div class="chat-search-panel">
   <h4>Start Chat</h4>
   <form method="get" action="{{ url_for('chat.index') }}" class="chat-search-form" id="chat-search-form">
@@ -81,35 +151,52 @@
     <button type="submit">Search</button>
   </form>
 
-  <div id="chat-search-empty" class="chat-empty-state"{% if q and users %} style="display:none;"{% endif %}>
-    {% if q %}
-      {% if not users %}No user found.{% else %}Search for a user to start a chat.{% endif %}
-    {% else %}
-      Search for a user to start a chat.
-    {% endif %}
-  </div>
+  <div class="chat-search-layout">
+    <div class="chat-search-results-column">
+      <div id="chat-search-empty" class="chat-empty-state"{% if q and users %} style="display:none;"{% endif %}>
+        {% if q %}
+          {% if not users %}No user found.{% else %}Search for a user to start a chat.{% endif %}
+        {% else %}
+          Search for a user to start a chat.
+        {% endif %}
+      </div>
 
-  <ul id="chat-search-results" class="chat-conversation-list chat-search-results"{% if not q or not users %} style="display:none;"{% endif %}>
-    {% for u in users %}
-      <li class="chat-conversation-card">
-        <div class="chat-search-result-card">
-          <a class="chat-conversation-link chat-search-profile-link" href="{{ url_for('main.user', username=u.username) }}">
-            <img
-              class="chat-conversation-avatar"
-              src="{{ u.gravatar(size=56) }}"
-              alt="{{ u.username }}"
-            >
-            <div class="chat-conversation-meta">
-              <div class="chat-conversation-name">{{ u.username }}</div>
+      <ul id="chat-search-results" class="chat-conversation-list chat-search-results"{% if not q or not users %} style="display:none;"{% endif %}>
+        {% for u in users %}
+          <li class="chat-conversation-card">
+            <div class="chat-search-result-card">
+              <a class="chat-conversation-link chat-search-profile-link" href="{{ u.profile_url }}">
+                <img
+                  class="chat-conversation-avatar"
+                  src="{{ u.avatar_url }}"
+                  alt="{{ u.username }}"
+                >
+                <div class="chat-conversation-meta">
+                  <div class="chat-conversation-name">{{ u.username }}</div>
+                </div>
+              </a>
+              <div class="chat-search-start-form">
+                <button type="button" class="chat-start-action-button" data-request-user-id="{{ u.id }}" data-request-username="{{ u.username }}" data-has-pending-request="{{ 'true' if u.has_pending_request else 'false' }}" data-pending-status-url="{{ u.pending_status_url }}">Start a conversation</button>
+              </div>
             </div>
-          </a>
-          <form method="post" action="{{ url_for('chat.start', user_id=u.id) }}" class="chat-search-start-form">
-            <button type="submit" class="chat-start-action-button">Start a conversation</button>
-          </form>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div id="chat-request-compose" class="chat-request-compose" style="display:none;">
+      <h4 id="chat-request-compose-title">Send chat request</h4>
+      <p class="chat-request-compose-help">This message will be sent by email together with Accept and Reject links.</p>
+      <form method="post" action="{{ url_for('chat.request_chat') }}">
+        <input type="hidden" name="requested_user_id" id="chat-requested-user-id">
+        <textarea id="chat-request-message" name="message" class="form-control" rows="7" placeholder="Write your request message here."></textarea>
+        <div class="chat-request-compose-actions">
+          <button type="submit" class="btn btn-primary">Send request</button>
+          <button type="button" class="btn btn-default" id="chat-request-cancel">Cancel</button>
         </div>
-      </li>
-    {% endfor %}
-  </ul>
+      </form>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
@@ -122,11 +209,46 @@ document.addEventListener("DOMContentLoaded", function () {
   const results = document.getElementById("chat-search-results");
   const empty = document.getElementById("chat-search-empty");
   const form = document.getElementById("chat-search-form");
-  if (!input || !results || !empty || !form) {
+  const composePanel = document.getElementById("chat-request-compose");
+  const composeTitle = document.getElementById("chat-request-compose-title");
+  const composeMessage = document.getElementById("chat-request-message");
+  const requestedUserId = document.getElementById("chat-requested-user-id");
+  const cancelButton = document.getElementById("chat-request-cancel");
+  if (!input || !results || !empty || !form || !composePanel || !composeTitle || !composeMessage || !requestedUserId || !cancelButton) {
     return;
   }
 
   let timer = null;
+
+  function requestTemplate(username) {
+    return [
+      `Hi ${username},`,
+      "",
+      "I found your profile on TalkTo and would like to start a conversation with you.",
+      "",
+      "What I would like to talk about:",
+      "- ",
+      "",
+      "Why I am reaching out:",
+      "- ",
+      "",
+      "No pressure to accept if this does not fit for you."
+    ].join("\n");
+  }
+
+  function openCompose(userId, username) {
+    requestedUserId.value = userId;
+    composeTitle.textContent = `Send chat request to ${username}`;
+    composeMessage.value = requestTemplate(username);
+    composePanel.style.display = "block";
+    composeMessage.focus();
+  }
+
+  function closeCompose() {
+    composePanel.style.display = "none";
+    requestedUserId.value = "";
+    composeMessage.value = "";
+  }
 
   function renderUsers(users) {
     results.innerHTML = "";
@@ -141,9 +263,16 @@ document.addEventListener("DOMContentLoaded", function () {
               <div class="chat-conversation-name">${user.username}</div>
             </div>
           </a>
-          <form method="post" action="${user.start_url}" class="chat-search-start-form">
-            <button type="submit" class="chat-start-action-button">Start a conversation</button>
-          </form>
+          <div class="chat-search-start-form">
+            <button
+              type="button"
+              class="chat-start-action-button"
+              data-request-user-id="${user.id}"
+              data-request-username="${user.username}"
+              data-has-pending-request="${user.has_pending_request ? "true" : "false"}"
+              data-pending-status-url="${user.pending_status_url}"
+            >Start a conversation</button>
+          </div>
         </div>
       `;
       results.appendChild(li);
@@ -192,6 +321,22 @@ document.addEventListener("DOMContentLoaded", function () {
   form.addEventListener("submit", function (event) {
     event.preventDefault();
     runSearch();
+  });
+
+  results.addEventListener("click", function (event) {
+    const button = event.target.closest(".chat-start-action-button");
+    if (!button) {
+      return;
+    }
+    if (button.dataset.hasPendingRequest === "true") {
+      window.location.href = button.dataset.pendingStatusUrl;
+      return;
+    }
+    openCompose(button.dataset.requestUserId, button.dataset.requestUsername);
+  });
+
+  cancelButton.addEventListener("click", function () {
+    closeCompose();
   });
 });
 </script>

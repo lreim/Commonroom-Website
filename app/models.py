@@ -49,6 +49,21 @@ user_tags = db.Table(
     db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True),
 )
 
+
+class UserBlock(db.Model):
+    __tablename__ = "user_blocks"
+    id = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    blocked_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+
+    __table_args__ = (
+        db.UniqueConstraint("blocker_id", "blocked_id", name="uq_user_block_pair"),
+    )
+
+    blocker = db.relationship("User", foreign_keys=[blocker_id], back_populates="blocks_initiated")
+    blocked = db.relationship("User", foreign_keys=[blocked_id], back_populates="blocks_received")
+
     
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -64,9 +79,37 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     tags = db.relationship('Tag', secondary=user_tags, back_populates='users', lazy='subquery')
+    blocks_initiated = db.relationship(
+        "UserBlock",
+        foreign_keys="UserBlock.blocker_id",
+        back_populates="blocker",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+    blocks_received = db.relationship(
+        "UserBlock",
+        foreign_keys="UserBlock.blocked_id",
+        back_populates="blocked",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+    chat_requests_sent = db.relationship(
+        "ChatRequest",
+        foreign_keys="ChatRequest.requester_id",
+        back_populates="requester",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+    chat_requests_received = db.relationship(
+        "ChatRequest",
+        foreign_keys="ChatRequest.requested_id",
+        back_populates="requested",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
     failed_login_attempts = 0
     login_locked_until = None
-    profile_label = db.Column(db.String(32))    
+    profile_label = db.Column(db.String(32))  
     
     def __repr__(self):
         return '<User %r>' % self.username
@@ -196,6 +239,21 @@ class User(UserMixin, db.Model):
     def ping(self):
         self.last_seen = datetime.now(timezone.utc)
         db.session.add(self)
+
+    def has_blocked(self, other_user):
+        if other_user is None:
+            return False
+        other_id = other_user.id if isinstance(other_user, User) else int(other_user)
+        return self.blocks_initiated.filter_by(blocked_id=other_id).first() is not None
+
+    def is_blocked_by(self, other_user):
+        if other_user is None:
+            return False
+        other_id = other_user.id if isinstance(other_user, User) else int(other_user)
+        return self.blocks_received.filter_by(blocker_id=other_id).first() is not None
+
+    def has_block_relationship(self, other_user):
+        return self.has_blocked(other_user) or self.is_blocked_by(other_user)
 
     def set_tags_from_string(self, raw_tags, allow_create=False):
         names = []
@@ -355,6 +413,62 @@ class Conversation(db.Model):
 
     def other_user(self, user_id):
         return self.user_b if self.user_a_id == user_id else self.user_a
+
+
+class ChatRequest(db.Model):
+    __tablename__ = "chat_requests"
+    STATUS_PENDING = "pending"
+    STATUS_ACCEPTED = "accepted"
+    STATUS_REJECTED = "rejected"
+
+    id = db.Column(db.Integer, primary_key=True)
+    requester_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    requested_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    message = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default=STATUS_PENDING, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    responded_at = db.Column(db.DateTime, nullable=True)
+
+    requester = db.relationship("User", foreign_keys=[requester_id], back_populates="chat_requests_sent")
+    requested = db.relationship("User", foreign_keys=[requested_id], back_populates="chat_requests_received")
+
+    def other_user(self, user_id):
+        return self.requested if self.requester_id == user_id else self.requester
+
+    def direction_for(self, user_id):
+        return "outgoing" if self.requester_id == user_id else "incoming"
+
+    def generate_response_token(self, action):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps(
+            {
+                'chat_request': self.id,
+                'requested_id': self.requested_id,
+                'action': action,
+            }
+        )
+
+    @staticmethod
+    def resolve_response_token(token, expected_action=None, max_age=604800):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token, max_age=max_age)
+        except Exception:
+            return None
+
+        request_id = data.get('chat_request')
+        requested_id = data.get('requested_id')
+        action = data.get('action')
+
+        if expected_action is not None and action != expected_action:
+            return None
+
+        chat_request = ChatRequest.query.get(request_id)
+        if chat_request is None:
+            return None
+        if chat_request.requested_id != requested_id:
+            return None
+        return chat_request
 
 
 class Message(db.Model):    #einzelne Nachricht 

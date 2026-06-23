@@ -1,0 +1,17 @@
+<p>Hi {{ requested.username }},</p>
+
+<p><strong>{{ requester.username }}</strong> would like to start a conversation with you on TalkTo.</p>
+
+<p><strong>Request message:</strong></p>
+<p>{{ chat_request.message|replace('\n', '<br>')|safe }}</p>
+
+<p>
+  <a href="{{ accept_url }}">Accept request</a>
+</p>
+
+<p>
+  <a href="{{ reject_url }}">Reject request</a>
+</p>
+
+<p>You can ignore this email if you do not want to respond right now. We appreciate your time and help for your peers!</p>
+<p>Help and be helped.</p>

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Chat Request{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+  <h1>Chat Request</h1>
+</div>
+
+{% if status == "accepted" %}
+  <p>The chat request has been accepted.</p>
+  <p>You can now sign in to TalkTo and continue there.</p>
+{% elif status == "rejected" %}
+  <p>The chat request has been rejected.</p>
+{% elif status == "blocked" %}
+  <p>This request can no longer be accepted because one side has blocked the other.</p>
+{% elif status == "already_processed" %}
+  <p>This chat request was already processed earlier.</p>
+{% else %}
+  <p>This chat request link is invalid or has expired.</p>
+{% endif %}
+{% endblock %}
+

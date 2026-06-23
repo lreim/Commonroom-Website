@@ -462,8 +462,20 @@ textarea.form-control {
   margin-bottom: 16px;
 }
 
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .chat-load-older {
   font-size: 13px;
+}
+
+.chat-block-state {
+  margin: 6px 0 0;
+  color: #8a5b00;
+  font-size: 14px;
 }
 
 .chat-messages {
@@ -661,10 +673,49 @@ textarea.form-control {
   margin-top: 24px;
 }
 
+.chat-search-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 14px;
+}
+
+.chat-search-results-column {
+  min-width: 0;
+}
+
+.chat-request-compose {
+  width: 100%;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #ddd4bc;
+  border-radius: 12px;
+  background: #fffdf7;
+  box-shadow: 0 8px 18px rgba(64, 46, 2, 0.06);
+}
+
+.chat-request-compose-help {
+  margin-bottom: 10px;
+  color: #6d624e;
+}
+
+.chat-request-compose textarea {
+  width: 100%;
+  resize: vertical;
+}
+
+.chat-request-compose-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
 .chat-search-form {
   display: flex;
   gap: 10px;
-  margin-bottom: 14px;
+  width: 100%;
+  margin-bottom: 0;
 }
 
 .chat-search-form input {
@@ -701,6 +752,11 @@ textarea.form-control {
   min-width: 420px;
 }
 
+.chat-request-card {
+  width: 50%;
+  min-width: 420px;
+}
+
 .chat-search-profile-link {
   flex: 1;
   min-width: 0;
@@ -730,6 +786,10 @@ textarea.form-control {
 }
 
 @media (max-width: 900px) {
+  .chat-search-layout {
+    grid-template-columns: 1fr;
+  }
+
   .chat-conversation-link {
     width: 100%;
     min-width: 0;
@@ -740,6 +800,17 @@ textarea.form-control {
     min-width: 0;
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .chat-request-card {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .chat-request-compose {
+    width: 100%;
+    min-width: 0;
+    margin-top: 0;
   }
 
   .chat-search-start-form {
@@ -780,6 +851,7 @@ html.dark-mode .profile-top-time-label,
 html.dark-mode .profile-top-time-value,
 html.dark-mode .chat-index-header p,
 html.dark-mode .chat-empty-state,
+html.dark-mode .chat-block-state,
 html.dark-mode .chat-conversation-last-time,
 html.dark-mode .chat-conversation-matching-tags,
 html.dark-mode .chat-conversation-message-count,
@@ -791,12 +863,17 @@ html.dark-mode .profile-preview-username {
 html.dark-mode .profile-menu-dropdown,
 html.dark-mode .tag-side-column,
 html.dark-mode .chat-conversation-link,
+html.dark-mode .chat-request-compose,
 html.dark-mode .chat-search-form input,
 html.dark-mode .form-control,
 html.dark-mode .profile-preview-card {
   background: #2c261f;
   border-color: #4c4134;
   color: #f1ebdd;
+}
+
+html.dark-mode .chat-request-compose-help {
+  color: #cbbfa8;
 }
 
 html.dark-mode .profile-label-badge {
