@@ -60,14 +60,13 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     name = db.Column(db.String(64))
-    location = db.Column(db.String(64))
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     tags = db.relationship('Tag', secondary=user_tags, back_populates='users', lazy='subquery')
     failed_login_attempts = 0
     login_locked_until = None
-    
+    profile_label = db.Column(db.String(32))    
     
     def __repr__(self):
         return '<User %r>' % self.username

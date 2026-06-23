@@ -3,15 +3,22 @@
 {% block page_content %}
 <div class="page-header">
   <h1>{{ user.username }}</h1>
-  <img src="{{ user.gravatar(size=100) }}" class="img-rounded profile-avatar-large">
-  {% if user.name or user.location %}
-  <p>
-    {% if user.name %}{{ user.name }}{% endif %}
-    {% if user.location %}
-      From <a href="http://maps.google.com/?q={{ user.location }}">{{ user.location }}</a>
+  {% if user.profile_label %}
+  <div class="profile-label-badge">
+    {% if user.profile_label == "listener" %}
+      Open to share experience
+    {% elif user.profile_label == "peer_support" %}
+      Need advice urgently
+    {% elif user.profile_label == "practical_advice" %}
+      Happy to talk
+    {% elif user.profile_label == "all" %}
+      Allrounder
+    {% else %}
+      {{ user.profile_label }}
     {% endif %}
-  </p>
+  </div>
   {% endif %}
+  <img src="{{ user.gravatar(size=100) }}" class="img-rounded profile-avatar-large">
   {% if current_user.is_administrator() %}
   <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
   {% endif %}

@@ -37,8 +37,8 @@
         <li><a href="{{ url_for('main.rules') }}">Rules</a></li>
         {%if current_user.is_authenticated %}    <!--current_user is defined by Flask-Login-->
         <li><a href="{{ url_for('main.tag_search') }}">Tagsearch</a></li>
-        <li><a href="{{ url_for('main.post')}}"> Post</a></li>
-        <li><a href="{{ url_for('chat.index')}}"> Chats Index</a></li>
+        <li><a href="{{ url_for('main.post')}}"> Posts</a></li>
+        <li><a href="{{ url_for('chat.index')}}"> Chats</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
         {%else%}
         <li><a href="{{ url_for('auth.login')}}"> Sign In</a></li>

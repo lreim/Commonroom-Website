@@ -12,6 +12,16 @@ class PostForm(FlaskForm):
 class EditProfileForm(FlaskForm):
     about_me = TextAreaField('About me', render_kw={"placeholder": "I study..., issues I struggle with are..., I have gone through... and can tell something about..."})
     tags = StringField('Tags (comma separated)', validators=[Length(0, 256)])
+    label = SelectField(
+            "Profile label",
+            choices=[
+                ("", "No label"),
+                ("listener", "Open to share experience"),
+                ("peer_support", "Need advice urgently"),
+                ("practical_advice", "Happy to talk"),
+                ("all", "Allrounder")
+    ]
+)
     submit = SubmitField('Submit')
 
 

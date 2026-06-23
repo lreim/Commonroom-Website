@@ -110,6 +110,7 @@ def edit_profile():
     if form.validate_on_submit():
         current_user.about_me = form.about_me.data
         missing_tags = current_user.set_tags_from_string(form.tags.data, allow_create=False)
+        current_user.profile_label = form.label.data
         if missing_tags:
             flash(
                 "Unknown tags: {}. Only admins can create new tags.".format(', '.join(missing_tags))
@@ -120,6 +121,7 @@ def edit_profile():
         flash('Your profile has been updated.')
         return redirect(url_for('main.settings', username=current_user.username))
     form.about_me.data = current_user.about_me
+    form.label.data = current_user.profile_label or ""
     form.tags.data = current_user.tag_string
     return render_template('edit_profile.html', form=form, all_tags=all_tags, is_admin_edit=False)
 

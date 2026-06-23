@@ -128,6 +128,19 @@ html.theme-toggle-ready .theme-switch {
   margin-bottom: 18px;
 }
 
+.profile-label-badge {
+  display: inline-block;
+  margin: 6px 0 14px;
+  padding: 6px 12px;
+  border: 1px solid #cdbf9d;
+  border-radius: 999px;
+  background: #fff4c8;
+  color: #6f4c00;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
 .profile-menu-dropdown {
   display: none;
   position: absolute;
@@ -784,6 +797,12 @@ html.dark-mode .profile-preview-card {
   background: #2c261f;
   border-color: #4c4134;
   color: #f1ebdd;
+}
+
+html.dark-mode .profile-label-badge {
+  background: #5b4b1e;
+  border-color: #8e7a45;
+  color: #f7ebbf;
 }
 
 html.dark-mode .chat-conversation-bubble,

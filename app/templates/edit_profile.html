@@ -52,6 +52,13 @@
         {{ form.about_me(class="form-control", rows="4") }}
       </div>
 
+      {% if form.label is defined %}
+      <div class="form-group">
+        {{ form.label.label(class="control-label") }}
+        {{ form.label(class="form-control") }}
+      </div>
+      {% endif %}
+
       <div class="form-group">
         <label class="control-label">Tags</label>
         <input id="tag-picker-input" class="form-control" type="text" placeholder="stress, motivation, friends,...">
