@@ -40,6 +40,7 @@
         <li><a href="{{ url_for('main.post')}}"> Posts</a></li>
         <li><a href="{{ url_for('chat.index')}}"> Chats</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
+        <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         {%else%}
         <li><a href="{{ url_for('auth.login')}}"> Sign In</a></li>
         {%endif%}
@@ -168,6 +169,25 @@ document.addEventListener("DOMContentLoaded", function () {
   {% endfor %}
   
   {% block page_content %}{% endblock %}
+</div>
+<div class="floating-contact-links">
+  <a
+    class="floating-mail-link"
+    href="mailto:lissy@example.com?subject=Questions%20to%20website%20TalkTo%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
+    aria-label="Send email"
+    title="Send email"
+  >
+    <span class="glyphicon glyphicon-envelope" aria-hidden="true"></span>
+  </a>
+  <a
+    class="floating-abuse-link"
+    href="mailto:lissy@example.com?subject=Report%20abuse%20%E2%80%94%20TalkTo%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
+    aria-label="Report abuse"
+    title="Report abuse"
+  >
+    <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
+    <span class="floating-abuse-text">Report abuse</span>
+  </a>
 </div>
 {% endblock %}
 

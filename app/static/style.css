@@ -11,6 +11,72 @@ body {
   max-width: calc(1170px - 6cm);
 }
 
+.floating-contact-links {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.floating-mail-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid #d9b7c6;
+  border-radius: 50%;
+  background: #f7dbe6;
+  color: #8a3f61;
+  box-shadow: 0 10px 22px rgba(118, 65, 90, 0.18);
+  text-decoration: none;
+}
+
+.floating-mail-link:hover,
+.floating-mail-link:focus {
+  background: #f4cfdd;
+  color: #7a3354;
+  text-decoration: none;
+}
+
+.floating-mail-link .glyphicon {
+  font-size: 19px;
+}
+
+.floating-abuse-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid #e3b1be;
+  border-radius: 999px;
+  background: #ffe6ec;
+  color: #9a3654;
+  box-shadow: 0 10px 22px rgba(118, 65, 90, 0.18);
+  text-decoration: none;
+}
+
+.floating-abuse-link:hover,
+.floating-abuse-link:focus {
+  background: #ffd9e4;
+  color: #872a47;
+  text-decoration: none;
+}
+
+.floating-abuse-link .glyphicon {
+  font-size: 18px;
+}
+
+.floating-abuse-text {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .navbar-right-controls {
   position: absolute;
   top: 50%;
@@ -437,6 +503,13 @@ textarea.form-control {
 }
 
 @media (max-width: 900px) {
+  .floating-contact-links {
+    right: 16px;
+    bottom: 16px;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
   .page-body-container {
     max-width: none;
   }
@@ -870,6 +943,30 @@ html.dark-mode .profile-preview-card {
   background: #2c261f;
   border-color: #4c4134;
   color: #f1ebdd;
+}
+
+html.dark-mode .floating-mail-link {
+  background: #5b2f42;
+  border-color: #8a5670;
+  color: #ffe5ef;
+}
+
+html.dark-mode .floating-mail-link:hover,
+html.dark-mode .floating-mail-link:focus {
+  background: #6c3950;
+  color: #fff0f6;
+}
+
+html.dark-mode .floating-abuse-link {
+  background: #6a2c3f;
+  border-color: #a35f77;
+  color: #ffe5ef;
+}
+
+html.dark-mode .floating-abuse-link:hover,
+html.dark-mode .floating-abuse-link:focus {
+  background: #7a3349;
+  color: #fff0f6;
 }
 
 html.dark-mode .chat-request-compose-help {

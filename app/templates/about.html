@@ -92,7 +92,7 @@
 
 <p>
     If any questions arise, if you miss features here, or if you want to report abuse, please do not hesitate to reach out to me.
-    Please <a href="mailto:lissy@example.com?subject=Questions%20to%20website%20TalkTo%20%E2%80%94%20Username">send me an email</a> with your username in the subject.
+    Please <a href = "mailto:lissy@example.com?subject=Questions%20to%20website%20TalkTo%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">send me an email</a> with your username in the subject.
 </p>
 </div>
 

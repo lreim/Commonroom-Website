@@ -160,6 +160,9 @@ def tag_search():
     all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
     return render_template('tag_search.html', all_tags=all_tags)
 
+@main.route('/get-help-now')
+def get_help_now():
+    return render_template('get_help_now.html')
 
 @main.route('/tags/search')
 def tag_search_api():

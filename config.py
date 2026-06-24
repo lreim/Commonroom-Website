@@ -90,8 +90,8 @@ config = {
 # - ---done halb dark mode color scheme machen ---done halb 
 # - ---done bei den forms den grauen Text in die Kästchen reinpassen lassen 
 # - ---done ein label vergeben lassen fürs userprofile, das anzeigt, ob jemand sich austauschen will, Fragen/Anliegen hat, oder nur als Helfer da sein will? (voluntary)
-# - eine chat anfrage einbauen, die der user an den matching user stellen kann, bevor man chattet, das soll auch per email versendet werden. Und dabei muss ein kurzer Anfragetext geschickt werden 
-    # (evtl mit emailvorlage? oder dass man ein Kontaktformular ausfüllt auf der Webseite?)  und dann soll pending unter den chats hinzugefügt werden. Und der User wird aufgefordert (Glocke), die Anfrage nach einer Woche erneut zu senden
+# - ---done eine chat anfrage einbauen, die der user an den matching user stellen kann, bevor man chattet, das soll auch per email versendet werden. Und dabei muss ein kurzer Anfragetext geschickt werden 
+            # (evtl mit emailvorlage? oder dass man ein Kontaktformular ausfüllt auf der Webseite?)  und dann soll pending unter den chats hinzugefügt werden. Und der User wird aufgefordert (Glocke), die Anfrage nach einer Woche erneut zu senden
 # - baue eine Glocke ein mit Benachrichtigungen zu Chats und Anfragen und Updates etc., (oder direkt im Chat Index? ODer im Userprofile?)
 # - ---done baue eine Datenschutz seite ein, auf der du erklärt, was du eingebaut hast und warum und wie die Daten geschützt sind. 
 # - ---done add a block button for a chat you want to end and block.
@@ -106,5 +106,5 @@ config = {
 # - neue message über Telefon sende evtl?
 # - andere email für die nachrichten botification nehmen
 # - oder nur push nachrichten im Browser 
-# - nightline und 321 verlinken 
+# - ---done nightline und 321 verlinken 
 # - den chat nicht screenen, weil das zu sensible daten sind 
