@@ -8,7 +8,7 @@
   <h1>Private Chats</h1>
   <h4>Browse existing conversations or start a new one.</h4>
 </div>
-<h4>Your Chats</h4>
+<h4 id="your-chats">Your Chats</h4>
 
 
 <div style="margin-bottom: 50px;">
@@ -24,7 +24,7 @@
 
 <ul class="chat-conversation-list">
   {% for item in items %}
-    <li class="chat-conversation-card">
+    <li class="chat-conversation-card" id="chat-conversation-{{ item.conversation.id }}">
       <a class="chat-conversation-link" href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}">
         <img
           class="chat-conversation-avatar"
@@ -67,10 +67,10 @@
 </ul>
 
 {% if requested_items %}
-<h4>Requested Chats</h4>
+<h4 id="requested-chats">Requested Chats</h4>
 <ul class="chat-conversation-list">
   {% for item in requested_items %}
-    <li class="chat-conversation-card">
+    <li class="chat-conversation-card" id="chat-request-{{ item.request.id }}">
       <a class="chat-conversation-link chat-search-profile-link chat-request-card" href="{{ url_for('main.user', username=item.other.username) }}">
           <img
             class="chat-conversation-avatar"
@@ -92,10 +92,10 @@
 {% endif %}
 
 {% if blocked_items %}
-<h4>Blocked Chats</h4>
+<h4 id="blocked-chats">Blocked Chats</h4>
 <ul class="chat-conversation-list">
   {% for item in blocked_items %}
-    <li class="chat-conversation-card">
+    <li class="chat-conversation-card" id="chat-conversation-{{ item.conversation.id }}">
       <a class="chat-conversation-link" href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}">
         <img
           class="chat-conversation-avatar"

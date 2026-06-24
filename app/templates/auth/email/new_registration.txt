@@ -1,0 +1,7 @@
+Hello,
+
+a new user has registered on TalkTo.
+
+Username: {{ user.username }}
+Email: {{ user.email }}
+Registered at: {{ user.member_since }}

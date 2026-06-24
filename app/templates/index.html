@@ -1,35 +1,60 @@
-{% extends "base.html" %}  <!--greift auf base struktur zu-->
+{% extends "base.html" %}
 {% block title %}Home{% endblock %}
 
 {% block page_content %}
 <div class="page-header">
-    <h1>
-        Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %} Stranger {% endif %}! <!--unnecessary greeting-->
-    </h1>
+  <h1>Welcome to TalkTo</h1>
+</div>
+
+<div class="reading-page">
+  <h2>Hi, friend!</h2>
+  <p>
+    TalkTo is a space for ETH students to find other students who may understand what they are going through.
+    The idea is simple: sometimes what helps most is not general advice, but talking to someone who has felt
+    something similar before.
+  </p>
+
+  <p>
+    Here, you can stay anonymous, choose tags that describe your situation, browse profiles, and send a chat request
+    to someone whose experience or perspective feels relevant to you. You can also join as someone who is open to
+    listening, sharing insight, and supporting others.
+  </p>
+
+  <h3>What you can do here</h3>
+  <p>
+    You can create a profile, select tags that match your struggles or experiences, search for people with similar topics,
+    and start conversations in a low-pressure way. Chat requests are first sent by email and only become an active chat
+    if the other person accepts.
+  </p>
+
+  <h3>Who this is for</h3>
+  <p>
+    TalkTo is for ETH students who feel stuck, lonely, overwhelmed, unsure, or simply in need of exchange.
+    It is just as much for students who want to give something back by listening and sharing what they have learned
+    through their own experiences.
+  </p>
+
+  <h3>What this platform is not</h3>
+  <p>
+    TalkTo is not a crisis service, not professional therapy, and not a substitute for urgent support.
+    If you are in immediate danger or need acute help, please use the <a href="{{ url_for('main.get_help_now') }}">Get Help Now</a> page
+    and contact an appropriate emergency or counselling service directly.
+  </p>
+
+  <h3>How to get started</h3>
+  <p>
+    If you are new here, start with the <a href="{{ url_for('main.onboarding') }}">Onboarding</a> page and the
+    <a href="{{ url_for('main.rules') }}">Rules</a>. Then complete your profile, choose your tags,
+    and explore who might be a good fit for a conversation.
+  </p>
+
+  <p>
     {% if current_user.is_authenticated %}
-    <p> 
-        Happy to see you again! 
-    </p>
+      You are signed in already. You can continue with your profile, chats, or tag search.
     {% else %}
-    <p>
-        Pleased to meet you! Click <a href="{{ url_for('auth.register') }}">here</a>
-        to register as a new member of our lovely community and <a href="{{ url_for('auth.login') }}">there</a> to login. 
-    </p>
+      If you already have an account, you can <a href="{{ url_for('auth.login') }}">sign in</a>.
+      If you are new, you can <a href="{{ url_for('auth.register') }}">register here</a>.
     {% endif %}
+  </p>
 </div>
 {% endblock %}
-<!-- oben wird die aktuelle Zeit angegeben, evtl in side bar oder top bar schreiben
- The format('LLL') format renders the date and time according to the time zone and
-locale settings in the client computer. The argument determines the rendering style,
-from 'L' to 'LLLL' for different levels of verbosity. The format() function can also
-accept custom format specifiers.
-
-The fromNow() render style shown in the second line renders a relative timestamp and
-automatically refreshes it as time passes. Initially this timestamp will be shown as “a few
-seconds ago,” but the refresh option will keep it updated as time passes, so if you leave
-the page open for a few minutes you will see the text changing to “a minute ago,” then
-“2 minutes ago,” and so on.-->
-
-
-
-<!--ToDO: language selecten-->

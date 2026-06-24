@@ -8,6 +8,7 @@ from flask_migrate import Migrate
 from config import config
 from flask_login import LoginManager
 from flask_socketio import SocketIO
+from flask_login import current_user
 
 #erst nur definieren, damit nicht direkt die App importiert werden muss (gut für Tests)
 bootstrap = Bootstrap()
@@ -52,11 +53,18 @@ def create_app(config_name):
 
     @app.context_processor
     def inject_session_timeout():
+        notification_payload = {"items": [], "has_unseen": False}
+        if current_user.is_authenticated:
+            from .notifications import build_notifications_for_user
+
+            notification_payload = build_notifications_for_user(current_user)
         lifetime = app.config.get('PERMANENT_SESSION_LIFETIME')
         timeout_minutes = int(lifetime.total_seconds() // 60) if lifetime else 0
         return dict(
             session_timeout_minutes=timeout_minutes,
-            current_time=datetime.now(timezone.utc)
+            current_time=datetime.now(timezone.utc),
+            notification_items=notification_payload["items"],
+            has_unseen_notifications=notification_payload["has_unseen"],
         )
     
     # attach routes and custom error pages here

@@ -88,6 +88,125 @@ body {
   transform: translateY(-50%);
 }
 
+.notification-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 30px;
+}
+
+.notification-menu-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d9c4ce;
+  border-radius: 50%;
+  background: #fff6fa;
+  color: #8f4060;
+  box-shadow: 0 6px 16px rgba(118, 65, 90, 0.12);
+}
+
+.notification-menu-trigger:hover,
+.notification-menu-trigger:focus {
+  color: #7d3151;
+  text-decoration: none;
+  outline: none;
+}
+
+.notification-menu-trigger .glyphicon {
+  font-size: 15px;
+}
+
+.notification-menu-trigger.has-unseen::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #fff6fa;
+  border-radius: 50%;
+  background: #43b85d;
+}
+
+.notification-menu-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 320px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid #d7ccb4;
+  border-radius: 10px;
+  background: #fffdf7;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+  z-index: 2200;
+}
+
+.notification-menu-dropdown.is-open {
+  display: block;
+}
+
+.notification-menu-title {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #876c49;
+}
+
+.notification-menu-item {
+  display: block;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border: 1px solid #efe2d6;
+  border-radius: 10px;
+  background: #fffaf0;
+  color: #2d1d00;
+  text-decoration: none;
+}
+
+.notification-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+.notification-menu-item:hover,
+.notification-menu-item:focus {
+  background: #fff5e2;
+  color: #2d1d00;
+  text-decoration: none;
+}
+
+.notification-menu-item.is-new {
+  border-color: #d9eecf;
+  background: #f4fff1;
+}
+
+.notification-menu-item-text {
+  display: block;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.notification-menu-item-time {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #8a7d69;
+}
+
+.notification-menu-empty {
+  padding: 8px 4px 2px;
+  font-size: 13px;
+  color: #7f715f;
+}
+
 .theme-switch {
   position: relative;
   display: inline-block;
@@ -914,6 +1033,7 @@ html.dark-mode .navbar-inverse .navbar-brand,
 html.dark-mode .navbar-inverse .navbar-nav > li > a,
 html.dark-mode .chat-conversation-link,
 html.dark-mode .chat-conversation-name,
+html.dark-mode .notification-menu-item,
 html.dark-mode .profile-menu-dropdown a,
 html.dark-mode .post-author a {
   color: #f1ebdd;
@@ -922,6 +1042,8 @@ html.dark-mode .post-author a {
 html.dark-mode .profile-top-time,
 html.dark-mode .profile-top-time-label,
 html.dark-mode .profile-top-time-value,
+html.dark-mode .notification-menu-empty,
+html.dark-mode .notification-menu-item-time,
 html.dark-mode .chat-index-header p,
 html.dark-mode .chat-empty-state,
 html.dark-mode .chat-block-state,
@@ -934,6 +1056,7 @@ html.dark-mode .profile-preview-username {
 }
 
 html.dark-mode .profile-menu-dropdown,
+html.dark-mode .notification-menu-dropdown,
 html.dark-mode .tag-side-column,
 html.dark-mode .chat-conversation-link,
 html.dark-mode .chat-request-compose,
@@ -943,6 +1066,35 @@ html.dark-mode .profile-preview-card {
   background: #2c261f;
   border-color: #4c4134;
   color: #f1ebdd;
+}
+
+html.dark-mode .notification-menu-trigger {
+  border-color: #6d5060;
+  background: #3c3037;
+  color: #f0dce6;
+}
+
+html.dark-mode .notification-menu-trigger.has-unseen::after {
+  border-color: #3c3037;
+}
+
+html.dark-mode .notification-menu-title {
+  color: #d8c9a4;
+}
+
+html.dark-mode .notification-menu-item {
+  border-color: #5a4b43;
+  background: #352b25;
+}
+
+html.dark-mode .notification-menu-item:hover,
+html.dark-mode .notification-menu-item:focus {
+  background: #40342d;
+}
+
+html.dark-mode .notification-menu-item.is-new {
+  border-color: #4e7056;
+  background: #253228;
 }
 
 html.dark-mode .floating-mail-link {

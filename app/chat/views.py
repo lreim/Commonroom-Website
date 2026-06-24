@@ -8,6 +8,7 @@ from . import chat
 from .. import db
 from ..email import send_email
 from ..models import User, Conversation, Message, UserBlock, ChatRequest
+from ..notifications import mark_notifications_seen_now
 
 
 def _pair_ids(user1_id, user2_id):
@@ -151,6 +152,13 @@ def search_users():
         "query": q,
         "users": users,
     })
+
+
+@chat.route("/notifications/mark-seen")
+@login_required
+def mark_notifications_seen():
+    mark_notifications_seen_now()
+    return jsonify({"ok": True})
 
 
 @chat.route("/start/<int:user_id>", methods=["POST"])

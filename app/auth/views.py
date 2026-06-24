@@ -1,4 +1,5 @@
 from flask import render_template, redirect, request, url_for, flash, session 
+from flask import current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from . import auth     #importiert auth object aus __init__.py
 from ..models import User
@@ -105,6 +106,14 @@ def register():
         db.session.commit()
         token = user.generate_confirmation_token()
         send_email(user.email, 'Please Confirm Your Account', 'auth/email/confirm', user=user, token=token)
+        admin_email = current_app.config.get('TALKTO_ADMIN')
+        if admin_email:
+            send_email(
+                admin_email,
+                'New user registration',
+                'auth/email/new_registration',
+                user=user,
+            )
         flash('A confirmation email has been sent to you. Pls take a look!')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)

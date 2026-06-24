@@ -72,7 +72,6 @@ config = {
 #      --- egal/done welche email adressen sollen funktionieren? (Nur die von studenten? oder auch von staff? oder dphys etc? oder muss man auch nur ethz.ch akzeptieren, wenn man student.ethz.ch akzeptiert?)  --- egal/done
 #      evtl das mailto für mich als admin rausnehmen, sodass ich nur im Notfall die emails aus der dabenbank lesen kann? 
 #      mir als Admin bei jeder neuen Registreierung eine email senden! 
-#      umami tracking einbauen? 
 #      --- done evtl einbauen, dass mir schon profile vorgeschlagen werden? 
 #      --- done fast done evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )  --- fast done
 #      --- done halb go back auf manchen seiten einbauen (bei login/auth Seiten?) und das unten plazieren links 
@@ -95,7 +94,7 @@ config = {
 # - baue eine Glocke ein mit Benachrichtigungen zu Chats und Anfragen und Updates etc., (oder direkt im Chat Index? ODer im Userprofile?)
 # - ---done baue eine Datenschutz seite ein, auf der du erklärt, was du eingebaut hast und warum und wie die Daten geschützt sind. 
 # - ---done add a block button for a chat you want to end and block.
-
+# wichtig!!: finde einen Server (evtl an der ETH) zum Hosten und baue dann auf diesem server lokal umami auf und binde es ein. 
 
 
 
