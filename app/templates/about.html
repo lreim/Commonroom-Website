@@ -3,10 +3,14 @@
 {% block title %}About{% endblock %}
 
 {% block page_content %}
+<div class="page-header">
+    <h1>About this website</h1>
+</div>
 <div class="reading-page">
 
-<h1>Hi, friend!</h1>
+<h2>Hi, friend!</h2>
 
+<h3>Who is behind TalkTo?</h3>
 <p>
     First of all: I am beyond happy to have you here. The step of actually visiting this page and engaging with it is already worth a lot!
     I am sure you would like to know who created this and whom you are trusting.
@@ -14,6 +18,7 @@
     I am a physics student in my fourth Bachelor’s semester. I love doing many different things, from sports to creative projects and tech stuff, and I randomly came up with this idea one night.
 </p>
 
+<h3>Why I built this</h3>
 <p>
     I wondered why I sometimes felt so lonely with my thoughts and issues, even though I have people to talk to.
     Sometimes it felt like they did not fully understand what I was struggling with and could not relate enough to help properly.
@@ -30,6 +35,7 @@
     Wait a minute, hold my beer...
 </p>
 
+<h3>Why this kind of space is needed</h3>
 <p>
     The problem with struggles and being understood is not that there are no people nearby who can relate.
     There are plenty of students just a few doors away who have more or less experienced one struggle or another.
@@ -53,6 +59,7 @@
     Let’s do it ourselves!
 </p>
 
+<h3>Who this is for</h3>
 <p>
     So, in short:
     Who is this website for?
@@ -73,10 +80,12 @@
     Help and be helped.
 </p>
 
+<h3>Where to go next</h3>
 <p>
     Let’s dive into it with <a href="{{ url_for('main.onboarding') }}">how it works</a> and <a href="{{ url_for('main.rules') }}">rules to remember</a>.
 </p>
 
+<h3>Important limits of this platform</h3>
 <p>
     Just a quick note for legal and responsibility reasons:
     This is neither a professional website nor the only platform you should choose and use in cases of severe mental illness or severe struggles.
@@ -90,9 +99,10 @@
     If you are okay with that, I am happy to welcome you here!
 </p>
 
+<h3>Questions or concerns?</h3>
 <p>
     If any questions arise, if you miss features here, or if you want to report abuse, please do not hesitate to reach out to me.
-    Please <a href = "mailto:lissy@example.com?subject=Questions%20to%20website%20TalkTo%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">send me an email</a> with your username in the subject.
+    Please <a href = "mailto:lissy@example.com?subject=Questions%20to%20website%20TalkTo%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">send me an email</a>.
 </p>
 </div>
 

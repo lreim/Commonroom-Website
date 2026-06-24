@@ -74,9 +74,9 @@ config = {
 #      mir als Admin bei jeder neuen Registreierung eine email senden! 
 #      umami tracking einbauen? 
 #      --- done evtl einbauen, dass mir schon profile vorgeschlagen werden? 
-#      fast done evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )  --- fast done
-#      go back auf manchen seiten einbauen (bei login/auth Seiten?) und das unten plazieren links 
-#      The Developers contact data unten auf jeder Seite haben? Oder unter About? 
+#      --- done fast done evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )  --- fast done
+#      --- done halb go back auf manchen seiten einbauen (bei login/auth Seiten?) und das unten plazieren links 
+#      --- done The Developers contact data unten auf jeder Seite haben? Oder unter About? 
 #      --- done wenn ich auf dem profil nach tags suche ode auf der tagseite, dann sollen die matching tags in den existing tags farblich anlaufen? 
 #      mache noch etwas mit den missing_tags, die gespeichert werden. 
 
