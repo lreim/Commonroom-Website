@@ -1,6 +1,6 @@
 Hi {{ requested.username }},
 
-{{ requester.username }} would like to start a conversation with you on TalkTo.
+{{ requester.username }} would like to start a conversation with you on CommonRoom.
 
 Request message:
 {{ chat_request.message }}

@@ -1,6 +1,6 @@
 Hello,
 
-a new user has registered on TalkTo.
+a new user has registered on CommonRoom.
 
 Username: {{ user.username }}
 Email: {{ user.email }}

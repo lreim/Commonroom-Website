@@ -7,8 +7,8 @@ basedir = os.path.abspath(os.path.dirname(__file__)) #nötig für path con datab
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'  #CSRF Schutz
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
-    TALKTO_MAIL_SUBJECT_PREFIX = '[TALKTO]'
-    TALKTO_MAIL_SENDER = 'TALKTO Developers <lissy.reim@t-online.de>'
+    TALKTO_MAIL_SUBJECT_PREFIX = '[COMMONROOM]'
+    TALKTO_MAIL_SENDER = 'CommonRoom Developers <lissy.reim@t-online.de>'
     TALKTO_ADMIN = os.environ.get('TALKTO_ADMIN')
     TALKTO_POSTS_PER_PAGE = 20
     #für Sicherheit bei Nutzung von Login session cookies 
@@ -55,8 +55,8 @@ config = {
 
 #wenn ich im Terminal export MAIL_PASSWORD="blah" mache und dann app.py importiere, dann liest diese Zeile mein eingegebenes Passwort
 #layout for automated e-Mail:
-#app.config['MAIL_SUBJECT_PREFIX'] = '[TalkTo] '
-#app.config['MAIL_SENDER'] = 'TalkTo Developers <lissy.reim@t-online.de>'
+#app.config['MAIL_SUBJECT_PREFIX'] = '[CommonRoom] '
+#app.config['MAIL_SENDER'] = 'CommonRoom Developers <lissy.reim@t-online.de>'
 #app.config['TALKTO_ADMIN'] = os.environ.get('TALKTO_ADMIN')
 
 

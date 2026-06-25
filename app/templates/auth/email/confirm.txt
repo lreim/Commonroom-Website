@@ -1,7 +1,7 @@
 {% from "_macros.html" import user_link %}
 Dear {{ user_link(user) }},
 
-Welcome to TalkTo!
+Welcome to CommonRoom!
 
 To confirm your account please click on the following link:
 
@@ -9,6 +9,6 @@ To confirm your account please click on the following link:
 
 Sincerely,
 
-The TalkTo Developers
+The CommonRoom Developers
 
 Note: replies to this email address are not monitored.
