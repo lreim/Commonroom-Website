@@ -326,6 +326,91 @@ html.theme-toggle-ready .theme-switch {
   line-height: 1.2;
 }
 
+.profile-label-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 14px;
+}
+
+.profile-label-badges .profile-label-badge {
+  margin: 0;
+}
+
+.profile-label-selector {
+  border: 1px solid #d7ccb4;
+  border-radius: 8px;
+  background: #fffdf7;
+}
+
+.profile-label-selector summary {
+  min-height: 46px;
+  padding: 12px 14px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 14px;
+}
+
+.profile-label-selector summary::-webkit-details-marker {
+  display: none;
+}
+
+.profile-label-selector summary::after {
+  content: "+";
+  float: right;
+  font-weight: 700;
+  color: #8a3f61;
+}
+
+.profile-label-selector[open] summary::after {
+  content: "-";
+}
+
+.profile-label-selector-options {
+  padding: 0 14px 12px;
+  border-top: 1px solid #e9deca;
+}
+
+.profile-label-selector-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.profile-label-selector-option input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.profile-label-selector-option span {
+  position: relative;
+  display: inline-block;
+  padding-left: 18px;
+}
+
+.profile-label-selector-option span::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%);
+}
+
+.profile-label-selector-option input[type="checkbox"]:checked + span::before {
+  content: "\2713";
+  width: auto;
+  height: auto;
+  color: #8a3f61;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .profile-menu-dropdown {
   display: none;
   position: absolute;
@@ -558,8 +643,29 @@ textarea.form-control {
   border: 1px solid #d9cfbb;
 }
 
+.profile-recommendation-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-recommendation-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
 .profile-recommendation-name {
   font-weight: 700;
+}
+
+.profile-recommendation-labels {
+  max-width: 140px;
+  text-align: right;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #8a3f61;
 }
 
 .profile-recommendation-tags,
@@ -1062,7 +1168,8 @@ html.dark-mode .chat-conversation-link,
 html.dark-mode .chat-request-compose,
 html.dark-mode .chat-search-form input,
 html.dark-mode .form-control,
-html.dark-mode .profile-preview-card {
+html.dark-mode .profile-preview-card,
+html.dark-mode .profile-label-selector {
   background: #2c261f;
   border-color: #4c4134;
   color: #f1ebdd;
@@ -1131,6 +1238,14 @@ html.dark-mode .profile-label-badge {
   color: #f7ebbf;
 }
 
+html.dark-mode .profile-label-selector-options {
+  border-top-color: #4c4134;
+}
+
+html.dark-mode .profile-label-selector summary::after {
+  color: #f0dce6;
+}
+
 html.dark-mode .chat-conversation-bubble,
 html.dark-mode .chat-conversation-bubble::before {
   background: #3b3257;
@@ -1171,7 +1286,7 @@ html.dark-mode .profile-menu-timeout {
 .profile-preview-header {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 8px;
 }
 
@@ -1183,14 +1298,14 @@ html.dark-mode .profile-menu-timeout {
   border: 1px solid #d9cfbb;
 }
 
+.profile-preview-heading {
+  flex: 1;
+  min-width: 0;
+}
+
 .profile-preview-name {
   font-weight: 700;
   line-height: 1.1;
-}
-
-.profile-preview-username {
-  font-size: 12px;
-  color: #6d624e;
 }
 
 .profile-preview-reason,
@@ -1200,6 +1315,14 @@ html.dark-mode .profile-menu-timeout {
   font-size: 12px;
   line-height: 1.35;
   margin-top: 4px;
+}
+
+.profile-preview-header-labels {
+  max-width: 120px;
+  text-align: right;
+  font-size: 11px;
+  line-height: 1.3;
+  color: #8a3f61;
 }
 
 .profile-preview-reason {

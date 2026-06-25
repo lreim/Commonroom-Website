@@ -67,6 +67,14 @@ class UserBlock(db.Model):
     
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
+    PROFILE_LABEL_CHOICES = [
+        ("listener", "Open to share experience"),
+        ("peer_support", "Need advice urgently"),
+        ("practical_advice", "Happy to talk"),
+        ("all", "Allrounder"),
+    ]
+    PROFILE_LABEL_MAP = dict(PROFILE_LABEL_CHOICES)
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), unique=True, index=True)
@@ -76,6 +84,7 @@ class User(UserMixin, db.Model):
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     name = db.Column(db.String(64))
     about_me = db.Column(db.Text())
+    funny_fact = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     tags = db.relationship('Tag', secondary=user_tags, back_populates='users', lazy='subquery')
@@ -255,6 +264,36 @@ class User(UserMixin, db.Model):
     def has_block_relationship(self, other_user):
         return self.has_blocked(other_user) or self.is_blocked_by(other_user)
 
+    def set_profile_labels(self, labels):
+        selected = []
+        seen = set()
+        valid_values = set(self.PROFILE_LABEL_MAP.keys())
+        for label in labels or []:
+            if not label or label not in valid_values or label in seen:
+                continue
+            seen.add(label)
+            selected.append(label)
+        self.profile_label = ",".join(selected)
+
+    @property
+    def profile_label_values(self):
+        if not self.profile_label:
+            return []
+        values = []
+        seen = set()
+        valid_values = set(self.PROFILE_LABEL_MAP.keys())
+        for chunk in self.profile_label.split(","):
+            value = chunk.strip()
+            if not value or value not in valid_values or value in seen:
+                continue
+            seen.add(value)
+            values.append(value)
+        return values
+
+    @property
+    def profile_label_texts(self):
+        return [self.PROFILE_LABEL_MAP[value] for value in self.profile_label_values]
+
     def set_tags_from_string(self, raw_tags, allow_create=False):
         names = []
         seen = set()
@@ -304,7 +343,12 @@ class User(UserMixin, db.Model):
             'friendship', 'making friends', 'social anxiety', 'belonging',
             'time management', 'work life balance', 'financial stress', 'relationship stress',
             'career uncertainty', 'imposter syndrome', 'panic feelings',
-            'emotional support', 'coping skills'
+            'emotional support', 'coping skills', 'perfectionism', 'decision fatigue',
+            'fear of failure', 'presentation anxiety', 'thesis stress', 'lab stress',
+            'group projects', 'deadline pressure', 'feeling behind', 'lack of structure',
+            'messy routine', 'conflict with flatmates', 'family pressure', 'breakups',
+            'dating', 'body image', 'digital overload', 'phone addiction',
+            'low energy', 'seasonal blues'
         ]
         intro_pool = [
             'Trying to navigate university life and stay mentally balanced.',
@@ -322,11 +366,13 @@ class User(UserMixin, db.Model):
             'Current challenge: finding belonging and better peer connections at university.',
             'Current challenge: coping with overwhelm while trying to stay motivated.'
         ]
+        label_pool = [choice[0] for choice in User.PROFILE_LABEL_CHOICES]
 
         seed()
         for i in range(count):
             chosen_tags = sample(tag_pool, randint(4, 7))
             about_line = f"{choice(intro_pool)} {choice(challenge_pool)} Interests: {', '.join(chosen_tags)}."
+            chosen_labels = sample(label_pool, randint(1, min(3, len(label_pool))))
             u = User(email=forgery_py.internet.email_address(),
                     username=User.generate_username(),
                     password=forgery_py.lorem_ipsum.word(),
@@ -335,6 +381,7 @@ class User(UserMixin, db.Model):
                     member_since=forgery_py.date.date(True))
             db.session.add(u)
             u.set_tags_from_string(', '.join(chosen_tags), allow_create=True)
+            u.set_profile_labels(chosen_labels)
             try:
                 db.session.commit()
             except IntegrityError:
@@ -501,7 +548,12 @@ class Tag(db.Model):
             'friendship', 'making friends', 'social anxiety', 'belonging',
             'time management', 'work life balance', 'financial stress', 'relationship stress',
             'career uncertainty', 'panic feelings', 'household', 'finding internships',
-            'emotional support', 'coping skills'
+            'emotional support', 'coping skills', 'perfectionism', 'decision fatigue',
+            'fear of failure', 'presentation anxiety', 'thesis stress', 'lab stress',
+            'group projects', 'deadline pressure', 'feeling behind', 'lack of structure',
+            'messy routine', 'conflict with flatmates', 'family pressure', 'breakups',
+            'dating', 'body image', 'digital overload', 'phone addiction',
+            'low energy', 'seasonal blues'
         ]
 
         for name in tag_pool:

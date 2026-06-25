@@ -91,7 +91,7 @@ config = {
 # - ---done ein label vergeben lassen fürs userprofile, das anzeigt, ob jemand sich austauschen will, Fragen/Anliegen hat, oder nur als Helfer da sein will? (voluntary)
 # - ---done eine chat anfrage einbauen, die der user an den matching user stellen kann, bevor man chattet, das soll auch per email versendet werden. Und dabei muss ein kurzer Anfragetext geschickt werden 
             # (evtl mit emailvorlage? oder dass man ein Kontaktformular ausfüllt auf der Webseite?)  und dann soll pending unter den chats hinzugefügt werden. Und der User wird aufgefordert (Glocke), die Anfrage nach einer Woche erneut zu senden
-# - baue eine Glocke ein mit Benachrichtigungen zu Chats und Anfragen und Updates etc., (oder direkt im Chat Index? ODer im Userprofile?)
+# - ---done baue eine Glocke ein mit Benachrichtigungen zu Chats und Anfragen und Updates etc., (oder direkt im Chat Index? ODer im Userprofile?)
 # - ---done baue eine Datenschutz seite ein, auf der du erklärt, was du eingebaut hast und warum und wie die Daten geschützt sind. 
 # - ---done add a block button for a chat you want to end and block.
 # wichtig!!: finde einen Server (evtl an der ETH) zum Hosten und baue dann auf diesem server lokal umami auf und binde es ein. 

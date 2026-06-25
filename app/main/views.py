@@ -109,8 +109,9 @@ def edit_profile():
     all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
     if form.validate_on_submit():
         current_user.about_me = form.about_me.data
+        current_user.funny_fact = form.funny_fact.data
         missing_tags = current_user.set_tags_from_string(form.tags.data, allow_create=False)
-        current_user.profile_label = form.label.data
+        current_user.set_profile_labels(form.label.data)
         if missing_tags:
             flash(
                 "Unknown tags: {}. Only admins can create new tags.".format(', '.join(missing_tags))
@@ -121,7 +122,8 @@ def edit_profile():
         flash('Your profile has been updated.')
         return redirect(url_for('main.settings', username=current_user.username))
     form.about_me.data = current_user.about_me
-    form.label.data = current_user.profile_label or ""
+    form.funny_fact.data = current_user.funny_fact
+    form.label.data = current_user.profile_label_values
     form.tags.data = current_user.tag_string
     return render_template('edit_profile.html', form=form, all_tags=all_tags, is_admin_edit=False)
 
@@ -139,6 +141,7 @@ def edit_profile_admin(id):
         user.confirmed = form.confirmed.data
         user.role = Role.query.get(form.role.data)
         user.about_me = form.about_me.data
+        user.funny_fact = form.funny_fact.data
         user.set_tags_from_string(form.tags.data, allow_create=True)
         db.session.add(user)
         db.session.commit()
@@ -151,6 +154,7 @@ def edit_profile_admin(id):
         form.confirmed.data = user.confirmed
         form.role.data = user.role_id
         form.about_me.data = user.about_me
+        form.funny_fact.data = user.funny_fact
         form.tags.data = user.tag_string
     return render_template('edit_profile.html', form=form, user=user, all_tags=all_tags, is_admin_edit=True)
 
@@ -158,7 +162,8 @@ def edit_profile_admin(id):
 @main.route('/tags')
 def tag_search():
     all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
-    return render_template('tag_search.html', all_tags=all_tags)
+    profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
+    return render_template('tag_search.html', all_tags=all_tags, profile_label_choices=profile_label_choices)
 
 @main.route('/get-help-now')
 def get_help_now():
@@ -167,6 +172,9 @@ def get_help_now():
 @main.route('/tags/search')
 def tag_search_api():
     query = request.args.get('q', '', type=str).strip()
+    requested_profile_labels = {
+        value.strip() for value in request.args.getlist('labels') if value and value.strip()
+    }
     all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
     matches = match_tags(query, all_tags)
     matched_tag_names = {m["name"] for m in matches}
@@ -183,6 +191,12 @@ def tag_search_api():
                 if not current_user.is_authenticated or u.id != current_user.id
             ][:6]
             for u in tag_users:
+                user_profile_labels = set(u.profile_label_values)
+                if requested_profile_labels:
+                    allows_labelled_profile = bool(user_profile_labels & requested_profile_labels)
+                    allows_unlabelled_profile = "__none__" in requested_profile_labels and not user_profile_labels
+                    if not allows_labelled_profile and not allows_unlabelled_profile:
+                        continue
                 user_tag_names = sorted(t.name for t in u.tags)
                 matching_tags = [name for name in user_tag_names if name in matched_tag_names]
                 reason = (
@@ -197,8 +211,8 @@ def tag_search_api():
                         "matching_tags": matching_tags,
                         "match_reason": reason,
                         "name": u.name or "",
-                        "location": u.location or "",
                         "about_me": (u.about_me or "")[:180],
+                        "profile_labels": u.profile_label_texts,
                         "tags": user_tag_names[:8],
                         "avatar_url": u.gravatar(size=48),
                     }

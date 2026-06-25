@@ -3,19 +3,11 @@
 {% block page_content %}
 <div class="page-header">
   <h1>{{ user.username }}</h1>
-  {% if user.profile_label %}
-  <div class="profile-label-badge">
-    {% if user.profile_label == "listener" %}
-      Open to share experience
-    {% elif user.profile_label == "peer_support" %}
-      Need advice urgently
-    {% elif user.profile_label == "practical_advice" %}
-      Happy to talk
-    {% elif user.profile_label == "all" %}
-      Allrounder
-    {% else %}
-      {{ user.profile_label }}
-    {% endif %}
+  {% if user.profile_label_values %}
+  <div class="profile-label-badges">
+    {% for label_text in user.profile_label_texts %}
+    <div class="profile-label-badge">{{ label_text }}</div>
+    {% endfor %}
   </div>
   {% endif %}
   <img src="{{ user.gravatar(size=100) }}" class="img-rounded profile-avatar-large">
@@ -23,6 +15,9 @@
   <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
   {% endif %}
   {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+  {% if user.funny_fact %}
+  <p><strong>Funny fact about me:</strong> {{ user.funny_fact }}</p>
+  {% endif %}
   {% if user.tags %}
   <p>
     Tags:
@@ -60,7 +55,12 @@
         <a class="profile-recommendation-link" href="{{ url_for('main.user', username=item.user.username) }}">
           <img src="{{ item.user.gravatar(size=56) }}" alt="{{ item.user.username }}" class="profile-recommendation-avatar">
           <div class="profile-recommendation-meta">
-            <div class="profile-recommendation-name">{{ item.user.username }}</div>
+            <div class="profile-recommendation-header">
+              <div class="profile-recommendation-name">{{ item.user.username }}</div>
+              {% if item.user.profile_label_texts %}
+              <div class="profile-recommendation-labels">{{ item.user.profile_label_texts|join(", ") }}</div>
+              {% endif %}
+            </div>
             <div class="profile-recommendation-tags">Matches: {{ item.matching_tags|join(", ") }}</div>
           </div>
         </a>

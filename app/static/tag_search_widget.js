@@ -30,6 +30,7 @@
     const safeName = user.name || user.username;
     const safeLocation = user.location ? `Location: ${user.location}` : "";
     const safeAbout = user.about_me || "";
+    const safeLabels = user.profile_labels || [];
     const safeTags = (user.matching_tags && user.matching_tags.length > 0)
       ? user.matching_tags
       : (user.tags || []);
@@ -37,10 +38,10 @@
     previewCard.innerHTML = `
       <div class="profile-preview-header">
         <img class="profile-preview-avatar" src="${user.avatar_url || ""}" alt="${user.username}">
-        <div>
+        <div class="profile-preview-heading">
           <div class="profile-preview-name">${safeName}</div>
-          <div class="profile-preview-username">@${user.username}</div>
         </div>
+        ${safeLabels.length ? `<div class="profile-preview-header-labels">${safeLabels.join(", ")}</div>` : ""}
       </div>
       <div class="profile-preview-reason">${safeReason}</div>
       ${safeLocation ? `<div class="profile-preview-location">${safeLocation}</div>` : ""}
@@ -97,6 +98,11 @@
     const resultsEl = root.querySelector("#tag-search-results");
     const existingEl = root.querySelector("#tag-existing-list");
     const selectedEl = root.querySelector("#tag-selected-list");
+    const profileLabelSelector = root.querySelector("#tagsearch-profile-label-selector");
+    const profileLabelSummary = root.querySelector("#tagsearch-profile-label-summary");
+    const profileLabelCheckboxes = profileLabelSelector
+      ? Array.from(profileLabelSelector.querySelectorAll("[data-tagsearch-profile-label]"))
+      : [];
     let statusEl = root.querySelector("#tag-search-status");
     if (!statusEl) {
       statusEl = document.createElement("p");
@@ -146,7 +152,52 @@
     }
 
     function getSearchQuery() {
-      return input ? input.value.trim() : "";
+      const typedQuery = input ? input.value.trim() : "";
+      if (mode === "picker") {
+        return typedQuery;
+      }
+
+      const parts = [];
+      const seen = new Set();
+
+      Array.from(selected)
+        .sort()
+        .forEach((tag) => {
+          if (!seen.has(tag)) {
+            seen.add(tag);
+            parts.push(tag);
+          }
+        });
+
+      if (typedQuery) {
+        const normalizedTyped = typedQuery.toLowerCase();
+        if (!seen.has(normalizedTyped)) {
+          parts.push(typedQuery);
+        }
+      }
+
+      return parts.join(", ");
+    }
+
+    function getSelectedProfileLabels() {
+      return profileLabelCheckboxes
+        .filter((checkbox) => checkbox.checked)
+        .map((checkbox) => checkbox.value);
+    }
+
+    function updateProfileLabelSummary() {
+      if (!profileLabelSummary) return;
+      const labels = profileLabelCheckboxes
+        .filter((checkbox) => checkbox.checked)
+        .map((checkbox) => {
+          const optionLabel = checkbox.closest(".profile-label-selector-option");
+          const textNode = optionLabel ? optionLabel.querySelector("span") : null;
+          return textNode ? textNode.textContent.trim() : "";
+        })
+        .filter(Boolean);
+      profileLabelSummary.textContent = labels.length > 0
+        ? labels.join(", ")
+        : "No profile label selected";
     }
 
     function syncHidden() {
@@ -321,7 +372,9 @@
         return;
       }
       try {
-        const url = `${endpoint}?q=${encodeURIComponent(q)}`;
+        const params = new URLSearchParams({ q });
+        getSelectedProfileLabels().forEach((label) => params.append("labels", label));
+        const url = `${endpoint}?${params.toString()}`;
         const resp = await fetch(url, { headers: { Accept: "application/json" } });
         const data = await resp.json();
         if (statusEl) {
@@ -342,9 +395,16 @@
         debouncedSearch();
       });
     }
+    profileLabelCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", function () {
+        updateProfileLabelSummary();
+        runSearch();
+      });
+    });
 
     syncHidden();
     ensurePreviewCard();
+    updateProfileLabelSummary();
     renderSelected();
     renderExisting();
     renderResults([]);

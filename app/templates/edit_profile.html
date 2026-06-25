@@ -52,17 +52,35 @@
         {{ form.about_me(class="form-control", rows="4") }}
       </div>
 
+      {% if form.funny_fact is defined %}
+      <div class="form-group">
+        {{ form.funny_fact.label(class="control-label") }}
+        {{ form.funny_fact(class="form-control", rows="4") }}
+      </div>
+      {% endif %}
+
       {% if form.label is defined %}
       <div class="form-group">
         {{ form.label.label(class="control-label") }}
-        {{ form.label(class="form-control") }}
+        <details class="profile-label-selector" id="profile-label-selector">
+          <summary id="profile-label-selector-summary">No label selected</summary>
+          <div class="profile-label-selector-options">
+            {% for option in form.label %}
+            <label class="profile-label-selector-option">
+              {{ option() }}
+              <span>{{ option.label.text }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </details>
+        <p class="help-block">You can select more than one option.</p>
       </div>
       {% endif %}
 
       <div class="form-group">
         <label class="control-label">Tags</label>
         <input id="tag-picker-input" class="form-control" type="text" placeholder="stress, motivation, friends,...">
-        <p class="help-block">Only admins can create new tags. Search for matching tags or select from existing tags.</p>
+        <p class="help-block">Only the developer can create new tags. Search for matching tags or select from existing tags. In case of missing tags, reach out!</p>
       </div>
 
       <h5>Selected Tags</h5>
@@ -85,4 +103,36 @@
 {% block scripts %}
 {{ super() }}
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const selector = document.getElementById("profile-label-selector");
+  const summary = document.getElementById("profile-label-selector-summary");
+  if (!selector || !summary) {
+    return;
+  }
+
+  const checkboxes = selector.querySelectorAll('input[type="checkbox"]');
+
+  function updateSummary() {
+    const selectedLabels = Array.from(checkboxes)
+      .filter(function (checkbox) { return checkbox.checked; })
+      .map(function (checkbox) {
+        const optionLabel = checkbox.closest(".profile-label-selector-option");
+        const textNode = optionLabel ? optionLabel.querySelector("span") : null;
+        return textNode ? textNode.textContent.trim() : "";
+      })
+      .filter(Boolean);
+
+    summary.textContent = selectedLabels.length > 0
+      ? selectedLabels.join(", ")
+      : "No label selected";
+  }
+
+  checkboxes.forEach(function (checkbox) {
+    checkbox.addEventListener("change", updateSummary);
+  });
+
+  updateSummary();
+});
+</script>
 {% endblock %}

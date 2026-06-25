@@ -20,6 +20,22 @@
       <input id="tag-search-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, loneliness, study strategy, making friends)">
     </div>
 
+    <div class="form-group">
+      <label class="control-label">Profile labels</label>
+      <details class="profile-label-selector" id="tagsearch-profile-label-selector">
+        <summary id="tagsearch-profile-label-summary">No profile label selected</summary>
+        <div class="profile-label-selector-options">
+          {% for value, label in profile_label_choices %}
+          <label class="profile-label-selector-option">
+            <input type="checkbox" value="{{ value }}" data-tagsearch-profile-label>
+            <span>{{ label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </details>
+      <p class="help-block">You can filter matching profiles by one or several profile labels.</p>
+    </div>
+
     <h4>Selected Tags</h4>
     <div id="tag-selected-list" class="tag-list"></div>
 

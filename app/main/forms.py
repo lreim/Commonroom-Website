@@ -1,8 +1,14 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField
+from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField, SelectMultipleField
+from wtforms.widgets import ListWidget, CheckboxInput
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
 from ..models import User, Role
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = ListWidget(prefix_label=False)
+    option_widget = CheckboxInput()
 
 class PostForm(FlaskForm):
     body = TextAreaField("What's on your mind?", validators=[DataRequired()])
@@ -11,17 +17,17 @@ class PostForm(FlaskForm):
 
 class EditProfileForm(FlaskForm):
     about_me = TextAreaField('About me', render_kw={"placeholder": "I study..., issues I struggle with are..., I have gone through... and can tell something about..."})
+    funny_fact = TextAreaField(
+        'Fun fact about me',
+        render_kw={
+            "placeholder": "Tell us a fun fact about yourself or answer one of those:\nWhat is your go-to food?\nWhich study place is the best and why?\nWhich cantine cooks?"
+        },
+    )
     tags = StringField('Tags (comma separated)', validators=[Length(0, 256)])
-    label = SelectField(
+    label = MultiCheckboxField(
             "Profile label",
-            choices=[
-                ("", "No label"),
-                ("listener", "Open to share experience"),
-                ("peer_support", "Need advice urgently"),
-                ("practical_advice", "Happy to talk"),
-                ("all", "Allrounder")
-    ]
-)
+            choices=User.PROFILE_LABEL_CHOICES,
+    )
     submit = SubmitField('Submit')
 
 
@@ -39,6 +45,7 @@ class EditProfileAdminForm(FlaskForm):
     confirmed = BooleanField('Confirmed')
     role = SelectField('Role', coerce=int)
     about_me = TextAreaField('About me')
+    funny_fact = TextAreaField('Funny fact about me')
     tags = StringField('Tags (comma separated)', validators=[Length(0, 256)])
     submit = SubmitField('Submit')
 
