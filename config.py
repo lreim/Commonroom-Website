@@ -68,16 +68,16 @@ config = {
 #TODO: ändere Cookie Secure zu True
 #      --- done mache form kästchen größer, sodass der graue placeholder text reinpasst --- done 
 #      evtl timeout rausmachen und dann nur beim Browserschließen session rememberen oder beenden lassen. 
-#      change edit_profile form inputs, think of what is really important and necessary 
+#      --- done change edit_profile form inputs, think of what is really important and necessary 
 #      --- egal/done welche email adressen sollen funktionieren? (Nur die von studenten? oder auch von staff? oder dphys etc? oder muss man auch nur ethz.ch akzeptieren, wenn man student.ethz.ch akzeptiert?)  --- egal/done
-#      evtl das mailto für mich als admin rausnehmen, sodass ich nur im Notfall die emails aus der dabenbank lesen kann? 
+#      evtl das mailto für mich als admin rausnehmen, sodass ich nur im Notfall die emails aus der dabenbank lesen kann? ne. 
 #      mir als Admin bei jeder neuen Registreierung eine email senden! 
 #      --- done evtl einbauen, dass mir schon profile vorgeschlagen werden? 
 #      --- done fast done evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )  --- fast done
 #      --- done halb go back auf manchen seiten einbauen (bei login/auth Seiten?) und das unten plazieren links 
 #      --- done The Developers contact data unten auf jeder Seite haben? Oder unter About? 
 #      --- done wenn ich auf dem profil nach tags suche ode auf der tagseite, dann sollen die matching tags in den existing tags farblich anlaufen? 
-#      mache noch etwas mit den missing_tags, die gespeichert werden. 
+#      mache noch etwas mit den missing_tags, die gespeichert werden oder nicht speichern???
 
 
 #Brainstorming on what to still do:
@@ -98,7 +98,7 @@ config = {
 
 
 
-# - mehr persönliche Sachen
+# - ---done mehr persönliche Sachen
 # - nsch der Anfrage icebreaker frage stellen (send an icebreaker), ich gebe icebreaker vor, ich gebe bei der Anfrage mitgeben (das ist eher, um sich wohler zu fühlen)
 # - Liste herausgeben an no-gos, die man nicht sharen sollte, in das about me feld ein screening einbauen bei keywords 
 # - reports machen können von den usern 
