@@ -5,6 +5,16 @@
 
 {% block head %}
   {{ super() }} <!--hier: added content zu bootstrap content-->
+  <style>
+    html, body {
+      background-color: #f9f5e8;
+      color: #2d1d00;
+    }
+    html.dark-mode, html.dark-mode body {
+      background-color: #1f1a16;
+      color: #f1ebdd;
+    }
+  </style>
   <script>
     (function () {
       try {
@@ -39,11 +49,13 @@
         <li><a href="{{ url_for('main.tag_search') }}">Tagsearch</a></li>
         <li><a href="{{ url_for('chat.index')}}"> Chats</a></li>
         <li><a href="{{ url_for('main.post')}}"> Posts</a></li>
+        <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
+        <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
         {%else%}
+        <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
+        <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
         <li><a href="{{ url_for('auth.login')}}"> Sign In</a></li>
         {%endif%}
-        <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
-        <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
       </ul>
       <div class="navbar-right-controls">
         <label class="theme-switch">

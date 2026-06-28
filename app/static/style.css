@@ -6,6 +6,25 @@ body {
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+.navbar,
+.navbar-inverse {
+  background: #5f2f2a;
+  border-color: #4a241f;
+}
+
+.navbar-inverse .navbar-brand,
+.navbar-inverse .navbar-nav > li > a {
+  color: #fff8fb;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus,
+.navbar-inverse .navbar-brand:hover,
+.navbar-inverse .navbar-brand:focus {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .page-body-container {
   width: auto;
   max-width: calc(1170px - 6cm);
@@ -1131,8 +1150,8 @@ html.dark-mode body {
 
 html.dark-mode .navbar,
 html.dark-mode .navbar-inverse {
-  background: #2a241d;
-  border-color: #43382c;
+  background: #5f2f2a;
+  border-color: #4a241f;
 }
 
 html.dark-mode .navbar-inverse .navbar-brand,

@@ -8,14 +8,8 @@ from ..models import User
 def canonicalize_eth_email(email):
     email = User.canonicalize_eth_email(email)
     if not email or "@" not in email:
-        raise ValidationError("Please use a valid ETH email address.")
-    local, domain = email.split("@", 1)
-
-    if domain not in {"ethz.ch", "student.ethz.ch"}:
-        if domain != "ethz.ch":
-            raise ValidationError("Please use a valid ETH email address.")
-
-    return f"{local}@ethz.ch"
+        raise ValidationError("Please use a valid email address.")
+    return email
 
 
 class LoginForm(FlaskForm):
