@@ -3,6 +3,7 @@
 {% block title %}Tag Search{% endblock %}
 
 {% block page_content %}
+<div data-inline-chat-request-root>
 <div class="page-header">
   <h1>Tagsearch</h1>
   <h4>Use one search bar to find existing tags with semantic matching.</h4>
@@ -14,6 +15,7 @@
   data-tag-widget="search"
   data-search-endpoint="{{ url_for('main.tag_search_api') }}"
   data-all-tags='{{ all_tags|tojson }}'
+  data-can-request-chat="{{ 'true' if current_user.is_authenticated else 'false' }}"
 >
   <div class="tag-main-column">
     <div class="form-group">
@@ -48,9 +50,27 @@
     <div id="tag-existing-list" class="tag-list"></div>
   </aside>
 </div>
+
+{% if current_user.is_authenticated %}
+<div class="chat-request-compose tagsearch-inline-request-compose" data-chat-request-compose style="display:none;">
+  <h4 data-chat-request-title>Send chat request</h4>
+  <p class="chat-request-compose-help">This message will be sent by email together with Accept and Reject links.</p>
+  <form method="post" action="{{ url_for('chat.request_chat') }}">
+    <input type="hidden" name="requested_user_id" data-chat-request-user-id>
+    <input type="hidden" name="next" data-chat-request-next value="{{ request.full_path if request.query_string else request.path }}">
+    <textarea data-chat-request-message name="message" class="form-control" rows="7" placeholder="Write your request message here."></textarea>
+    <div class="chat-request-compose-actions">
+      <button type="submit" class="btn btn-primary">Send request</button>
+      <button type="button" class="btn btn-default" data-chat-request-cancel>Cancel</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+</div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
+<script src="{{ url_for('static', filename='chat_request_compose.js') }}"></script>
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
 {% endblock %}

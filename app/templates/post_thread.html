@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Post Thread{% endblock %}
+
+{% macro post_preview_payload(post) -%}
+{{ {
+    "username": post.author.username,
+    "name": post.author.name or "",
+    "about_me": (post.author.about_me or "")[:180],
+    "matching_tags": post.author.tags|map(attribute="name")|list|sort,
+    "tags": post.author.tags|map(attribute="name")|list|sort,
+    "profile_labels": post.author.profile_label_texts,
+    "avatar_url": post.author.gravatar(size=48)
+}|tojson }}
+{%- endmacro %}
+
+{% macro render_post_node(node, form, level=0) -%}
+<li class="post post-thread-item{% if level > 0 %} post-thread-reply{% endif %}" style="margin-left: {{ level * 24 }}px;">
+    <div class="profile-thumbnail">
+        <a href="{{ url_for('.user', username=node.author.username) }}">
+            <img class="img-rounded profile-thumbnail" src="{{ node.author.gravatar(size=level > 0 and 36 or 40) }}">
+        </a>
+    </div>
+    <div class="post-content">
+        <div class="post-date">{{ moment(node.timestamp).fromNow() }}</div>
+        <div class="post-author">
+            <a href="{{ url_for('.user', username=node.author.username) }}" data-profile-preview='{{ post_preview_payload(node) }}'>
+                {{ node.author.username }}
+            </a>
+        </div>
+        <div class="post-body">{{ node.body }}</div>
+        <div class="post-thread-inline-actions">
+            <details class="post-reply-box">
+                <summary>Reply</summary>
+                <form method="post" action="{{ url_for('main.post_thread', post_id=post.id) }}">
+                    {{ form.csrf_token }}
+                    <input type="hidden" name="reply_to_id" value="{{ node.id }}">
+                    {{ form.body(class="form-control", rows="4", placeholder="Write your reply here.", id="reply-body-" ~ node.id) }}
+                    <div class="post-reply-actions">
+                        {{ form.submit(class="btn btn-primary", value="Send reply") }}
+                    </div>
+                </form>
+            </details>
+        </div>
+    </div>
+</li>
+{% set child_replies = node.replies.order_by(node.__class__.timestamp.asc()).all() %}
+{% if child_replies %}
+<ul class="posts post-thread-children">
+    {% for child in child_replies %}
+        {{ render_post_node(child, form, level + 1) }}
+    {% endfor %}
+</ul>
+{% endif %}
+{%- endmacro %}
+
+{% block page_content %}
+<div class="page-header">
+    <p><a class="btn btn-default" href="{{ url_for('main.post') }}">Back to posts</a></p>
+    <h1>Post Thread</h1>
+    <h4>Read the full reply thread and answer directly inside the conversation.</h4>
+</div>
+
+<div class="post-thread-root">
+    <ul class="posts post-thread-tree">
+        {{ render_post_node(post, form, 0) }}
+    </ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
+{% endblock %}

@@ -417,6 +417,17 @@ class Post(db.Model):
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    parent_id = db.Column(db.Integer, db.ForeignKey('posts.id'), index=True)
+
+    parent = db.relationship(
+        'Post',
+        remote_side=[id],
+        backref=db.backref('replies', lazy='dynamic', cascade='all, delete-orphan')
+    )
+
+    @property
+    def is_reply(self):
+        return self.parent_id is not None
 
     @staticmethod
     def generate_fake(count=100):

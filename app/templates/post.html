@@ -6,7 +6,7 @@
 <div class="page-header">
     <h1>Take a look at some posts!</h1>
     <h4>
-        These are posts from your likeminded people. Feel free to read around. 
+        These are public posts from all of your peers here. Feel free to read around and share your thoughts!
     </h4>
 </div>
 <div class="post-form-wrap">
@@ -14,6 +14,59 @@
         {{ wtf.quick_form(form) }}
     {% endif %}
 </div>
+
+<details
+    class="post-topic-filter"
+    data-tag-widget="picker"
+    data-hidden-input-id="post-topic-filter-input"
+    data-search-endpoint="{{ url_for('main.tag_search_api') }}"
+    data-all-tags='{{ all_tags|tojson }}'
+    {% if selected_topics %}open{% endif %}
+>
+    <summary>Filter posts by topics</summary>
+    <form method="get" action="{{ url_for('main.post') }}" class="post-topic-filter-form">
+        <div class="tag-two-column-layout post-tag-layout">
+            <div class="tag-main-column">
+                <div class="page-subheader">
+                    <p>Use the same topic tags as in tagsearch. The filter shows posts from users whose profile tags match your selected topics.</p>
+                </div>
+                <div class="form-group">
+                    <input id="tag-picker-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, motivation, loneliness)">
+                    <input type="hidden" id="post-topic-filter-input" name="topics" value="{{ selected_topics }}">
+                </div>
+
+                <h4>Selected Topics</h4>
+                <div id="tag-selected-list" class="tag-list"></div>
+
+                <h4>Matches</h4>
+                <div id="tag-search-results" class="tag-results"></div>
+
+                <div class="post-topic-filter-actions">
+                    <button type="submit" class="btn btn-primary">Apply filter</button>
+                    <a href="{{ url_for('main.post') }}" class="btn btn-default">Clear filter</a>
+                </div>
+                {% if matched_topics %}
+                <p class="text-muted post-topic-filter-status">Currently matching topics: {{ matched_topics|join(", ") }}</p>
+                {% endif %}
+            </div>
+
+            <aside class="tag-side-column">
+                <h4>Existing Tags</h4>
+                <div id="tag-existing-list" class="tag-list"></div>
+            </aside>
+        </div>
+    </form>
+</details>
+
+<div style="margin-bottom: 26px;">
+    <form method="get" action="{{ url_for('main.post') }}">
+        <input type="hidden" name="topics" value="{{ selected_topics }}">
+        <select name="sort" style="padding: 12px 16px; font-size: 16px; min-width: 150px;" onchange="this.form.submit()">
+            <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Most Recent</option>
+        </select>
+    </form>
+</div>
+
 <ul class="posts">
     {% for post in posts %}
     <li class="post">
@@ -31,9 +84,10 @@
                     data-profile-preview='{{ {
                         "username": post.author.username,
                         "name": post.author.name or "",
-                        "location": post.author.location or "",
                         "about_me": (post.author.about_me or "")[:180],
+                        "matching_tags": post.author.tags|map(attribute="name")|list|sort,
                         "tags": post.author.tags|map(attribute="name")|list|sort,
+                        "profile_labels": post.author.profile_label_texts,
                         "avatar_url": post.author.gravatar(size=48)
                     }|tojson }}'
                 >
@@ -41,6 +95,32 @@
                 </a>
             </div>
             <div class="post-body">{{ post.body }}</div>
+            {% if post.replies.count() > 0 %}
+            <div class="post-thread-row">
+                <a class="post-thread-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">
+                    &#8627; {{ post.replies.count() }} {% if post.replies.count() == 1 %}reply{% else %}replies{% endif %}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="post-side-actions">
+            <details class="post-reply-box">
+                <summary>Reply</summary>
+                <form method="post" action="{{ url_for('main.post') }}">
+                    {{ form.hidden_tag() }}
+                    <input type="hidden" name="reply_to_id" value="{{ post.id }}">
+                    {{ form.body(class="form-control", rows="4", placeholder="Write your reply here.") }}
+                    <div class="post-reply-actions">
+                        {{ form.submit(class="btn btn-primary", value="Send reply") }}
+                    </div>
+                </form>
+            </details>
+        </div>
+    </li>
+    {% else %}
+    <li class="post">
+        <div class="post-content">
+            <div class="post-body">No posts match this topic filter yet.</div>
         </div>
     </li>
     {% endfor %}

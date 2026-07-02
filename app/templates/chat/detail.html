@@ -13,7 +13,7 @@
     </div>
     <div class="chat-header-actions">
       {% if pagination.has_next %}
-        <a class="chat-load-older" href="{{ url_for('chat.detail', conversation_id=conversation.id, page=pagination.next_num) }}">Aeltere laden</a>
+        <a class="chat-load-older" href="{{ url_for('chat.detail', conversation_id=conversation.id, page=pagination.next_num) }}#message-{{ messages[0].id }}">Aeltere laden</a>
       {% endif %}
       {% if current_user.has_blocked(other) %}
       <form method="post" action="{{ url_for('chat.unblock_user', user_id=other.id) }}">
@@ -29,7 +29,7 @@
 
   <ul id="messages" class="chat-messages">
     {% for m in messages %}
-      <li class="chat-message{% if m.author_id == current_user.id %} chat-message-own{% endif %}">
+      <li id="message-{{ m.id }}" class="chat-message{% if m.author_id == current_user.id %} chat-message-own{% endif %}">
         <div class="chat-bubble">
           <div class="chat-meta">
             <span class="chat-author">{{ user_link(m.author) }}</span>
@@ -66,6 +66,7 @@
 
   function createMessageElement(msg) {
     const li = document.createElement("li");
+    li.id = `message-${msg.id}`;
     li.className = "chat-message" + (msg.author_id === currentUserId ? " chat-message-own" : "");
 
     const bubble = document.createElement("div");

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from types import SimpleNamespace
 
 from flask import render_template, redirect, url_for, request, abort, jsonify, flash
 from flask_login import login_required, current_user
@@ -13,6 +14,16 @@ from ..notifications import mark_notifications_seen_now
 
 def _pair_ids(user1_id, user2_id):
     return (user1_id, user2_id) if user1_id < user2_id else (user2_id, user1_id)
+
+
+def _safe_next_url(default_endpoint="chat.index", anchor=None):
+    next_url = request.form.get("next") or request.args.get("next")
+    if next_url and next_url.startswith("/"):
+        return next_url
+    target = url_for(default_endpoint)
+    if anchor:
+        target = f"{target}#{anchor}"
+    return target
 
 
 def _blocked_message(current_user, other_user):
@@ -41,6 +52,21 @@ def _create_or_get_conversation(user_a_id, user_b_id):
         db.session.add(conversation)
         db.session.commit()
     return conversation
+
+
+def _send_chat_request_email(chat_request):
+    accept_token = chat_request.generate_response_token("accept")
+    reject_token = chat_request.generate_response_token("reject")
+    send_email(
+        chat_request.requested.email,
+        "New chat request",
+        "chat/email/request_chat",
+        chat_request=chat_request,
+        requester=chat_request.requester,
+        requested=chat_request.requested,
+        accept_url=url_for("chat.accept_request", token=accept_token, _external=True),
+        reject_url=url_for("chat.reject_request", token=reject_token, _external=True),
+    )
 
 
 def _serialize_chat_candidate(user):
@@ -174,7 +200,7 @@ def pending_request_notice(user_id):
     other = User.query.get_or_404(user_id)
     if _pending_request_between(current_user.id, other.id) is not None:
         flash("There is already a pending chat request between you and this user.")
-    return redirect(url_for("chat.index"))
+    return redirect(_safe_next_url())
 
 
 @chat.route("/request", methods=["POST"])
@@ -182,6 +208,7 @@ def pending_request_notice(user_id):
 def request_chat():
     requested_id = request.form.get("requested_user_id", type=int)
     body = (request.form.get("message") or "").strip()
+    next_url = _safe_next_url()
 
     if not requested_id:
         abort(400)
@@ -189,7 +216,7 @@ def request_chat():
         abort(400)
     if not body:
         flash("Please write a short request message first.")
-        return redirect(url_for("chat.index"))
+        return redirect(next_url)
 
     other = User.query.get_or_404(requested_id)
     if current_user.has_block_relationship(other):
@@ -206,7 +233,7 @@ def request_chat():
     pending_request = _pending_request_between(current_user.id, other.id)
     if pending_request is not None:
         flash("There is already a pending chat request between you and this user.")
-        return redirect(url_for("chat.index"))
+        return redirect(next_url)
 
     chat_request = ChatRequest(
         requester_id=current_user.id,
@@ -217,21 +244,47 @@ def request_chat():
     db.session.add(chat_request)
     db.session.commit()
 
-    accept_token = chat_request.generate_response_token("accept")
-    reject_token = chat_request.generate_response_token("reject")
-    send_email(
-        other.email,
-        "New chat request",
-        "chat/email/request_chat",
-        chat_request=chat_request,
-        requester=current_user,
-        requested=other,
-        accept_url=url_for("chat.accept_request", token=accept_token, _external=True),
-        reject_url=url_for("chat.reject_request", token=reject_token, _external=True),
-    )
+    _send_chat_request_email(chat_request)
 
     flash("Your chat request has been sent by email.")
-    return redirect(url_for("chat.index"))
+    return redirect(next_url)
+
+
+@chat.route("/request/<int:request_id>/withdraw", methods=["POST"])
+@login_required
+def withdraw_request(request_id):
+    chat_request = ChatRequest.query.get_or_404(request_id)
+    if chat_request.requester_id != current_user.id:
+        abort(403)
+    if chat_request.status != ChatRequest.STATUS_PENDING:
+        flash("This chat request can no longer be withdrawn.")
+        return redirect(url_for("chat.index"))
+
+    db.session.delete(chat_request)
+    db.session.commit()
+    flash("Your chat request has been withdrawn.")
+    return redirect(url_for("chat.index") + "#requested-chats")
+
+
+@chat.route("/request/<int:request_id>/resend", methods=["POST"])
+@login_required
+def resend_request(request_id):
+    chat_request = ChatRequest.query.get_or_404(request_id)
+    if chat_request.requester_id != current_user.id:
+        abort(403)
+    if chat_request.status != ChatRequest.STATUS_PENDING:
+        flash("This chat request can no longer be resent.")
+        return redirect(url_for("chat.index"))
+    if current_user.has_block_relationship(chat_request.requested):
+        abort(403)
+
+    chat_request.created_at = datetime.now(timezone.utc)
+    db.session.add(chat_request)
+    db.session.commit()
+    _send_chat_request_email(chat_request)
+
+    flash("Your chat request has been sent again by email.")
+    return redirect(url_for("chat.index") + "#requested-chats")
 
 
 @chat.route("/<int:conversation_id>")
@@ -242,10 +295,17 @@ def detail(conversation_id):    #lädt Konversation
         abort(403)
 
     page = request.args.get("page", 1, type=int)
-    pagination = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.created_at.desc()).paginate(
-        page=page, per_page=20, error_out=False
+    per_page = 20
+    visible_message_count = max(page, 1) * per_page
+    total_message_count = Message.query.filter_by(conversation_id=conversation.id).count()
+    message_items = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.created_at.desc()).limit(
+        visible_message_count
+    ).all()
+    messages = list(reversed(message_items))
+    pagination = SimpleNamespace(
+        has_next=total_message_count > visible_message_count,
+        next_num=page + 1,
     )
-    messages = list(reversed(pagination.items))
     other = conversation.other_user(current_user.id)
     is_blocked = current_user.has_block_relationship(other)
     blocked_message = _blocked_message(current_user, other) if is_blocked else None

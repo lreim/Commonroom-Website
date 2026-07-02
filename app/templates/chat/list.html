@@ -71,7 +71,8 @@
 <ul class="chat-conversation-list">
   {% for item in requested_items %}
     <li class="chat-conversation-card" id="chat-request-{{ item.request.id }}">
-      <a class="chat-conversation-link chat-search-profile-link chat-request-card" href="{{ url_for('main.user', username=item.other.username) }}">
+      <div class="chat-search-result-card chat-request-card">
+        <a class="chat-conversation-link chat-search-profile-link" href="{{ url_for('main.user', username=item.other.username) }}">
           <img
             class="chat-conversation-avatar"
             src="{{ item.other.gravatar(size=56) }}"
@@ -85,7 +86,18 @@
             </div>
             <div class="chat-conversation-message-count">Awaiting email response</div>
           </div>
-      </a>
+        </a>
+        {% if item.direction == "outgoing" %}
+        <div class="chat-search-start-form chat-request-actions">
+          <form method="post" action="{{ url_for('chat.resend_request', request_id=item.request.id) }}">
+            <button type="submit" class="chat-start-action-button">Resend request</button>
+          </form>
+          <form method="post" action="{{ url_for('chat.withdraw_request', request_id=item.request.id) }}">
+            <button type="submit" class="btn btn-default chat-request-withdraw-button">Withdraw</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
     </li>
   {% endfor %}
 </ul>

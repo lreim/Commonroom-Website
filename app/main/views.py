@@ -46,20 +46,101 @@ def data_and_privacy():
 @login_required
 def post():
     form = PostForm()
+    reply_to_id = request.form.get('reply_to_id', type=int)
     if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
-        post = Post(body=form.body.data, author=current_user._get_current_object())
+        parent_post = None
+        if reply_to_id:
+            parent_post = Post.query.get_or_404(reply_to_id)
+            if parent_post.parent is not None:
+                parent_post = parent_post.parent
+        post = Post(
+            body=form.body.data,
+            author=current_user._get_current_object(),
+            parent=parent_post,
+        )
         db.session.add(post)
         db.session.commit()
+        if parent_post is not None:
+            return redirect(url_for('main.post_thread', post_id=parent_post.id))
         return redirect(url_for('main.post'))
 
+    all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
+    topic_query = request.args.get('topics', '', type=str).strip()
+    selected_topics = []
+    seen_topics = set()
+    for chunk in topic_query.split(','):
+        topic = chunk.strip().lower()
+        if not topic or topic in seen_topics:
+            continue
+        seen_topics.add(topic)
+        selected_topics.append(topic)
+
+    matched_topics = []
+    if topic_query:
+        matched_topics = [item["name"] for item in match_tags(topic_query, all_tags)]
+
+    sort_by = request.args.get('sort', 'most_recent', type=str)
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    post_query = Post.query.filter(Post.parent_id.is_(None))
+    if matched_topics:
+        post_query = post_query.join(User, Post.author).join(User.tags).filter(Tag.name.in_(matched_topics)).distinct()
+
+    if sort_by == 'most_recent':
+        post_query = post_query.order_by(Post.timestamp.desc())
+    else:
+        sort_by = 'most_recent'
+        post_query = post_query.order_by(Post.timestamp.desc())
+
+    pagination = post_query.paginate(
         page=page,
         per_page=current_app.config.get('TALKTO_POSTS_PER_PAGE', 20),
         error_out=False
     )
     posts = pagination.items
-    return render_template('post.html', form=form, posts=posts, pagination=pagination)
+    return render_template(
+        'post.html',
+        form=form,
+        posts=posts,
+        pagination=pagination,
+        all_tags=all_tags,
+        selected_topics=', '.join(selected_topics),
+        matched_topics=matched_topics,
+        sort_by=sort_by,
+    )
+
+
+@main.route('/post/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def post_thread(post_id):
+    root_post = Post.query.get_or_404(post_id)
+    if root_post.parent is not None:
+        return redirect(url_for('main.post_thread', post_id=root_post.parent_id))
+
+    form = PostForm()
+    reply_to_id = request.form.get('reply_to_id', type=int)
+    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
+        parent_post = root_post
+        if reply_to_id:
+            parent_post = Post.query.get_or_404(reply_to_id)
+            ancestor = parent_post
+            while ancestor.parent is not None:
+                ancestor = ancestor.parent
+            if ancestor.id != root_post.id:
+                parent_post = root_post
+        reply = Post(
+            body=form.body.data,
+            author=current_user._get_current_object(),
+            parent=parent_post,
+        )
+        db.session.add(reply)
+        db.session.commit()
+        return redirect(url_for('main.post_thread', post_id=root_post.id))
+
+    return render_template(
+        'post_thread.html',
+        post=root_post,
+        form=form,
+    )
 
 @main.route('/user/<username>')
 def user(username):
@@ -160,6 +241,7 @@ def edit_profile_admin(id):
 
 
 @main.route('/tags')
+@login_required
 def tag_search():
     all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
     profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
@@ -170,6 +252,7 @@ def get_help_now():
     return render_template('get_help_now.html')
 
 @main.route('/tags/search')
+@login_required
 def tag_search_api():
     query = request.args.get('q', '', type=str).strip()
     requested_profile_labels = {
@@ -206,6 +289,7 @@ def tag_search_api():
                 )
                 users.append(
                     {
+                        "id": u.id,
                         "username": u.username,
                         "profile_url": url_for('main.user', username=u.username),
                         "matching_tags": matching_tags,

@@ -43,10 +43,28 @@
         </div>
         ${safeLabels.length ? `<div class="profile-preview-header-labels">${safeLabels.join(", ")}</div>` : ""}
       </div>
-      <div class="profile-preview-reason">${safeReason}</div>
-      ${safeLocation ? `<div class="profile-preview-location">${safeLocation}</div>` : ""}
-      ${safeAbout ? `<div class="profile-preview-about">${safeAbout}</div>` : ""}
-      ${safeTags.length ? `<div class="profile-preview-tags">Tags: ${safeTags.join(", ")}</div>` : ""}
+      <div class="profile-preview-section">
+        <div class="profile-preview-section-label">Matching tags</div>
+        <div class="profile-preview-reason">${safeReason}</div>
+      </div>
+      ${safeLocation ? `
+        <div class="profile-preview-section">
+          <div class="profile-preview-section-label">Location</div>
+          <div class="profile-preview-location">${safeLocation.replace(/^Location:\s*/, "")}</div>
+        </div>
+      ` : ""}
+      ${safeAbout ? `
+        <div class="profile-preview-section">
+          <div class="profile-preview-section-label">About me</div>
+          <div class="profile-preview-about">${safeAbout}</div>
+        </div>
+      ` : ""}
+      ${safeTags.length ? `
+        <div class="profile-preview-section">
+          <div class="profile-preview-section-label">Tags</div>
+          <div class="profile-preview-tags">${safeTags.join(", ")}</div>
+        </div>
+      ` : ""}
     `;
     previewCard.style.display = "block";
     positionGlobalPreviewCard(evt);
@@ -93,6 +111,7 @@
     const mode = root.getAttribute("data-tag-widget");
     const endpoint = root.getAttribute("data-search-endpoint");
     const allTags = JSON.parse(root.getAttribute("data-all-tags") || "[]");
+    const storageKey = "commonroom_tagsearch_state";
     const input =
       root.querySelector("#tag-picker-input") || root.querySelector("#tag-search-input");
     const resultsEl = root.querySelector("#tag-search-results");
@@ -117,6 +136,34 @@
     let selected = new Set();
     let previewCard = null;
     let currentMatches = [];
+
+    function saveSearchState() {
+      if (mode !== "search") return;
+      const payload = {
+        query: input ? input.value : "",
+        selectedTags: Array.from(selected),
+        selectedProfileLabels: getSelectedProfileLabels()
+      };
+      window.sessionStorage.setItem(storageKey, JSON.stringify(payload));
+    }
+
+    function restoreSearchState() {
+      if (mode !== "search") return;
+      const raw = window.sessionStorage.getItem(storageKey);
+      if (!raw) return;
+      try {
+        const payload = JSON.parse(raw);
+        selected = new Set((payload.selectedTags || []).map((tag) => String(tag).toLowerCase()));
+        if (input && payload.query) {
+          input.value = payload.query;
+        }
+        profileLabelCheckboxes.forEach((checkbox) => {
+          checkbox.checked = (payload.selectedProfileLabels || []).includes(checkbox.value);
+        });
+      } catch (err) {
+        window.sessionStorage.removeItem(storageKey);
+      }
+    }
 
     function ensurePreviewCard() {
       if (previewCard || mode === "picker") return;
@@ -225,6 +272,7 @@
           chip.title = "Click to remove";
           chip.addEventListener("click", () => {
             selected.delete(tag);
+            saveSearchState();
             syncHidden();
             renderSelected();
             renderExisting();
@@ -262,6 +310,7 @@
           } else {
             selected.add(key);
           }
+          saveSearchState();
           if (mode === "picker") {
             syncHidden();
             renderSelected();
@@ -343,8 +392,16 @@
           usersList.className = "tag-match-users-list";
 
           m.users.forEach((u) => {
+            const item = document.createElement("div");
+            item.className = "tag-match-user-item";
+
             const link = document.createElement("a");
-            link.href = u.profile_url;
+            const profileUrl = new URL(u.profile_url, window.location.origin);
+            profileUrl.searchParams.set(
+              "return_to",
+              `${window.location.pathname}${window.location.search}${window.location.hash}`
+            );
+            link.href = profileUrl.toString();
             link.textContent = u.username;
             link.className = "tag-match-user-link";
             if (mode !== "picker") {
@@ -352,7 +409,9 @@
               link.addEventListener("mousemove", positionPreviewCard);
               link.addEventListener("mouseleave", hidePreviewCard);
             }
-            usersList.appendChild(link);
+
+            item.appendChild(link);
+            usersList.appendChild(item);
           });
 
           usersWrap.appendChild(usersList);
@@ -392,22 +451,28 @@
     const debouncedSearch = debounce(runSearch, 220);
     if (input) {
       input.addEventListener("input", function () {
+        saveSearchState();
         debouncedSearch();
       });
     }
     profileLabelCheckboxes.forEach((checkbox) => {
       checkbox.addEventListener("change", function () {
+        saveSearchState();
         updateProfileLabelSummary();
         runSearch();
       });
     });
 
+    restoreSearchState();
     syncHidden();
     ensurePreviewCard();
     updateProfileLabelSummary();
     renderSelected();
     renderExisting();
     renderResults([]);
+    if (mode === "search" && getSearchQuery()) {
+      runSearch();
+    }
   }
 
   document.addEventListener("DOMContentLoaded", function () {

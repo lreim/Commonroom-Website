@@ -80,7 +80,7 @@ def build_notifications_for_user(user, limit=8):
                 "is_new": seen_at is None or responded_at > seen_at,
                 "text": f"{chat_request.requested.username} {response_word} your chat request",
                 "url": (
-                    url_for("chat.index") + f"#chat-conversation-{conversation.id}"
+                    url_for("chat.detail", conversation_id=conversation.id)
                     if chat_request.status == ChatRequest.STATUS_ACCEPTED and conversation is not None
                     else (
                         url_for("chat.index") + "#your-chats"
@@ -108,7 +108,7 @@ def build_notifications_for_user(user, limit=8):
                 "timestamp": created_at,
                 "is_new": seen_at is None or created_at > seen_at,
                 "text": f"New message from {other.username}",
-                "url": url_for("chat.index") + f"#chat-conversation-{conversation.id}",
+                "url": url_for("chat.detail", conversation_id=conversation.id) + f"#message-{last_msg.id}",
             }
         )
 

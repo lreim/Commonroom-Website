@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% block title %}User{% endblock %}
 {% block page_content %}
+<div data-inline-chat-request-root>
 <div class="page-header">
+  {% if request.args.get('return_to', '').startswith('/') %}
+  <p>
+    <a class="btn btn-default" href="{{ request.args.get('return_to') }}">Back to matchings</a>
+  </p>
+  {% endif %}
   <h1>{{ user.username }}</h1>
   {% if user.profile_label_values %}
   <div class="profile-label-badges">
@@ -14,31 +20,49 @@
   {% if current_user.is_administrator() %}
   <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
   {% endif %}
-  {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+  {% if user.about_me %}
+  <div class="profile-detail-block">
+    <div class="profile-detail-label">About me</div>
+    <div class="profile-detail-value">{{ user.about_me }}</div>
+  </div>
+  {% endif %}
   {% if user.funny_fact %}
-  <p><strong>Funny fact about me:</strong> {{ user.funny_fact }}</p>
+  <div class="profile-detail-block">
+    <div class="profile-detail-label">Funny fact about me</div>
+    <div class="profile-detail-value">{{ user.funny_fact }}</div>
+  </div>
   {% endif %}
   {% if user.tags %}
-  <p>
-    Tags:
+  <div class="profile-detail-block">
+    <div class="profile-detail-label">Tags</div>
+    <div class="profile-detail-value">
     {% for tag in user.tags|sort(attribute='name') %}
       <span class="label label-info">{{ tag.name }}</span>
     {% endfor %}
-  </p>
+    </div>
+  </div>
   {% endif %}
-  <p>
-    Member since {{ moment(user.member_since).format('L') }}.
-    Last seen {{ moment(user.last_seen).fromNow() }}.
-  </p>
+  <div class="profile-detail-block">
+    <div class="profile-detail-label">Activity</div>
+    <div class="profile-detail-value">
+      Member since {{ moment(user.member_since).format('L') }}.
+      Last seen {{ moment(user.last_seen).fromNow() }}.
+    </div>
+  </div>
   {% if current_user.is_authenticated and user == current_user %}
   <p>
     <a class="btn btn-default" href="{{ url_for('main.user', username=user.username, recommend=1) }}">Show suitable profiles</a>
   </p>
   {% endif %}
   {% if current_user.is_authenticated and user != current_user %}
-  <form method="post" action="{{ url_for('chat.start', user_id=user.id) }}" style="display:inline-block; margin-left: 8px;">
-    <button type="submit" class="btn btn-primary">Chat starten</button>
-  </form>
+  <button
+    type="button"
+    class="btn btn-primary"
+    data-inline-chat-request
+    data-request-user-id="{{ user.id }}"
+    data-request-username="{{ user.username }}"
+    style="display:inline-block; margin-top: 8px;"
+  >Start a chat</button>
   {% endif %}
   {% if current_user.is_administrator() %}
   <a class="btn btn-primary" href="{{ url_for('.edit_profile_admin', id=user.id) }}">Edit Profile [Admin]</a>
@@ -61,9 +85,37 @@
               <div class="profile-recommendation-labels">{{ item.user.profile_label_texts|join(", ") }}</div>
               {% endif %}
             </div>
-            <div class="profile-recommendation-tags">Matches: {{ item.matching_tags|join(", ") }}</div>
+            <div class="profile-recommendation-section">
+              <div class="profile-recommendation-section-label">Matching tags</div>
+              <div class="profile-recommendation-section-value">{{ item.matching_tags|join(", ") }}</div>
+            </div>
+            {% if item.user.about_me %}
+            <div class="profile-recommendation-section">
+              <div class="profile-recommendation-section-label">About me</div>
+              <div class="profile-recommendation-section-value">{{ item.user.about_me }}</div>
+            </div>
+            {% endif %}
+            {% if item.user.tags %}
+            <div class="profile-recommendation-section">
+              <div class="profile-recommendation-section-label">Tags</div>
+              <div class="profile-recommendation-section-value">
+                {% for tag in item.user.tags|sort(attribute='name') %}
+                <span class="label label-info">{{ tag.name }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
           </div>
         </a>
+        <div class="profile-recommendation-actions">
+          <button
+            type="button"
+            class="chat-start-action-button"
+            data-inline-chat-request
+            data-request-user-id="{{ item.user.id }}"
+            data-request-username="{{ item.user.username }}"
+          >Start a conversation</button>
+        </div>
       </li>
       {% endfor %}
     </ul>
@@ -81,6 +133,22 @@
 </div>
 {% endif %}
 
+{% if current_user.is_authenticated %}
+<div class="chat-request-compose profile-inline-request-compose" data-chat-request-compose style="display:none;">
+  <h4 data-chat-request-title>Send chat request</h4>
+  <p class="chat-request-compose-help">This message will be sent by email together with Accept and Reject links.</p>
+  <form method="post" action="{{ url_for('chat.request_chat') }}">
+    <input type="hidden" name="requested_user_id" data-chat-request-user-id>
+    <input type="hidden" name="next" data-chat-request-next value="{{ request.full_path if request.query_string else request.path }}">
+    <textarea data-chat-request-message name="message" class="form-control" rows="7" placeholder="Write your request message here."></textarea>
+    <div class="chat-request-compose-actions">
+      <button type="submit" class="btn btn-primary">Send request</button>
+      <button type="button" class="btn btn-default" data-chat-request-cancel>Cancel</button>
+    </div>
+  </form>
+</div>
+{% endif %}
+
 <ul class="posts">
   {% for post in posts %}
   <li class="post">
@@ -89,4 +157,10 @@
   </li>
   {% endfor %}
 </ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='chat_request_compose.js') }}"></script>
 {% endblock %}

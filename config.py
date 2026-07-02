@@ -110,15 +110,15 @@ config = {
 
 
 # - antworten können auch posts direkt
-# - chat darkmode
-# - in notifications direkt auf den chat springen 
-# - bei ältere laden im Chat nicht alles dann verschwinden lassen, bis eine neue Nachricht kommt 
+# - ---done chat darkmode
+# - ---done in notifications direkt auf den chat springen 
+# - ---done bei ältere laden im Chat nicht alles dann verschwinden lassen, bis eine neue Nachricht kommt 
 # - confirm link resent sehe ich als admin nicht
 # - beim kontakt icoon, muss man scjließen können und die email, die geöffnet wird, verschiebt das ganzr Layout der webseite!!!
 # - erwähnen, dass man sich keinen namen geben kann in onboardnig 
 # - links einbauen in onboardning page, damit man direkt das eigene profil findet und die settings 
 # - und die navbar statish lassen, sodass sie nciht vershwidet beim scrollen
 # - bei posts ändern, dass klar ist, dass es alle use sein können, die man hier sieht, nicht nur likeminded people., dort aber auch filter einbauen für themen für posts (gleiche tags?)
-# - direkt von start a chat auf den user im chat 
-# - eine chat request nochmal senen kännen und auch zkommenurückuziehen können
+# - ---done direkt von start a chat auf den user im chat und dass man back to matches und weiter requesten kannt
+# - ---done eine chat request nochmal senen kännen und auch zkommenurückuziehen können
 # - timeout evtl anpassen
