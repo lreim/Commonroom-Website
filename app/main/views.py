@@ -309,7 +309,7 @@ def tag_search_api():
         "matches": matches,
         "all_tags": all_tags,
         "semantic_model_ready": model_ready,
-        "error": None if model_ready else "SentenceTransformer model could not be loaded.",
+        "error": None if model_ready else "Semantic tag index is not available.",
     })
 
 
