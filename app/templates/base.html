@@ -263,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <div class="floating-contact-links">
   <a
     class="floating-mail-link"
-    href="mailto:lissy@example.com?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
+    href="mailto:contact@commonroom.ch?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
     aria-label="Send email"
     title="Send email"
   >
@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", function () {
   {% if current_user.is_authenticated %}
   <a
     class="floating-abuse-link"
-    href="mailto:lissy@example.com?subject=Report%20abuse%20%E2%80%94%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
+    href="mailto:report-abuse@commonroom.ch?subject=Report%20abuse%20%E2%80%94%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
     aria-label="Report abuse"
     title="Report abuse"
   >
