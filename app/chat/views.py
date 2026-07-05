@@ -54,13 +54,14 @@ def _create_or_get_conversation(user_a_id, user_b_id):
     return conversation
 
 
-def _send_chat_request_email(chat_request):
+def _send_chat_request_email(chat_request, message_stream=None):
     accept_token = chat_request.generate_response_token("accept")
     reject_token = chat_request.generate_response_token("reject")
     send_email(
         chat_request.requested.email,
         "New chat request",
         "chat/email/request_chat",
+        message_stream=message_stream or current_app.config.get('POSTMARK_MESSAGE_STREAM_CHAT_REQUEST'),
         chat_request=chat_request,
         requester=chat_request.requester,
         requested=chat_request.requested,
@@ -281,7 +282,10 @@ def resend_request(request_id):
     chat_request.created_at = datetime.now(timezone.utc)
     db.session.add(chat_request)
     db.session.commit()
-    _send_chat_request_email(chat_request)
+    _send_chat_request_email(
+        chat_request,
+        message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_CHAT_REQUEST_RESEND'),
+    )
 
     flash("Your chat request has been sent again by email.")
     return redirect(url_for("chat.index") + "#requested-chats")

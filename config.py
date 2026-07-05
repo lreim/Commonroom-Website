@@ -11,6 +11,14 @@ class Config:
     TALKTO_MAIL_SENDER = 'CommonRoom Developers <lissy.reim@t-online.de>'
     TALKTO_ADMIN = os.environ.get('TALKTO_ADMIN')
     TALKTO_POSTS_PER_PAGE = 20
+    POSTMARK_API_TOKEN = os.environ.get('POSTMARK_API_TOKEN')
+    POSTMARK_MESSAGE_STREAM_REGISTRATION = os.environ.get('POSTMARK_MESSAGE_STREAM_REGISTRATION', 'registration')
+    POSTMARK_MESSAGE_STREAM_CHANGE_EMAIL = os.environ.get('POSTMARK_MESSAGE_STREAM_CHANGE_EMAIL', 'change-email')
+    POSTMARK_MESSAGE_STREAM_CHAT_REQUEST = os.environ.get('POSTMARK_MESSAGE_STREAM_CHAT_REQUEST', 'chat-request')
+    POSTMARK_MESSAGE_STREAM_CHAT_REQUEST_RESEND = os.environ.get('POSTMARK_MESSAGE_STREAM_CHAT_REQUEST_RESEND', 'chat-request-resend')
+    POSTMARK_MESSAGE_STREAM_PASSWORD_RESET = os.environ.get('POSTMARK_MESSAGE_STREAM_PASSWORD_RESET', 'password-reset')
+    POSTMARK_MESSAGE_STREAM_RESEND_CONFIRMATION = os.environ.get('POSTMARK_MESSAGE_STREAM_RESEND_CONFIRMATION', 'resend-confirmation')
+    POSTMARK_MESSAGE_STREAM_ADMIN_REGISTRATION = os.environ.get('POSTMARK_MESSAGE_STREAM_ADMIN_REGISTRATION', 'admin-registration')
     #für Sicherheit bei Nutzung von Login session cookies 
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=20)   #damit man automatisch ausgeloggt werden kann nach einer bestimmten Zeitspanne, 
                                                      # der cookie überträgt login daten von request zu request

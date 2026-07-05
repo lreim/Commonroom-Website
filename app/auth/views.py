@@ -68,6 +68,7 @@ def reset_password_mail():
                 user.email,
                 'Reset Your Password',
                 'auth/email/reset_password',
+                message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_PASSWORD_RESET'),
                 user=user,
                 token=token
             )
@@ -105,13 +106,21 @@ def register():
         db.session.add(user)
         db.session.commit()
         token = user.generate_confirmation_token()
-        send_email(user.email, 'Please Confirm Your Account', 'auth/email/confirm', user=user, token=token)
+        send_email(
+            user.email,
+            'Please Confirm Your Account',
+            'auth/email/confirm',
+            message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_REGISTRATION'),
+            user=user,
+            token=token
+        )
         admin_email = current_app.config.get('TALKTO_ADMIN')
         if admin_email:
             send_email(
                 admin_email,
                 'New user registration',
                 'auth/email/new_registration',
+                message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_ADMIN_REGISTRATION'),
                 user=user,
             )
         flash('A confirmation email has been sent to you. Pls take a look!')
@@ -149,8 +158,14 @@ def unconfirmed():     #prüft, ob der user schon confirmed hat, sonst unconfirm
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
-    send_email(current_user.email,
-                'Confirm Your Account', 'auth/email/confirm', user = current_user, token=token)
+    send_email(
+        current_user.email,
+        'Confirm Your Account',
+        'auth/email/confirm',
+        message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_RESEND_CONFIRMATION'),
+        user=current_user,
+        token=token
+    )
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
 
@@ -178,6 +193,7 @@ def change_email_request():
                 canonicalize_eth_email(form.email.data),
                 'Confirm your email address',
                 'auth/email/change_email',
+                message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_CHANGE_EMAIL'),
                 user=current_user,
                 token=token
             )
