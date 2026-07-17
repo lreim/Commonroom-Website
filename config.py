@@ -79,13 +79,13 @@ config = {
 #      --- done change edit_profile form inputs, think of what is really important and necessary 
 #      --- egal/done welche email adressen sollen funktionieren? (Nur die von studenten? oder auch von staff? oder dphys etc? oder muss man auch nur ethz.ch akzeptieren, wenn man student.ethz.ch akzeptiert?)  --- egal/done
 #      evtl das mailto für mich als admin rausnehmen, sodass ich nur im Notfall die emails aus der dabenbank lesen kann? ne. 
-#      mir als Admin bei jeder neuen Registreierung eine email senden! 
+#      ---done mir als Admin bei jeder neuen Registreierung eine email senden! 
 #      --- done evtl einbauen, dass mir schon profile vorgeschlagen werden? 
 #      --- done fast done evtl bei dem freien About me text auch schon Vorgaben machen (Current challenge, last challenges, what makes me a good person to help you,... )  --- fast done
 #      --- done halb go back auf manchen seiten einbauen (bei login/auth Seiten?) und das unten plazieren links 
 #      --- done The Developers contact data unten auf jeder Seite haben? Oder unter About? 
 #      --- done wenn ich auf dem profil nach tags suche ode auf der tagseite, dann sollen die matching tags in den existing tags farblich anlaufen? 
-#      mache noch etwas mit den missing_tags, die gespeichert werden oder nicht speichern???
+#      --- no mache noch etwas mit den missing_tags, die gespeichert werden oder nicht speichern???
 
 
 #Brainstorming on what to still do:
@@ -102,7 +102,7 @@ config = {
 # - ---done baue eine Glocke ein mit Benachrichtigungen zu Chats und Anfragen und Updates etc., (oder direkt im Chat Index? ODer im Userprofile?)
 # - ---done baue eine Datenschutz seite ein, auf der du erklärt, was du eingebaut hast und warum und wie die Daten geschützt sind. 
 # - ---done add a block button for a chat you want to end and block.
-# wichtig!!: finde einen Server (evtl an der ETH) zum Hosten und baue dann auf diesem server lokal umami auf und binde es ein. 
+# - ---done wichtig!!: finde einen Server (evtl an der ETH) zum Hosten und baue dann auf diesem server lokal umami auf und binde es ein. 
 
 
 
@@ -121,12 +121,11 @@ config = {
 # - ---done chat darkmode
 # - ---done in notifications direkt auf den chat springen 
 # - ---done bei ältere laden im Chat nicht alles dann verschwinden lassen, bis eine neue Nachricht kommt 
-# - confirm link resent sehe ich als admin nicht
-# - beim kontakt icoon, muss man scjließen können und die email, die geöffnet wird, verschiebt das ganzr Layout der webseite!!!
-# - erwähnen, dass man sich keinen namen geben kann in onboardnig 
-# - links einbauen in onboardning page, damit man direkt das eigene profil findet und die settings 
-# - und die navbar statish lassen, sodass sie nciht vershwidet beim scrollen
-# - bei posts ändern, dass klar ist, dass es alle use sein können, die man hier sieht, nicht nur likeminded people., dort aber auch filter einbauen für themen für posts (gleiche tags?)
+# - ---done beim kontakt icoon, muss man scjließen können und die email, die geöffnet wird, verschiebt das ganzr Layout der webseite!!!
+# - ---done erwähnen, dass man sich keinen namen geben kann in onboardnig 
+# - ---done links einbauen in onboardning page, damit man direkt das eigene profil findet und die settings 
+# - ---done und die navbar statish lassen, sodass sie nciht vershwidet beim scrollen
+# - ---done bei posts ändern, dass klar ist, dass es alle use sein können, die man hier sieht, nicht nur likeminded people., dort aber auch filter einbauen für themen für posts (gleiche tags?)
 # - ---done direkt von start a chat auf den user im chat und dass man back to matches und weiter requesten kannt
 # - ---done eine chat request nochmal senen kännen und auch zkommenurückuziehen können
 # - timeout evtl anpassen

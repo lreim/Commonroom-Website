@@ -4,10 +4,16 @@ body {
   background-color: #f9f5e8;
   color: #2d1d00;
   transition: background-color 0.25s ease, color 0.25s ease;
+  padding-top: 74px;
 }
 
 .navbar,
 .navbar-inverse {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2200;
   background: #5f2f2a;
   border-color: #4a241f;
 }
@@ -15,6 +21,19 @@ body {
 .navbar-inverse .navbar-brand,
 .navbar-inverse .navbar-nav > li > a {
   color: #fff8fb;
+}
+
+.commonroom-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.commonroom-brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex: 0 0 auto;
 }
 
 .navbar-inverse .navbar-nav > li > a:hover,
@@ -63,6 +82,92 @@ body {
 
 .floating-mail-link .glyphicon {
   font-size: 19px;
+}
+
+.floating-contact-panel {
+  position: relative;
+}
+
+.floating-contact-panel summary {
+  list-style: none;
+}
+
+.floating-contact-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.floating-contact-card {
+  position: absolute;
+  right: 0;
+  bottom: 64px;
+  width: 280px;
+  padding: 16px 16px 14px;
+  border: 1px solid #e1c7d3;
+  border-radius: 16px;
+  background: #fff8fb;
+  box-shadow: 0 16px 34px rgba(118, 65, 90, 0.22);
+}
+
+.floating-contact-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: 0;
+  background: transparent;
+  color: #8a3f61;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.floating-contact-card-title {
+  margin-bottom: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #7a3354;
+}
+
+.floating-contact-card-text {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #6b4a57;
+}
+
+.floating-contact-card-link {
+  display: inline-block;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #f7dbe6;
+  color: #8a3f61;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.floating-contact-card-link:hover,
+.floating-contact-card-link:focus {
+  background: #f4cfdd;
+  color: #7a3354;
+  text-decoration: none;
+}
+
+.floating-abuse-panel {
+  position: relative;
+}
+
+.floating-abuse-card {
+  right: 0;
+}
+
+.floating-abuse-card-link {
+  background: #ffe6ec;
+  color: #9a3654;
+}
+
+.floating-abuse-card-link:hover,
+.floating-abuse-card-link:focus {
+  background: #ffd9e4;
+  color: #872a47;
 }
 
 .floating-abuse-link {
@@ -675,6 +780,18 @@ textarea.form-control {
 
 .post-thread-row {
   margin-top: 6px;
+}
+
+.post-thread-branch {
+  margin: 8px 0 12px;
+}
+
+.post-thread-branch summary {
+  list-style: none;
+}
+
+.post-thread-branch summary::-webkit-details-marker {
+  display: none;
 }
 
 .post-thread-root {

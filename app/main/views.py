@@ -1,4 +1,5 @@
 from datetime import datetime, timezone 
+from sqlalchemy import func
 from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
 from .forms import PostForm, EditProfileForm, EditProfileAdminForm
@@ -87,6 +88,23 @@ def post():
 
     if sort_by == 'most_recent':
         post_query = post_query.order_by(Post.timestamp.desc())
+    elif sort_by == 'most_replies':
+        reply_count_subquery = (
+            db.session.query(
+                Post.parent_id.label('root_post_id'),
+                func.count(Post.id).label('reply_count'),
+            )
+            .filter(Post.parent_id.isnot(None))
+            .group_by(Post.parent_id)
+            .subquery()
+        )
+        post_query = (
+            post_query
+            .outerjoin(reply_count_subquery, Post.id == reply_count_subquery.c.root_post_id)
+            .order_by(func.coalesce(reply_count_subquery.c.reply_count, 0).desc(), Post.timestamp.desc())
+        )
+    elif sort_by == 'oldest_first':
+        post_query = post_query.order_by(Post.timestamp.asc())
     else:
         sort_by = 'most_recent'
         post_query = post_query.order_by(Post.timestamp.desc())

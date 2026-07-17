@@ -17,12 +17,24 @@
     This is why it has just a few features and a simple design.
     You should start by:
   </p>
+  {% if current_user.is_authenticated %}
+  <p>
+    Useful shortcuts in case you want to jump there directly:
+    <a href="{{ url_for('main.user', username=current_user.username) }}">your profile</a>,
+    <a href="{{ url_for('main.settings') }}">settings</a>,
+    <a href="{{ url_for('chat.index') }}">chat index</a>,
+    <a href="{{ url_for('main.tag_search') }}">tagsearch</a>,
+    and <a href="{{ url_for('main.post') }}">posts</a>.
+  </p>
+  {% endif %}
 
   <h3>First steps</h3>
   <ol>
     <li>
     <p>
       Register and directly set up your user profile.
+      Your username is generated automatically, so you cannot give yourself your own name here.
+      Once you are in, you can find your profile and settings through the avatar menu at the top right.
     </p></li>
     <li>
     <p>

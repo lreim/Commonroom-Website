@@ -28,28 +28,37 @@
             </a>
         </div>
         <div class="post-body">{{ node.body }}</div>
-        <div class="post-thread-inline-actions">
-            <details class="post-reply-box">
-                <summary>Reply</summary>
-                <form method="post" action="{{ url_for('main.post_thread', post_id=post.id) }}">
-                    {{ form.csrf_token }}
-                    <input type="hidden" name="reply_to_id" value="{{ node.id }}">
-                    {{ form.body(class="form-control", rows="4", placeholder="Write your reply here.", id="reply-body-" ~ node.id) }}
-                    <div class="post-reply-actions">
-                        {{ form.submit(class="btn btn-primary", value="Send reply") }}
-                    </div>
-                </form>
-            </details>
-        </div>
+    </div>
+    <div class="post-side-actions">
+        <details class="post-reply-box" data-reply-toggle>
+            <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
+            <form method="post" action="{{ url_for('main.post_thread', post_id=post.id) }}">
+                {{ form.csrf_token }}
+                <input type="hidden" name="reply_to_id" value="{{ node.id }}">
+                {{ form.body(class="form-control", rows="4", placeholder="Write your reply here.", id="reply-body-" ~ node.id) }}
+                <div class="post-reply-actions">
+                    {{ form.submit(class="btn btn-primary", value="Send reply") }}
+                </div>
+            </form>
+        </details>
     </div>
 </li>
 {% set child_replies = node.replies.order_by(node.__class__.timestamp.asc()).all() %}
 {% if child_replies %}
-<ul class="posts post-thread-children">
-    {% for child in child_replies %}
-        {{ render_post_node(child, form, level + 1) }}
-    {% endfor %}
-</ul>
+<details class="post-thread-branch" data-thread-toggle>
+    <summary
+        class="post-thread-link"
+        data-closed-label="&#8627; {{ child_replies|length }} {% if child_replies|length == 1 %}reply{% else %}replies{% endif %}"
+        data-open-label="Hide replies"
+    >
+        &#8627; {{ child_replies|length }} {% if child_replies|length == 1 %}reply{% else %}replies{% endif %}
+    </summary>
+    <ul class="posts post-thread-children">
+        {% for child in child_replies %}
+            {{ render_post_node(child, form, level + 1) }}
+        {% endfor %}
+    </ul>
+</details>
 {% endif %}
 {%- endmacro %}
 
@@ -70,4 +79,37 @@
 {% block scripts %}
 {{ super() }}
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
+<script>
+document.querySelectorAll('[data-reply-toggle]').forEach(function (replyBox) {
+  var summary = replyBox.querySelector('summary');
+  if (!summary) {
+    return;
+  }
+
+  function syncReplyLabel() {
+    summary.textContent = replyBox.open
+      ? summary.dataset.openLabel
+      : summary.dataset.closedLabel;
+  }
+
+  syncReplyLabel();
+  replyBox.addEventListener('toggle', syncReplyLabel);
+});
+
+document.querySelectorAll('[data-thread-toggle]').forEach(function (threadBox) {
+  var summary = threadBox.querySelector('summary');
+  if (!summary) {
+    return;
+  }
+
+  function syncThreadLabel() {
+    summary.textContent = threadBox.open
+      ? summary.dataset.openLabel
+      : summary.dataset.closedLabel;
+  }
+
+  syncThreadLabel();
+  threadBox.addEventListener('toggle', syncThreadLabel);
+});
+</script>
 {% endblock %}

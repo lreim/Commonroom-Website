@@ -80,7 +80,7 @@
       <div class="form-group">
         <label class="control-label">Tags</label>
         <input id="tag-picker-input" class="form-control" type="text" placeholder="stress, motivation, friends,...">
-        <p class="help-block">Only the developer can create new tags. Search for matching tags or select from existing tags. In case of missing tags, reach out!</p>
+        <p class="help-block">Only the developer can create new tags. Search for matching tags or select from existing tags. In case of missing tags, <a href="mailto:contact@commonroom.ch?subject=Missing%20tags%20%E2%80%94%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">reach out</a>!</p>
       </div>
 
       <h5>Selected Tags</h5>

@@ -63,6 +63,8 @@
         <input type="hidden" name="topics" value="{{ selected_topics }}">
         <select name="sort" style="padding: 12px 16px; font-size: 16px; min-width: 150px;" onchange="this.form.submit()">
             <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Most Recent</option>
+            <option value="most_replies" {% if sort_by == "most_replies" %}selected{% endif %}>Most Replies</option>
+            <option value="oldest_first" {% if sort_by == "oldest_first" %}selected{% endif %}>Oldest First</option>
         </select>
     </form>
 </div>
@@ -104,8 +106,8 @@
             {% endif %}
         </div>
         <div class="post-side-actions">
-            <details class="post-reply-box">
-                <summary>Reply</summary>
+            <details class="post-reply-box" data-reply-toggle>
+                <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
                 <form method="post" action="{{ url_for('main.post') }}">
                     {{ form.hidden_tag() }}
                     <input type="hidden" name="reply_to_id" value="{{ post.id }}">
@@ -130,4 +132,21 @@
 {% block scripts %}
 {{ super() }}
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
+<script>
+document.querySelectorAll('[data-reply-toggle]').forEach(function (replyBox) {
+  var summary = replyBox.querySelector('summary');
+  if (!summary) {
+    return;
+  }
+
+  function syncReplyLabel() {
+    summary.textContent = replyBox.open
+      ? summary.dataset.openLabel
+      : summary.dataset.closedLabel;
+  }
+
+  syncReplyLabel();
+  replyBox.addEventListener('toggle', syncReplyLabel);
+});
+</script>
 {% endblock %}

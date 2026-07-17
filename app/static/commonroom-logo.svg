@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>CommonRoom logo</title>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f7dbe6"/>
+      <stop offset="100%" stop-color="#d99a7f"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="58" fill="url(#bg)" stroke="#5f2f2a" stroke-width="6"/>
+  <circle cx="46" cy="54" r="14" fill="#5f2f2a" opacity="0.9"/>
+  <circle cx="82" cy="54" r="14" fill="#8a3f61" opacity="0.92"/>
+  <path d="M34 83c7-10 17-15 30-15s23 5 30 15" fill="none" stroke="#5f2f2a" stroke-linecap="round" stroke-width="9"/>
+</svg>
