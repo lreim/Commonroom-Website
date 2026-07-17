@@ -141,4 +141,5 @@ config = {
 # - schreibe den IT Leuten der ETH, damit sie meine email domain aus dem Spam nehmen
 # - evtl am Anfang alle email adressen erlauben, damit die Test phase beginnen akann
 # - so ein Feedback Formular einbauen, das vorgefertigtes Formular ist für einfacheres Feedback
-
+# - was ist mit den ersties, die noch keine email adresse der ETH haben? Egal?
+# - noch bei data and privacy tracking erwähnen und lesbarkeit er email bei contaktaufnahme 
