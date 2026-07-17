@@ -129,3 +129,16 @@ config = {
 # - ---done direkt von start a chat auf den user im chat und dass man back to matches und weiter requesten kannt
 # - ---done eine chat request nochmal senen kännen und auch zkommenurückuziehen können
 # - timeout evtl anpassen
+
+
+# - datenbank löschen und logo einfügen und die versteckten emails der user einbauen 
+# - tracking einbauen---no, ist schon auf hetzner drauf 
+# - chat ist 1:1 sagen
+# - page für feedback für die Testphase 
+# - chat request doesnt work
+# - tags ändern 
+# - save setting change --> sagen au fder onboarding seite 
+# - schreibe den IT Leuten der ETH, damit sie meine email domain aus dem Spam nehmen
+# - evtl am Anfang alle email adressen erlauben, damit die Test phase beginnen akann
+# - so ein Feedback Formular einbauen, das vorgefertigtes Formular ist für einfacheres Feedback
+
