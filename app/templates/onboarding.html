@@ -17,16 +17,23 @@
     This is why it has just a few features and a simple design.
     You should start by:
   </p>
-  {% if current_user.is_authenticated %}
   <p>
     Useful shortcuts in case you want to jump there directly:
+    {% if current_user.is_authenticated %}
     <a href="{{ url_for('main.user', username=current_user.username) }}">your profile</a>,
     <a href="{{ url_for('main.settings') }}">settings</a>,
     <a href="{{ url_for('chat.index') }}">chat index</a>,
     <a href="{{ url_for('main.tag_search') }}">tagsearch</a>,
     and <a href="{{ url_for('main.post') }}">posts</a>.
+    {% else %}
+    <a href="{{ url_for('auth.login') }}">sign in</a>,
+    <a href="{{ url_for('main.about') }}">about</a>,
+    <a href="{{ url_for('main.rules') }}">rules</a>,
+    <a href="{{ url_for('main.get_help_now') }}">get help now</a>,
+    and <a href="{{ url_for('main.data_and_privacy') }}">data and privacy</a>.
+    After signing in, you will also find your profile, settings, chat index, tagsearch, and posts from here.
+    {% endif %}
   </p>
-  {% endif %}
 
   <h3>First steps</h3>
   <ol>
