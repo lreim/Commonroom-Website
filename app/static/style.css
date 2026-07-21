@@ -1044,6 +1044,64 @@ textarea.form-control {
 }
 
 @media (max-width: 900px) {
+  .navbar-collapse {
+    max-height: calc(100vh - 74px);
+    overflow-y: auto;
+  }
+
+  .navbar-right-controls {
+    position: static;
+    right: auto;
+    top: auto;
+    z-index: auto;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: end;
+    align-items: start;
+    gap: 10px 12px;
+    margin: 12px 15px 16px;
+    transform: none;
+  }
+
+  .theme-switch {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  .notification-menu {
+    margin-left: 0;
+    justify-self: end;
+  }
+
+  .profile-menu {
+    align-items: flex-end;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .profile-menu-anonymous {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+
+  .profile-top-time {
+    min-width: 0;
+  }
+
+  .notification-menu-dropdown,
+  .profile-menu-dropdown {
+    position: static;
+    right: auto;
+    top: auto;
+    min-width: 0;
+    width: min(280px, calc(100vw - 30px));
+    margin-top: 8px;
+  }
+
+  .profile-menu-dropdown::before {
+    display: none;
+  }
+
   .floating-contact-links {
     right: 16px;
     bottom: 16px;
