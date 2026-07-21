@@ -52,6 +52,7 @@
   const conversationId = Number("{{ conversation.id }}");
   const currentUserId = Number("{{ current_user.id }}");
   const socket = io();
+  const messagesList = document.getElementById("messages");
 
   function formatTimestamp(isoString) {
     const date = new Date(isoString);
@@ -95,13 +96,18 @@
     return li;
   }
 
+  function scrollMessagesToBottom() {
+    messagesList.scrollTop = messagesList.scrollHeight;
+  }
+
   socket.on("connect", () => {
     socket.emit("join_conversation", { conversation_id: conversationId });
   });
 
   socket.on("new_message", (msg) => {
     if (msg.conversation_id !== conversationId) return;
-    document.getElementById("messages").appendChild(createMessageElement(msg));
+    messagesList.appendChild(createMessageElement(msg));
+    scrollMessagesToBottom();
   });
 
   socket.on("chat_error", (payload) => {
@@ -116,6 +122,9 @@
     if (!body) return;
     socket.emit("send_message", { conversation_id: conversationId, body });
     input.value = "";
+    window.requestAnimationFrame(scrollMessagesToBottom);
   });
+
+  scrollMessagesToBottom();
 </script>
 {% endblock %}
