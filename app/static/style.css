@@ -575,7 +575,8 @@ html.theme-toggle-ready .theme-switch {
 }
 
 .profile-menu:hover .profile-menu-dropdown,
-.profile-menu:focus-within .profile-menu-dropdown {
+.profile-menu:focus-within .profile-menu-dropdown,
+.profile-menu.is-open .profile-menu-dropdown {
   display: block;
 }
 
@@ -1044,6 +1045,10 @@ textarea.form-control {
 }
 
 @media (max-width: 900px) {
+  html.chat-detail-page .floating-contact-links {
+    display: none;
+  }
+
   .navbar-collapse {
     max-height: calc(100vh - 74px);
     overflow-y: auto;

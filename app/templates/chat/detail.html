@@ -49,6 +49,7 @@
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
+  document.documentElement.classList.add("chat-detail-page");
   const conversationId = Number("{{ conversation.id }}");
   const currentUserId = Number("{{ current_user.id }}");
   const socket = io();
@@ -97,7 +98,17 @@
   }
 
   function scrollMessagesToBottom() {
+    const lastMessage = messagesList.lastElementChild;
     messagesList.scrollTop = messagesList.scrollHeight;
+    if (lastMessage) {
+      lastMessage.scrollIntoView({ block: "end" });
+    }
+  }
+
+  function scrollMessagesToBottomSoon() {
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(scrollMessagesToBottom);
+    });
   }
 
   socket.on("connect", () => {
@@ -107,7 +118,7 @@
   socket.on("new_message", (msg) => {
     if (msg.conversation_id !== conversationId) return;
     messagesList.appendChild(createMessageElement(msg));
-    scrollMessagesToBottom();
+    scrollMessagesToBottomSoon();
   });
 
   socket.on("chat_error", (payload) => {
@@ -122,9 +133,9 @@
     if (!body) return;
     socket.emit("send_message", { conversation_id: conversationId, body });
     input.value = "";
-    window.requestAnimationFrame(scrollMessagesToBottom);
+    scrollMessagesToBottomSoon();
   });
 
-  scrollMessagesToBottom();
+  scrollMessagesToBottomSoon();
 </script>
 {% endblock %}
