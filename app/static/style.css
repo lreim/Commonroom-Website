@@ -1203,6 +1203,17 @@ textarea.form-control {
   color: #2e1958;
 }
 
+.chat-author-link {
+  color: #337ab7;
+  text-decoration: none;
+}
+
+.chat-author-link:hover,
+.chat-author-link:focus {
+  color: #23527c;
+  text-decoration: underline;
+}
+
 .chat-time {
   margin-left: auto;
   font-size: 10px;
