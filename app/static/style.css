@@ -1049,6 +1049,18 @@ textarea.form-control {
     display: none;
   }
 
+  html.feedback-page .floating-contact-links {
+    display: none;
+  }
+
+  html.feedback-page select.form-control {
+    min-height: 56px;
+    height: auto;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    line-height: 1.35;
+  }
+
   .post {
     flex-wrap: wrap;
   }
