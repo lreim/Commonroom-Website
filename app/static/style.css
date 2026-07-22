@@ -1060,13 +1060,11 @@ textarea.form-control {
     top: auto;
     z-index: auto;
     display: none;
-    grid-template-columns: auto auto auto;
-    grid-template-areas:
-      "time profile switch"
-      "bell bell bell";
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "bell switch time profile";
     justify-content: start;
     justify-items: start;
-    align-items: start;
+    align-items: center;
     gap: 10px 12px;
     margin: 12px 15px 16px;
     padding-top: 6px;
@@ -1108,6 +1106,7 @@ textarea.form-control {
   .profile-top-time {
     grid-area: time;
     min-width: 0;
+    max-width: 100%;
     text-align: left;
   }
 
