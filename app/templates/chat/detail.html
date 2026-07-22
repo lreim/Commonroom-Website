@@ -97,21 +97,22 @@
     return li;
   }
 
-  function scrollMessagesToBottom() {
-    const lastMessage = messagesList.lastElementChild;
-    if (!lastMessage) {
+  function scrollMessageIntoBottom(messageElement) {
+    if (!messageElement) {
       return;
     }
 
-    const targetScrollTop = lastMessage.offsetTop + lastMessage.offsetHeight - messagesList.clientHeight;
+    const targetScrollTop = messageElement.offsetTop + messageElement.offsetHeight - messagesList.clientHeight;
     messagesList.scrollTop = Math.max(targetScrollTop, 0);
   }
 
-  function scrollMessagesToBottomSoon() {
+  function scrollMessageIntoBottomSoon(messageElement) {
     window.requestAnimationFrame(function () {
       window.requestAnimationFrame(function () {
-        scrollMessagesToBottom();
-        window.setTimeout(scrollMessagesToBottom, 30);
+        scrollMessageIntoBottom(messageElement);
+        window.setTimeout(function () {
+          scrollMessageIntoBottom(messageElement);
+        }, 30);
       });
     });
   }
@@ -122,8 +123,9 @@
 
   socket.on("new_message", (msg) => {
     if (msg.conversation_id !== conversationId) return;
-    messagesList.appendChild(createMessageElement(msg));
-    scrollMessagesToBottomSoon();
+    const messageElement = createMessageElement(msg);
+    messagesList.appendChild(messageElement);
+    scrollMessageIntoBottomSoon(messageElement);
   });
 
   socket.on("chat_error", (payload) => {
@@ -138,9 +140,8 @@
     if (!body) return;
     socket.emit("send_message", { conversation_id: conversationId, body });
     input.value = "";
-    scrollMessagesToBottomSoon();
   });
 
-  scrollMessagesToBottomSoon();
+  scrollMessageIntoBottomSoon(messagesList.lastElementChild);
 </script>
 {% endblock %}
