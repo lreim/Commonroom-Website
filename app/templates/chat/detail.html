@@ -99,15 +99,20 @@
 
   function scrollMessagesToBottom() {
     const lastMessage = messagesList.lastElementChild;
-    messagesList.scrollTop = messagesList.scrollHeight;
-    if (lastMessage) {
-      lastMessage.scrollIntoView({ block: "end" });
+    if (!lastMessage) {
+      return;
     }
+
+    const targetScrollTop = lastMessage.offsetTop + lastMessage.offsetHeight - messagesList.clientHeight;
+    messagesList.scrollTop = Math.max(targetScrollTop, 0);
   }
 
   function scrollMessagesToBottomSoon() {
     window.requestAnimationFrame(function () {
-      window.requestAnimationFrame(scrollMessagesToBottom);
+      window.requestAnimationFrame(function () {
+        scrollMessagesToBottom();
+        window.setTimeout(scrollMessagesToBottom, 30);
+      });
     });
   }
 
