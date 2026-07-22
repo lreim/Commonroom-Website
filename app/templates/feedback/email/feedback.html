@@ -1,0 +1,22 @@
+<p>Hello,</p>
+
+<p>new test phase feedback has been submitted on CommonRoom.</p>
+
+<p>
+  <strong>Category:</strong> {{ category }}<br>
+  <strong>Type:</strong> {{ feedback_type }}<br>
+  <strong>Follow-up allowed:</strong> {{ "yes" if allow_follow_up else "no" }}
+</p>
+
+<p>
+  <strong>Submitted by:</strong><br>
+  {% if is_authenticated and user %}
+  Username: {{ user.username }}<br>
+  Email: {{ user.email }}
+  {% else %}
+  Anonymous / not logged in
+  {% endif %}
+</p>
+
+<p><strong>Feedback message:</strong></p>
+<p>{{ message|replace('\n', '<br>')|safe }}</p>

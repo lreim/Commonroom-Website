@@ -2,13 +2,14 @@ from datetime import datetime, timezone
 from sqlalchemy import func
 from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
-from .forms import PostForm, EditProfileForm, EditProfileAdminForm
+from .forms import PostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db
 from ..models import User, Post, Role, Tag
 from ..tag_matching import match_tags, get_model
 from flask_login import login_required, current_user
 from app.decorators import admin_required, permission_required
 from ..models import Permission
+from ..email import send_email
 
 #ATTENTION: with blueprint use main. iinstead of app. 
 
@@ -42,6 +43,28 @@ def rules():
 @main.route('/data-and-privacy')
 def data_and_privacy():
     return render_template('data_and_privacy.html', active_page='data_and_privacy')
+
+
+@main.route('/feedback', methods=['GET', 'POST'])
+def feedback():
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        recipient = current_app.config.get('TALKTO_ADMIN') or 'contact@commonroom.ch'
+        send_email(
+            recipient,
+            'Test phase feedback',
+            'feedback/email/feedback',
+            message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_FEEDBACK'),
+            category=form.category.data,
+            feedback_type=form.feedback_type.data,
+            allow_follow_up=form.allow_follow_up.data,
+            message=form.message.data,
+            is_authenticated=current_user.is_authenticated,
+            user=current_user._get_current_object() if current_user.is_authenticated else None,
+        )
+        flash('Your feedback has been sent. Thanks for helping improve CommonRoom.')
+        return redirect(url_for('main.feedback'))
+    return render_template('feedback.html', form=form, active_page='feedback')
 
 @main.route('/post', methods=['GET', 'POST'])
 @login_required

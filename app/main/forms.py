@@ -15,6 +15,46 @@ class PostForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class FeedbackForm(FlaskForm):
+    category = SelectField(
+        "What is this about?",
+        choices=[
+            ("onboarding", "Onboarding"),
+            ("profile_tags", "Profile and tags"),
+            ("tagsearch", "Tagsearch"),
+            ("chat_requests", "Chat requests"),
+            ("chat", "Chat"),
+            ("posts", "Posts"),
+            ("design_usability", "Design / usability"),
+            ("bug_report", "Bug report"),
+            ("safety_privacy", "Safety / privacy feeling"),
+            ("other", "Something else"),
+        ],
+        validators=[DataRequired()],
+    )
+    feedback_type = SelectField(
+        "How would you describe it?",
+        choices=[
+            ("confusing", "This confused me"),
+            ("annoying", "This was annoying"),
+            ("good", "This felt good"),
+            ("missing", "This felt missing"),
+            ("bug", "This is a bug"),
+            ("other", "Other"),
+        ],
+        validators=[DataRequired()],
+    )
+    allow_follow_up = BooleanField("You may follow up with me if something is unclear.")
+    message = TextAreaField(
+        "Your feedback",
+        validators=[DataRequired(), Length(10, 3000)],
+        render_kw={
+            "placeholder": "What happened, what felt unclear, what worked well, what felt missing, or what would you change?"
+        },
+    )
+    submit = SubmitField("Send feedback")
+
+
 class EditProfileForm(FlaskForm):
     about_me = TextAreaField('About me', render_kw={"placeholder": "I study..., issues I struggle with are..., I have gone through... and can tell something about..."})
     funny_fact = TextAreaField(

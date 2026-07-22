@@ -53,6 +53,7 @@
         <li><a href="{{ url_for('main.about') }}">About</a></li>   <!--in urls, nicht in paths -->
         <li><a href="{{ url_for('main.onboarding') }}">Onboarding</a></li>
         <li><a href="{{ url_for('main.rules') }}">Rules</a></li>
+        <li><a href="{{ url_for('main.feedback') }}">Feedback</a></li>
         {%if current_user.is_authenticated %}    <!--current_user is defined by Flask-Login-->
         <li><a href="{{ url_for('main.tag_search') }}">Tagsearch</a></li>
         <li><a href="{{ url_for('chat.index')}}"> Chats</a></li>

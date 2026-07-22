@@ -19,6 +19,7 @@ class Config:
     POSTMARK_MESSAGE_STREAM_PASSWORD_RESET = os.environ.get('POSTMARK_MESSAGE_STREAM_PASSWORD_RESET', 'password-reset')
     POSTMARK_MESSAGE_STREAM_RESEND_CONFIRMATION = os.environ.get('POSTMARK_MESSAGE_STREAM_RESEND_CONFIRMATION', 'resend-confirmation')
     POSTMARK_MESSAGE_STREAM_ADMIN_REGISTRATION = os.environ.get('POSTMARK_MESSAGE_STREAM_ADMIN_REGISTRATION', 'admin-registration')
+    POSTMARK_MESSAGE_STREAM_FEEDBACK = os.environ.get('POSTMARK_MESSAGE_STREAM_FEEDBACK', 'admin-registration')
     #für Sicherheit bei Nutzung von Login session cookies 
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=20)   #damit man automatisch ausgeloggt werden kann nach einer bestimmten Zeitspanne, 
                                                      # der cookie überträgt login daten von request zu request
@@ -141,4 +142,4 @@ config = {
 # - ---ne evtl am Anfang alle email adressen erlauben, damit die Test phase beginnen akann
 # - so ein Feedback Formular einbauen, das vorgefertigtes Formular ist für einfacheres Feedback
 # - was ist mit den ersties, die noch keine email adresse der ETH haben? Egal?
-# - noch bei data and privacy tracking erwähnen und lesbarkeit er email bei contaktaufnahme 
+# - ---done noch bei data and privacy tracking erwähnen und lesbarkeit er email bei contaktaufnahme 

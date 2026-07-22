@@ -1,0 +1,18 @@
+Hello,
+
+new test phase feedback has been submitted on CommonRoom.
+
+Category: {{ category }}
+Type: {{ feedback_type }}
+Follow-up allowed: {{ "yes" if allow_follow_up else "no" }}
+
+Submitted by:
+{% if is_authenticated and user %}
+Username: {{ user.username }}
+Email: {{ user.email }}
+{% else %}
+Anonymous / not logged in
+{% endif %}
+
+Feedback message:
+{{ message }}
