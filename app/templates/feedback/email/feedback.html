@@ -11,8 +11,7 @@
 <p>
   <strong>Submitted by:</strong><br>
   {% if is_authenticated and user %}
-  Username: {{ user.username }}<br>
-  Email: {{ user.email }}
+  Username: {{ user.username }}
   {% else %}
   Anonymous / not logged in
   {% endif %}
