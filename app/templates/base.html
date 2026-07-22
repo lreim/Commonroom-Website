@@ -210,15 +210,26 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
   const trigger = document.getElementById("notification-menu-trigger");
   const dropdown = document.getElementById("notification-menu-dropdown");
+  const navbar = document.querySelector(".navbar");
   if (!trigger || !dropdown) {
     return;
   }
 
   let hasMarkedSeen = false;
 
+  function syncMobileNavbarExpansion() {
+    if (!navbar || !window.matchMedia("(max-width: 900px)").matches) {
+      return;
+    }
+    const hasProfileOpen = document.querySelector(".profile-menu.is-open");
+    const hasNotificationOpen = dropdown.classList.contains("is-open");
+    navbar.classList.toggle("mobile-controls-expanded", Boolean(hasProfileOpen || hasNotificationOpen));
+  }
+
   function closeMenu() {
     trigger.setAttribute("aria-expanded", "false");
     dropdown.classList.remove("is-open");
+    syncMobileNavbarExpansion();
   }
 
   function openMenu() {
@@ -229,6 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
       trigger.classList.remove("has-unseen");
       fetch(trigger.dataset.markSeenUrl, { headers: { Accept: "application/json" } }).catch(function () {});
     }
+    syncMobileNavbarExpansion();
   }
 
   trigger.addEventListener("click", function (event) {
@@ -252,6 +264,8 @@ document.addEventListener("DOMContentLoaded", function () {
       closeMenu();
     }
   });
+
+  window.addEventListener("resize", syncMobileNavbarExpansion);
 });
 </script>
 <script>
@@ -303,12 +317,24 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
   const profileMenu = document.querySelector(".profile-menu");
   const profileTrigger = profileMenu ? profileMenu.querySelector(".profile-menu-trigger") : null;
+  const navbar = document.querySelector(".navbar");
   if (!profileMenu || !profileTrigger) {
     return;
   }
 
   function isMobileNavbarLayout() {
     return window.matchMedia("(max-width: 900px)").matches;
+  }
+
+  function syncMobileNavbarExpansion() {
+    if (!navbar || !isMobileNavbarLayout()) {
+      if (navbar) {
+        navbar.classList.remove("mobile-controls-expanded");
+      }
+      return;
+    }
+    const hasNotificationOpen = document.getElementById("notification-menu-dropdown")?.classList.contains("is-open");
+    navbar.classList.toggle("mobile-controls-expanded", profileMenu.classList.contains("is-open") || Boolean(hasNotificationOpen));
   }
 
   profileTrigger.addEventListener("click", function (event) {
@@ -323,17 +349,20 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       profileMenu.classList.add("is-open");
     }
+    syncMobileNavbarExpansion();
   });
 
   document.addEventListener("click", function (event) {
     if (!profileMenu.contains(event.target)) {
       profileMenu.classList.remove("is-open");
+      syncMobileNavbarExpansion();
     }
   });
 
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
       profileMenu.classList.remove("is-open");
+      syncMobileNavbarExpansion();
     }
   });
 
@@ -341,6 +370,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!isMobileNavbarLayout()) {
       profileMenu.classList.remove("is-open");
     }
+    syncMobileNavbarExpansion();
   });
 });
 </script>

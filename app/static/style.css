@@ -1049,6 +1049,11 @@ textarea.form-control {
     display: none;
   }
 
+  .navbar.mobile-controls-expanded,
+  .navbar-inverse.mobile-controls-expanded {
+    padding-bottom: 150px;
+  }
+
   .navbar-collapse {
     max-height: calc(100vh - 74px);
     overflow-y: auto;
