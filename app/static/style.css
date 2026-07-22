@@ -1060,12 +1060,12 @@ textarea.form-control {
     top: auto;
     z-index: auto;
     display: none;
-    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-columns: auto auto auto auto;
     grid-template-areas: "bell switch time profile";
     justify-content: start;
     justify-items: start;
     align-items: center;
-    gap: 10px 12px;
+    gap: 8px;
     margin: 12px 15px 16px;
     padding-top: 6px;
     border-top: 1px solid rgba(255, 248, 251, 0.14);
@@ -1086,7 +1086,7 @@ textarea.form-control {
     grid-area: bell;
     margin-left: 0;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: flex-start;
     justify-self: start;
   }
@@ -1113,7 +1113,8 @@ textarea.form-control {
   .notification-menu-dropdown,
   .profile-menu-dropdown {
     min-width: 0;
-    width: min(280px, calc(100vw - 30px));
+    width: auto;
+    max-width: calc(100vw - 30px);
   }
 
   .notification-menu-dropdown {
@@ -1121,7 +1122,8 @@ textarea.form-control {
     right: auto;
     top: auto;
     bottom: auto;
-    margin: 0 0 8px;
+    margin: 8px 0 0;
+    width: min(280px, calc(100vw - 30px));
     max-width: calc(100vw - 30px);
   }
 
@@ -1130,6 +1132,18 @@ textarea.form-control {
     right: auto;
     top: auto;
     margin-top: 8px;
+    min-width: 110px;
+    width: max-content;
+    max-width: 140px;
+    padding: 10px 10px 8px;
+  }
+
+  .profile-menu:focus-within .profile-menu-dropdown {
+    display: none;
+  }
+
+  .profile-menu.is-open .profile-menu-dropdown {
+    display: block;
   }
 
   .profile-menu-dropdown::before {
