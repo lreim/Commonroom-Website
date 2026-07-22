@@ -1640,6 +1640,12 @@ html.dark-mode .profile-label-selector {
   color: #f1ebdd;
 }
 
+html.dark-mode .post-sort-select {
+  background: #d8cfbf;
+  border-color: #b9ad97;
+  color: #2f2418;
+}
+
 html.dark-mode .notification-menu-trigger {
   border-color: #6d5060;
   background: #3c3037;

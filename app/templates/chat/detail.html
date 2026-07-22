@@ -6,6 +6,7 @@
 <div class="chat-page">
   <div class="chat-header">
     <div>
+      <p><a class="btn btn-default" href="{{ url_for('chat.index') }}">Back to chats</a></p>
       <h3>Chat mit {{ user_link(other) }}</h3>
       {% if is_blocked %}
         <p class="chat-block-state">{{ blocked_message }}</p>
