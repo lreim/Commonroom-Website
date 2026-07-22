@@ -1049,31 +1049,48 @@ textarea.form-control {
     display: none;
   }
 
+  .navbar > .container,
+  .navbar-inverse > .container {
+    position: relative;
+    padding-bottom: 60px;
+  }
+
+  .navbar-header {
+    position: relative;
+    min-height: 74px;
+  }
+
   .navbar-collapse {
     max-height: calc(100vh - 74px);
     overflow-y: auto;
+    clear: both;
   }
 
   .navbar-right-controls {
-    position: static;
-    right: auto;
-    top: auto;
-    z-index: auto;
+    position: absolute;
+    top: 8px;
+    right: 50px;
+    z-index: 2100;
     display: grid;
-    grid-template-columns: auto auto;
-    justify-content: end;
+    grid-template-columns: auto auto auto;
+    grid-template-areas:
+      "time profile switch"
+      ". bell .";
+    justify-items: end;
     align-items: start;
-    gap: 10px 12px;
-    margin: 12px 15px 16px;
+    gap: 8px 10px;
+    margin: 0;
     transform: none;
   }
 
   .theme-switch {
-    grid-column: 1 / -1;
+    grid-area: switch;
+    align-self: center;
     justify-self: end;
   }
 
   .notification-menu {
+    grid-area: bell;
     margin-left: 0;
     display: flex;
     flex-direction: column-reverse;
@@ -1082,18 +1099,23 @@ textarea.form-control {
   }
 
   .profile-menu {
+    grid-area: profile;
     align-items: flex-end;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .profile-menu-anonymous {
-    grid-column: 1 / -1;
+    grid-area: time;
     justify-self: end;
   }
 
   .profile-top-time {
+    grid-area: time;
     min-width: 0;
+    max-width: 128px;
+    padding-top: 0;
+    text-align: right;
   }
 
   .notification-menu-dropdown,
@@ -1120,6 +1142,15 @@ textarea.form-control {
 
   .profile-menu-dropdown::before {
     display: none;
+  }
+
+  .profile-top-time-label {
+    font-size: 9px;
+  }
+
+  .profile-top-time-value {
+    font-size: 11px;
+    line-height: 1.25;
   }
 
   .floating-contact-links {
