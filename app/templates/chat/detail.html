@@ -77,9 +77,10 @@
     const meta = document.createElement("div");
     meta.className = "chat-meta";
 
-    const author = document.createElement("span");
+    const author = document.createElement("a");
     author.className = "chat-author";
     author.textContent = msg.author_username;
+    author.href = msg.author_profile_url;
 
     const time = document.createElement("span");
     time.className = "chat-time";

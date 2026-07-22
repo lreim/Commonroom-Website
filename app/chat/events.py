@@ -1,5 +1,6 @@
 from flask_socketio import emit, join_room
 from flask_login import current_user
+from flask import url_for
 
 from .. import socketio, db
 from ..models import Conversation, Message
@@ -57,6 +58,7 @@ def send_message(data):
             "conversation_id": conversation_id,
             "author_id": msg.author_id,
             "author_username": current_user.username,
+            "author_profile_url": url_for("main.user", username=current_user.username),
             "body": msg.body,
             "created_at": msg.created_at.isoformat(),
         },
