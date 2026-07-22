@@ -1049,44 +1049,39 @@ textarea.form-control {
     display: none;
   }
 
-  .navbar > .container,
-  .navbar-inverse > .container {
-    position: relative;
-    padding-bottom: 60px;
-  }
-
-  .navbar-header {
-    position: relative;
-    min-height: 74px;
-  }
-
   .navbar-collapse {
     max-height: calc(100vh - 74px);
     overflow-y: auto;
-    clear: both;
   }
 
   .navbar-right-controls {
-    position: absolute;
-    top: 8px;
-    right: 50px;
-    z-index: 2100;
-    display: grid;
+    position: static;
+    right: auto;
+    top: auto;
+    z-index: auto;
+    display: none;
     grid-template-columns: auto auto auto;
     grid-template-areas:
       "time profile switch"
-      ". bell .";
-    justify-items: end;
+      "bell bell bell";
+    justify-content: start;
+    justify-items: start;
     align-items: start;
-    gap: 8px 10px;
-    margin: 0;
+    gap: 10px 12px;
+    margin: 12px 15px 16px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 248, 251, 0.14);
     transform: none;
+  }
+
+  .navbar-collapse.in .navbar-right-controls {
+    display: grid;
   }
 
   .theme-switch {
     grid-area: switch;
+    justify-self: start;
     align-self: center;
-    justify-self: end;
   }
 
   .notification-menu {
@@ -1094,28 +1089,26 @@ textarea.form-control {
     margin-left: 0;
     display: flex;
     flex-direction: column-reverse;
-    align-items: flex-end;
-    justify-self: end;
+    align-items: flex-start;
+    justify-self: start;
   }
 
   .profile-menu {
     grid-area: profile;
-    align-items: flex-end;
+    align-items: flex-start;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 
   .profile-menu-anonymous {
     grid-area: time;
-    justify-self: end;
+    justify-self: start;
   }
 
   .profile-top-time {
     grid-area: time;
     min-width: 0;
-    max-width: 128px;
-    padding-top: 0;
-    text-align: right;
+    text-align: left;
   }
 
   .notification-menu-dropdown,
@@ -1142,15 +1135,6 @@ textarea.form-control {
 
   .profile-menu-dropdown::before {
     display: none;
-  }
-
-  .profile-top-time-label {
-    font-size: 9px;
-  }
-
-  .profile-top-time-value {
-    font-size: 11px;
-    line-height: 1.25;
   }
 
   .floating-contact-links {

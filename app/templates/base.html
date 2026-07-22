@@ -65,76 +65,76 @@
         <li><a href="{{ url_for('auth.login')}}"> Sign In</a></li>
         {%endif%}
       </ul>
-    </div>
-    <div class="navbar-right-controls">
-      <label class="theme-switch">
-        <input type="checkbox" id="theme-toggle">
-        <span class="theme-slider"></span>
-      </label>
-      {% if current_user.is_authenticated %}
-      <div class="notification-menu">
-        <button
-          type="button"
-          class="notification-menu-trigger{% if has_unseen_notifications %} has-unseen{% endif %}"
-          id="notification-menu-trigger"
-          aria-expanded="false"
-          aria-haspopup="true"
-          data-mark-seen-url="{{ url_for('chat.mark_notifications_seen') }}"
-          title="Activity"
-        >
-          <span class="glyphicon glyphicon-bell" aria-hidden="true"></span>
-          <span class="sr-only">Open notifications</span>
-        </button>
-        <div class="notification-menu-dropdown" id="notification-menu-dropdown">
-          <div class="notification-menu-title">Notifications</div>
-          {% if notification_items %}
-            {% for item in notification_items %}
-            <a
-              href="{{ item.url }}"
-              class="notification-menu-item{% if item.is_new %} is-new{% endif %}"
-            >
-              <span class="notification-menu-item-text">{{ item.text }}</span>
-              <span class="notification-menu-item-time">{{ moment(item.timestamp).fromNow() }}</span>
-            </a>
-            {% endfor %}
-          {% else %}
-            <div class="notification-menu-empty">No new activity right now.</div>
-          {% endif %}
-        </div>
-      </div>
-      <div class="profile-menu">
-        <div class="profile-top-time">
-          <div class="profile-top-time-label">Local date and time</div>
-          <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
-        </div>
-        <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
-          <img
-            src="{{ current_user.gravatar(size=40) }}"
-            alt="{{ current_user.username }}"
-            class="profile-menu-avatar"
+      <div class="navbar-right-controls">
+        <label class="theme-switch">
+          <input type="checkbox" id="theme-toggle">
+          <span class="theme-slider"></span>
+        </label>
+        {% if current_user.is_authenticated %}
+        <div class="notification-menu">
+          <button
+            type="button"
+            class="notification-menu-trigger{% if has_unseen_notifications %} has-unseen{% endif %}"
+            id="notification-menu-trigger"
+            aria-expanded="false"
+            aria-haspopup="true"
+            data-mark-seen-url="{{ url_for('chat.mark_notifications_seen') }}"
+            title="Activity"
           >
-        </a>
-        <div class="profile-menu-dropdown">
-          {% if session_timeout_minutes %}
-          <div
-            id="session-timeout-countdown"
-            class="profile-menu-timeout"
-            data-timeout-minutes="{{ session_timeout_minutes }}"
-          ></div>
-          {% endif %}
-          <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
-          <a href="{{ url_for('main.settings') }}">Settings</a>
-          <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+            <span class="glyphicon glyphicon-bell" aria-hidden="true"></span>
+            <span class="sr-only">Open notifications</span>
+          </button>
+          <div class="notification-menu-dropdown" id="notification-menu-dropdown">
+            <div class="notification-menu-title">Notifications</div>
+            {% if notification_items %}
+              {% for item in notification_items %}
+              <a
+                href="{{ item.url }}"
+                class="notification-menu-item{% if item.is_new %} is-new{% endif %}"
+              >
+                <span class="notification-menu-item-text">{{ item.text }}</span>
+                <span class="notification-menu-item-time">{{ moment(item.timestamp).fromNow() }}</span>
+              </a>
+              {% endfor %}
+            {% else %}
+              <div class="notification-menu-empty">No new activity right now.</div>
+            {% endif %}
+          </div>
         </div>
-      </div>
-      {% else %}
-      <div class="profile-menu profile-menu-anonymous">
-        <div class="profile-top-time">
-          <div class="profile-top-time-label">Local date and time</div>
-          <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+        <div class="profile-menu">
+          <div class="profile-top-time">
+            <div class="profile-top-time-label">Local date and time</div>
+            <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+          </div>
+          <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
+            <img
+              src="{{ current_user.gravatar(size=40) }}"
+              alt="{{ current_user.username }}"
+              class="profile-menu-avatar"
+            >
+          </a>
+          <div class="profile-menu-dropdown">
+            {% if session_timeout_minutes %}
+            <div
+              id="session-timeout-countdown"
+              class="profile-menu-timeout"
+              data-timeout-minutes="{{ session_timeout_minutes }}"
+            ></div>
+            {% endif %}
+            <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
+            <a href="{{ url_for('main.settings') }}">Settings</a>
+            <a href="{{ url_for('auth.logout') }}">Sign Out</a>
+          </div>
         </div>
+        {% else %}
+        <div class="profile-menu profile-menu-anonymous">
+          <div class="profile-top-time">
+            <div class="profile-top-time-label">Local date and time</div>
+            <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+          </div>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
     </div>
   </div>
 </div>
