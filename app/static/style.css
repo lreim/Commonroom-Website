@@ -1095,11 +1095,22 @@ textarea.form-control {
 
   .notification-menu-dropdown,
   .profile-menu-dropdown {
+    min-width: 0;
+    width: min(280px, calc(100vw - 30px));
+  }
+
+  .notification-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: auto;
+    bottom: calc(100% + 8px);
+    margin-top: 0;
+  }
+
+  .profile-menu-dropdown {
     position: static;
     right: auto;
     top: auto;
-    min-width: 0;
-    width: min(280px, calc(100vw - 30px));
     margin-top: 8px;
   }
 

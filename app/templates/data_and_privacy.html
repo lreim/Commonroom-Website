@@ -76,6 +76,7 @@
     Chat data is the most sensitive part of the platform.
     Messages are stored because the chat must still exist when one user is offline and comes back later.
     Chat requests are also stored with their status so that the app can distinguish between pending, accepted, and rejected requests.
+    Each chat is designed as a 1:1 conversation between exactly two users, not as a group chat or public chat room.
   </p>
 
   <p>
@@ -141,6 +142,19 @@
     Also important: the current repository is still a development-oriented setup.
     Some cookie settings that should be stricter in production are not yet hardened in the current config.
     In particular, secure cookie and HTTPS-only deployment settings still need to be enforced properly when the project is deployed for real.
+  </p>
+
+  <h3>Server provider logs and statistics</h3>
+  <p>
+    The platform is hosted on Hetzner infrastructure.
+    This also means that some basic server-side access data can exist at the hosting level, for example in the form of traffic statistics
+    or server and web logs that are relevant for stability, debugging, and security.
+    According to Hetzner's own documentation, this kind of hosting-related logging can include technical request data such as timestamps,
+    requested resources, status codes, referrer information, and browser user-agent data.
+    Hetzner also describes that IP addresses in webserver logs are anonymized there and that statistics tools such as AWStats or Report Magic
+    can be used on hosting level to evaluate log data in aggregated form.
+    This is not the same thing as building additional personal behavior tracking into the platform itself, but it is still part of the technical environment
+    in which the website runs and should therefore be mentioned transparently.
   </p>
 
   <h3>What is not publicly shown</h3>
