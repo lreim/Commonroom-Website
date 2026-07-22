@@ -1493,6 +1493,7 @@ textarea.form-control {
 .chat-search-result-card {
   display: flex;
   align-items: center;
+  flex-direction: column;
   gap: 12px;
   width: 50%;
   min-width: 420px;
@@ -1506,17 +1507,24 @@ textarea.form-control {
 .chat-search-profile-link {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 .chat-search-start-form {
   margin: 0;
   flex: 0 0 auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .chat-request-actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
 }
 
 .chat-start-action-button {
@@ -1531,6 +1539,8 @@ textarea.form-control {
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
+  width: auto;
+  min-width: 0;
 }
 
 .chat-start-action-button:hover {
@@ -1538,8 +1548,9 @@ textarea.form-control {
 }
 
 .chat-request-withdraw-button {
-  width: 100%;
+  width: auto;
   white-space: nowrap;
+  min-width: 0;
 }
 
 @media (max-width: 900px) {
@@ -1640,7 +1651,7 @@ html.dark-mode .profile-label-selector {
   color: #f1ebdd;
 }
 
-html.dark-mode .post-sort-select {
+html.dark-mode .sort-select {
   background: #d8cfbf;
   border-color: #b9ad97;
   color: #2f2418;
