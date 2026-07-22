@@ -1060,10 +1060,10 @@ textarea.form-control {
     top: auto;
     z-index: auto;
     display: none;
-    grid-template-columns: auto auto auto auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-areas: "bell switch time profile";
-    justify-content: start;
-    justify-items: start;
+    justify-content: stretch;
+    justify-items: stretch;
     align-items: center;
     gap: 8px;
     margin: 12px 15px 16px;
@@ -1078,7 +1078,7 @@ textarea.form-control {
 
   .theme-switch {
     grid-area: switch;
-    justify-self: start;
+    justify-self: center;
     align-self: center;
   }
 
@@ -1087,34 +1087,35 @@ textarea.form-control {
     margin-left: 0;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    justify-self: start;
+    align-items: stretch;
+    justify-self: stretch;
   }
 
   .profile-menu {
     grid-area: profile;
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
     gap: 8px;
   }
 
   .profile-menu-anonymous {
     grid-area: time;
-    justify-self: start;
+    justify-self: stretch;
   }
 
   .profile-top-time {
     grid-area: time;
     min-width: 0;
     max-width: 100%;
-    text-align: left;
+    text-align: center;
   }
 
   .notification-menu-dropdown,
   .profile-menu-dropdown {
     min-width: 0;
-    width: auto;
-    max-width: calc(100vw - 30px);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .notification-menu-dropdown {
@@ -1123,8 +1124,7 @@ textarea.form-control {
     top: auto;
     bottom: auto;
     margin: 8px 0 0;
-    width: min(280px, calc(100vw - 30px));
-    max-width: calc(100vw - 30px);
+    width: 100%;
   }
 
   .profile-menu-dropdown {
@@ -1132,10 +1132,15 @@ textarea.form-control {
     right: auto;
     top: auto;
     margin-top: 8px;
-    min-width: 110px;
-    width: max-content;
-    max-width: 140px;
+    min-width: 0;
+    width: 100%;
     padding: 10px 10px 8px;
+  }
+
+  .notification-menu-trigger,
+  .profile-menu-trigger {
+    justify-self: center;
+    align-self: center;
   }
 
   .profile-menu:focus-within .profile-menu-dropdown {
