@@ -739,7 +739,7 @@ html.dark-mode .welcome-logo {
 .welcome-logo-tagline {
   margin: 0 0 30px;
   text-align: center;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  font-family: Georgia, serif;
   font-size: 33px;
   font-style: italic;
   font-weight: 400;
