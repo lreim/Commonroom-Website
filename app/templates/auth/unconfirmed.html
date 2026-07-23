@@ -7,15 +7,25 @@
 <div class="page-header">
     <h1>You are stuck until you confirm your email... :D</h1>
 </div>
-<p>
+
+<div class="reading-page">
+  <p>
+    Your account is not confirmed yet, so some parts of CommonRoom stay locked until you confirm your email address.
+  </p>
+
+  <p>
+    If you want to return to the login page, you can
     <a href="{{ url_for('auth.login') }}">
-        Click here to log in
-    </a>
-</p>
-<p>
-  <a href="{{ url_for('auth.resend_confirmation') }}">
-    Click here to resend a confirmation email.
-  </a>
-</p>
+      click here to log in
+    </a>.
+  </p>
+
+  <p>
+    If the email did not arrive or the link expired, you can
+    <a href="{{ url_for('auth.resend_confirmation') }}">
+      click here to resend a confirmation email
+    </a>.
+  </p>
+</div>
 
 {% endblock %}

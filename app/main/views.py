@@ -49,9 +49,8 @@ def data_and_privacy():
 def feedback():
     form = FeedbackForm()
     if form.validate_on_submit():
-        recipient = current_app.config.get('TALKTO_ADMIN') or 'contact@commonroom.ch'
         send_email(
-            recipient,
+            'contact@commonroom.ch',
             'Test phase feedback',
             'feedback/email/feedback',
             message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_FEEDBACK'),

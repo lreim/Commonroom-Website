@@ -11,7 +11,16 @@
 </div>
 <div class="post-form-wrap">
     {% if current_user.can(Permission.WRITE_ARTICLES) %}
-        {{ wtf.quick_form(form) }}
+        <form method="post" action="{{ url_for('main.post') }}" class="post-compose-form">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.body.label }}
+                {{ form.body(class="form-control", rows="4", placeholder="Write your post here.") }}
+            </div>
+            <div class="post-compose-actions">
+                {{ form.submit(class="btn btn-primary", value="Post") }}
+            </div>
+        </form>
     {% endif %}
 </div>
 

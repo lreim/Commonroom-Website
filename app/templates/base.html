@@ -54,12 +54,16 @@
         <li><a href="{{ url_for('main.onboarding') }}">Onboarding</a></li>
         <li><a href="{{ url_for('main.rules') }}">Rules</a></li>
         <li><a href="{{ url_for('main.feedback') }}">Feedback</a></li>
-        {%if current_user.is_authenticated %}    <!--current_user is defined by Flask-Login-->
+        {%if current_user.is_authenticated and current_user.confirmed %}    <!--current_user is defined by Flask-Login-->
         <li><a href="{{ url_for('main.tag_search') }}">Tagsearch</a></li>
         <li><a href="{{ url_for('chat.index')}}"> Chats</a></li>
         <li><a href="{{ url_for('main.post')}}"> Posts</a></li>
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
+        {%elif current_user.is_authenticated %}
+        <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
+        <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
+        <li><a href="{{ url_for('auth.logout')}}"> Sign Out</a></li>
         {%else%}
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
@@ -71,7 +75,7 @@
           <input type="checkbox" id="theme-toggle">
           <span class="theme-slider"></span>
         </label>
-        {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated and current_user.confirmed %}
         <div class="notification-menu">
           <button
             type="button"
@@ -449,7 +453,7 @@ document.addEventListener("DOMContentLoaded", function () {
       </a>
     </div>
   </details>
-  {% if current_user.is_authenticated %}
+  {% if current_user.is_authenticated and current_user.confirmed %}
   <details class="floating-contact-panel floating-abuse-panel" data-floating-panel>
     <summary
       class="floating-abuse-link"

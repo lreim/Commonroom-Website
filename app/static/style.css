@@ -740,7 +740,7 @@ html.dark-mode .welcome-logo {
   margin: 0 0 30px;
   text-align: center;
   font-family: Georgia, serif;
-  font-size: 33px;
+  font-size: 24px;
   font-style: italic;
   font-weight: 400;
   line-height: 1.25;
@@ -1101,6 +1101,45 @@ html.dark-mode .welcome-logo {
 }
 
 @media (max-width: 1380px) {
+  .navbar-header {
+    float: none;
+  }
+
+  .navbar-toggle {
+    display: block;
+  }
+
+  .navbar-collapse {
+    border-top: 1px solid rgba(255, 248, 251, 0.14);
+    box-shadow: none;
+  }
+
+  .navbar-collapse.collapse {
+    display: none !important;
+  }
+
+  .navbar-collapse.collapse.in {
+    display: block !important;
+  }
+
+  .navbar-nav {
+    float: none !important;
+    margin: 7.5px 0;
+  }
+
+  .navbar-nav > li {
+    float: none;
+  }
+
+  .navbar-nav > li > a {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .navbar-right-controls {
+    clear: both;
+  }
+
   html.chat-detail-page .floating-contact-links {
     display: none;
   }
