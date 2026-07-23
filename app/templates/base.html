@@ -218,6 +218,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let hasMarkedSeen = false;
 
+  function positionNotificationDropdown() {
+    if (!window.matchMedia("(max-width: 1380px)").matches) {
+      dropdown.style.top = "";
+      dropdown.style.left = "";
+      dropdown.style.right = "";
+      return;
+    }
+    const rect = trigger.getBoundingClientRect();
+    dropdown.style.top = `${rect.bottom + 8}px`;
+    dropdown.style.left = `${Math.max(15, rect.left - 8)}px`;
+    dropdown.style.right = "auto";
+  }
+
   function syncMobileNavbarExpansion() {
     if (!navbar || !window.matchMedia("(max-width: 1380px)").matches) {
       return;
@@ -236,6 +249,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function openMenu() {
     trigger.setAttribute("aria-expanded", "true");
     dropdown.classList.add("is-open");
+    positionNotificationDropdown();
     if (!hasMarkedSeen) {
       hasMarkedSeen = true;
       trigger.classList.remove("has-unseen");
@@ -266,7 +280,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  window.addEventListener("resize", syncMobileNavbarExpansion);
+  window.addEventListener("resize", function () {
+    syncMobileNavbarExpansion();
+    if (dropdown.classList.contains("is-open")) {
+      positionNotificationDropdown();
+    }
+  });
 });
 </script>
 <script>
@@ -318,13 +337,27 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
   const profileMenu = document.querySelector(".profile-menu");
   const profileTrigger = profileMenu ? profileMenu.querySelector(".profile-menu-trigger") : null;
+  const profileDropdown = profileMenu ? profileMenu.querySelector(".profile-menu-dropdown") : null;
   const navbar = document.querySelector(".navbar");
-  if (!profileMenu || !profileTrigger) {
+  if (!profileMenu || !profileTrigger || !profileDropdown) {
     return;
   }
 
   function isMobileNavbarLayout() {
     return window.matchMedia("(max-width: 1380px)").matches;
+  }
+
+  function positionProfileDropdown() {
+    if (!isMobileNavbarLayout()) {
+      profileDropdown.style.top = "";
+      profileDropdown.style.left = "";
+      profileDropdown.style.right = "";
+      return;
+    }
+    const rect = profileTrigger.getBoundingClientRect();
+    profileDropdown.style.top = `${rect.bottom + 8}px`;
+    profileDropdown.style.right = `${Math.max(15, window.innerWidth - rect.right - 8)}px`;
+    profileDropdown.style.left = "auto";
   }
 
   function syncMobileNavbarExpansion() {
@@ -349,6 +382,7 @@ document.addEventListener("DOMContentLoaded", function () {
       profileMenu.classList.remove("is-open");
     } else {
       profileMenu.classList.add("is-open");
+      positionProfileDropdown();
     }
     syncMobileNavbarExpansion();
   });
@@ -372,6 +406,9 @@ document.addEventListener("DOMContentLoaded", function () {
       profileMenu.classList.remove("is-open");
     }
     syncMobileNavbarExpansion();
+    if (profileMenu.classList.contains("is-open")) {
+      positionProfileDropdown();
+    }
   });
 });
 </script>

@@ -33,10 +33,12 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
+  overflow: hidden;
   flex: 0 0 auto;
   display: block;
   object-fit: cover;
   object-position: center;
+  clip-path: circle(50% at 50% 50%);
   transform: scale(1.25);
   transform-origin: center;
 }
@@ -721,8 +723,12 @@ textarea.form-control {
 
 .welcome-logo {
   width: min(390px, 84vw);
-  height: auto;
+  aspect-ratio: 1 / 1;
   display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  clip-path: circle(50% at 50% 50%);
   filter: drop-shadow(0 12px 28px rgba(255, 248, 239, 0.95));
 }
 
@@ -1130,7 +1136,7 @@ html.dark-mode .welcome-logo {
 
   .navbar.mobile-controls-expanded,
   .navbar-inverse.mobile-controls-expanded {
-    padding-bottom: 460px;
+    padding-bottom: 0;
   }
 
   .navbar-collapse {
@@ -1214,23 +1220,25 @@ html.dark-mode .welcome-logo {
   }
 
   .notification-menu-dropdown {
-    position: absolute;
-    left: 0;
-    top: calc(100% + 8px);
+    position: fixed;
+    left: 15px;
+    top: 0;
     bottom: auto;
     margin: 0;
     width: min(260px, calc(100vw - 30px));
+    z-index: 2600;
   }
 
   .profile-menu-dropdown {
-    position: absolute;
-    right: 0;
-    top: calc(100% + 8px);
+    position: fixed;
+    right: 15px;
+    top: 0;
     margin-top: 0;
     min-width: 0;
     width: max-content;
     max-width: min(180px, calc(100vw - 30px));
     padding: 10px 10px 8px;
+    z-index: 2600;
   }
 
   .notification-menu-trigger,
