@@ -143,3 +143,6 @@ config = {
 # - so ein Feedback Formular einbauen, das vorgefertigtes Formular ist für einfacheres Feedback
 # - was ist mit den ersties, die noch keine email adresse der ETH haben? Egal?
 # - ---done noch bei data and privacy tracking erwähnen und lesbarkeit er email bei contaktaufnahme 
+
+
+# - schreibe der Nightline, dem VMP/VSETH, dem SPH, Chats, Flyer, in Bibs aushängen, Freunde raufholen,

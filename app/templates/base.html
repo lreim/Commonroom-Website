@@ -41,7 +41,7 @@
       </button>
       <a class="navbar-brand commonroom-brand" href="/">
         <img
-          src="{{ url_for('static', filename='Logo_Website_CommonRoom.png') }}"
+          src="{{ url_for('static', filename='Logo_Website_small.jpg') }}"
           alt="CommonRoom logo"
           class="commonroom-brand-logo"
         >
@@ -102,11 +102,11 @@
             {% endif %}
           </div>
         </div>
+        <div class="profile-top-time">
+          <div class="profile-top-time-label">Local date and time</div>
+          <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
+        </div>
         <div class="profile-menu">
-          <div class="profile-top-time">
-            <div class="profile-top-time-label">Local date and time</div>
-            <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
-          </div>
           <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
             <img
               src="{{ current_user.gravatar(size=40) }}"
@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let hasMarkedSeen = false;
 
   function syncMobileNavbarExpansion() {
-    if (!navbar || !window.matchMedia("(max-width: 900px)").matches) {
+    if (!navbar || !window.matchMedia("(max-width: 1380px)").matches) {
       return;
     }
     const hasProfileOpen = document.querySelector(".profile-menu.is-open");
@@ -324,7 +324,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function isMobileNavbarLayout() {
-    return window.matchMedia("(max-width: 900px)").matches;
+    return window.matchMedia("(max-width: 1380px)").matches;
   }
 
   function syncMobileNavbarExpansion() {

@@ -221,7 +221,8 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  margin-left: 30px;
+  margin-left: 8px;
+  margin-right: -30px;
 }
 
 .notification-menu-trigger {
@@ -702,11 +703,14 @@ textarea.form-control {
 .reading-page {
   font-size: 16px;
   line-height: 1.65;
-  margin-top: 96px;
 }
 
 .reading-page p {
   margin-bottom: 18px;
+}
+
+.welcome-reading-page {
+  margin-top: 96px;
 }
 
 .welcome-logo-wrap {
@@ -723,9 +727,7 @@ textarea.form-control {
 }
 
 html.dark-mode .welcome-logo {
-  filter:
-    drop-shadow(0 8px 16px rgba(255, 248, 239, 0.72))
-    drop-shadow(0 10px 14px rgba(0, 0, 0, 0.26));
+  filter: none;
 }
 
 .welcome-logo-tagline {
@@ -1092,7 +1094,7 @@ html.dark-mode .welcome-logo {
   margin: 20px 0 28px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1380px) {
   html.chat-detail-page .floating-contact-links {
     display: none;
   }
@@ -1128,12 +1130,18 @@ html.dark-mode .welcome-logo {
 
   .navbar.mobile-controls-expanded,
   .navbar-inverse.mobile-controls-expanded {
-    padding-bottom: 320px;
+    padding-bottom: 460px;
   }
 
   .navbar-collapse {
     max-height: calc(100vh - 74px);
     overflow-y: auto;
+  }
+
+  .navbar.mobile-controls-expanded .navbar-collapse,
+  .navbar-inverse.mobile-controls-expanded .navbar-collapse {
+    max-height: none;
+    overflow: visible;
   }
 
   .navbar-right-controls {
@@ -1145,7 +1153,7 @@ html.dark-mode .welcome-logo {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     grid-template-areas: "bell switch time profile";
     justify-content: stretch;
-    justify-items: stretch;
+    justify-items: center;
     align-items: center;
     gap: 8px;
     margin: 12px 15px 16px;
@@ -1171,20 +1179,22 @@ html.dark-mode .welcome-logo {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-self: stretch;
+    justify-self: center;
   }
 
   .profile-menu {
     grid-area: profile;
     position: relative;
+    display: flex;
     align-items: center;
     flex-direction: column;
     gap: 8px;
+    justify-self: center;
   }
 
   .profile-menu-anonymous {
     grid-area: time;
-    justify-self: stretch;
+    justify-self: center;
   }
 
   .profile-top-time {
@@ -1192,6 +1202,7 @@ html.dark-mode .welcome-logo {
     min-width: 0;
     max-width: 100%;
     text-align: center;
+    justify-self: center;
   }
 
   .notification-menu-dropdown,
@@ -1632,7 +1643,7 @@ html.dark-mode .welcome-logo {
   min-width: 0;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1380px) {
   .chat-search-layout {
     grid-template-columns: 1fr;
   }
@@ -1763,30 +1774,6 @@ html.dark-mode .notification-menu-item:focus {
 html.dark-mode .notification-menu-item.is-new {
   border-color: #4e7056;
   background: #253228;
-}
-
-html.dark-mode .floating-mail-link {
-  background: #745546;
-  border-color: #b69381;
-  color: #fff3ea;
-}
-
-html.dark-mode .floating-mail-link:hover,
-html.dark-mode .floating-mail-link:focus {
-  background: #866352;
-  color: #fff8f2;
-}
-
-html.dark-mode .floating-abuse-link {
-  background: #745546;
-  border-color: #b69381;
-  color: #fff3ea;
-}
-
-html.dark-mode .floating-abuse-link:hover,
-html.dark-mode .floating-abuse-link:focus {
-  background: #866352;
-  color: #fff8f2;
 }
 
 html.dark-mode .chat-request-compose-help {
