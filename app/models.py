@@ -328,66 +328,6 @@ class User(UserMixin, db.Model):
         seed = str(self.id) if self.id is not None else (self.username or self.email or 'anonymous')
         return f'https://api.dicebear.com/9.x/thumbs/svg?seed={seed}&size={size}'
     
-    #generate fake users  (nur für development)
-    @staticmethod
-    def generate_fake(count=100):
-        from sqlalchemy.exc import IntegrityError
-        from random import seed, randint, sample, choice
-        import forgery_py
-
-        tag_pool = [
-            'uni life', 'campus life', 'exam stress', 'exam anxiety', 'finals pressure',
-            'study strategy', 'study planning', 'focus', 'concentration', 'procrastination',
-            'mental load', 'overthinking', 'self doubt', 'motivation', 'burnout',
-            'stress management', 'sleep issues', 'loneliness', 'homesickness',
-            'friendship', 'making friends', 'social anxiety', 'belonging',
-            'time management', 'work life balance', 'financial stress', 'relationship stress',
-            'career uncertainty', 'imposter syndrome', 'panic feelings',
-            'emotional support', 'coping skills', 'perfectionism', 'decision fatigue',
-            'fear of failure', 'presentation anxiety', 'thesis stress', 'lab stress',
-            'group projects', 'deadline pressure', 'feeling behind', 'lack of structure',
-            'messy routine', 'conflict with flatmates', 'family pressure', 'breakups',
-            'dating', 'body image', 'digital overload', 'phone addiction',
-            'low energy', 'seasonal blues'
-        ]
-        intro_pool = [
-            'Trying to navigate university life and stay mentally balanced.',
-            'Looking for honest conversations about study pressure and personal growth.',
-            'I like exchanging practical strategies for exams and focus.',
-            'Interested in supportive communities and meaningful friendships on campus.',
-            'Sharing real experiences about stress, doubt, and motivation.',
-            'Building better habits for learning, structure, and wellbeing.'
-        ]
-        challenge_pool = [
-            'Current challenge: managing exam anxiety and staying consistent with study plans.',
-            'Current challenge: balancing social life, deadlines, and sleep.',
-            'Current challenge: reducing procrastination and keeping focus during long sessions.',
-            'Current challenge: handling self-doubt and pressure before assessments.',
-            'Current challenge: finding belonging and better peer connections at university.',
-            'Current challenge: coping with overwhelm while trying to stay motivated.'
-        ]
-        label_pool = [choice[0] for choice in User.PROFILE_LABEL_CHOICES]
-
-        seed()
-        for i in range(count):
-            chosen_tags = sample(tag_pool, randint(4, 7))
-            about_line = f"{choice(intro_pool)} {choice(challenge_pool)} Interests: {', '.join(chosen_tags)}."
-            chosen_labels = sample(label_pool, randint(1, min(3, len(label_pool))))
-            u = User(email=forgery_py.internet.email_address(),
-                    username=User.generate_username(),
-                    password=forgery_py.lorem_ipsum.word(),
-                    confirmed=True,
-                    about_me=about_line,
-                    member_since=forgery_py.date.date(True))
-            db.session.add(u)
-            u.set_tags_from_string(', '.join(chosen_tags), allow_create=True)
-            u.set_profile_labels(chosen_labels)
-            try:
-                db.session.commit()
-            except IntegrityError:
-                db.session.rollback()
-
-    
 @login_manager.user_loader      #loads user given the identifier 
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -428,27 +368,6 @@ class Post(db.Model):
     @property
     def is_reply(self):
         return self.parent_id is not None
-
-    @staticmethod
-    def generate_fake(count=100):
-        from random import seed, randint
-        from datetime import datetime, timezone
-        import forgery_py
-
-        seed()
-        user_count = User.query.count()
-        if user_count == 0:
-            return
-
-        for _ in range(count):
-            u = User.query.offset(randint(0, user_count - 1)).first()
-            p = Post(
-                body=forgery_py.lorem_ipsum.sentences(randint(1, 3)),
-                timestamp=datetime.now(timezone.utc),
-                author=u
-            )
-            db.session.add(p)
-        db.session.commit()
 
 class Conversation(db.Model):
     __tablename__ = "conversations"
@@ -552,19 +471,31 @@ class Tag(db.Model):
     @staticmethod
     def seed_defaults():
         tag_pool = [
-            'uni life', 'campus life', 'exam stress', 'exam anxiety', 'finals pressure',
-            'study strategy', 'study planning', 'focus', 'concentration', 'procrastination',
-            'mental load', 'overthinking', 'self doubt', 'motivation', 'burnout', 'imposter syndrome',
-            'stress management', 'sleep issues', 'loneliness', 'homesickness',
-            'friendship', 'making friends', 'social anxiety', 'belonging',
-            'time management', 'work life balance', 'financial stress', 'relationship stress',
-            'career uncertainty', 'panic feelings', 'household', 'finding internships',
-            'emotional support', 'coping skills', 'perfectionism', 'decision fatigue',
-            'fear of failure', 'presentation anxiety', 'thesis stress', 'lab stress',
-            'group projects', 'deadline pressure', 'feeling behind', 'lack of structure',
-            'messy routine', 'conflict with flatmates', 'family pressure', 'breakups',
-            'dating', 'body image', 'digital overload', 'phone addiction',
-            'low energy', 'seasonal blues'
+            # Academic pressure and study process
+            'exam stress', 'exam anxiety', 'finals pressure', 'study strategy',
+            'study planning', 'focus', 'concentration', 'procrastination', 'time management',
+            'thesis stress', 'master thesis pressure', 'phd pressure', 'lab stress',
+            'group projects', 'deadline pressure', 'presentation anxiety',
+            'oral exam anxiety', 'academic pressure', 'finding internships',
+            'feeling behind', 'fear of failure', 'career uncertainty',
+
+            # Mental and emotional struggles
+            'mental load', 'overthinking', 'self doubt', 'motivation', 'burnout',
+            'study burnout', 'imposter syndrome', 'panic feelings', 'stress management',
+            'coping skills', 'perfectionism', 'decision fatigue', 'sleep issues',
+            'low energy', 'restlessness', 'morning anxiety', 'depressive thoughts',
+            'anxiety spirals', 'grief', 'self worth', 'guilt', 'shame',
+            'emotional numbness', 'constant comparison', 'fear of the future',
+            'fear of disappointing others', 'difficulty asking for help',
+
+            # Social and belonging-related struggles
+            'loneliness', 'homesickness', 'social anxiety', 'belonging',
+            'emotional support', 'isolation', 'family pressure',
+
+            # Daily life and environment
+            'work life balance', 'financial stress', 'lack of structure',
+            'messy routine', 'conflict with flatmates', 'household',
+            'digital overload', 'phone addiction', 'body image', 'seasonal blues'
         ]
 
         for name in tag_pool:

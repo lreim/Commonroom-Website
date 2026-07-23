@@ -9,6 +9,9 @@ def canonicalize_eth_email(email):
     email = User.canonicalize_eth_email(email)
     if not email or "@" not in email:
         raise ValidationError("Please use a valid email address.")
+    domain = email.split("@", 1)[1]
+    if domain != "ethz.ch":
+        raise ValidationError("Please use a valid ETH email address.")
     return email
 
 

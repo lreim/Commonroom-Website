@@ -24,7 +24,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=20)   #damit man automatisch ausgeloggt werden kann nach einer bestimmten Zeitspanne, 
                                                      # der cookie überträgt login daten von request zu request
     REMEMBER_COOKIE_DURATION = timedelta(days=7)        # cookie, der den user wiedererkennt, wenn remember_me aktiviert wurde, damit man sich nicht einloggen muss.
-    REMEMBER_COOKIE_HTTPONLY = False #True für Deploy!!!!!# !!!!!!!!!!!!!!!!!!!!!!
+    REMEMBER_COOKIE_HTTPONLY = True #True für Deploy!!!!!# !!!!!!!!!!!!!!!!!!!!!!
     REMEMBER_COOKIE_SECURE = False
     REMEMBER_COOKIE_SAMESITE = "Lax"
 
