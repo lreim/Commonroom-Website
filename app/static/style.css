@@ -30,10 +30,15 @@ body {
 }
 
 .commonroom-brand-logo {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   flex: 0 0 auto;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.25);
+  transform-origin: center;
 }
 
 .navbar-inverse .navbar-nav > li > a:hover,
@@ -65,18 +70,18 @@ body {
   justify-content: center;
   width: 52px;
   height: 52px;
-  border: 1px solid #d9b7c6;
+  border: 1px solid #ddc8bb;
   border-radius: 50%;
-  background: #f7dbe6;
-  color: #8a3f61;
-  box-shadow: 0 10px 22px rgba(118, 65, 90, 0.18);
+  background: #f4e3d8;
+  color: #7b5a49;
+  box-shadow: 0 10px 22px rgba(124, 96, 78, 0.18);
   text-decoration: none;
 }
 
 .floating-mail-link:hover,
 .floating-mail-link:focus {
-  background: #f4cfdd;
-  color: #7a3354;
+  background: #efd9cc;
+  color: #6d4d3e;
   text-decoration: none;
 }
 
@@ -138,16 +143,16 @@ body {
   display: inline-block;
   padding: 9px 12px;
   border-radius: 10px;
-  background: #f7dbe6;
-  color: #8a3f61;
+  background: #f4e3d8;
+  color: #7b5a49;
   font-weight: 600;
   text-decoration: none;
 }
 
 .floating-contact-card-link:hover,
 .floating-contact-card-link:focus {
-  background: #f4cfdd;
-  color: #7a3354;
+  background: #efd9cc;
+  color: #6d4d3e;
   text-decoration: none;
 }
 
@@ -160,14 +165,14 @@ body {
 }
 
 .floating-abuse-card-link {
-  background: #ffe6ec;
-  color: #9a3654;
+  background: #f4e3d8;
+  color: #7b5a49;
 }
 
 .floating-abuse-card-link:hover,
 .floating-abuse-card-link:focus {
-  background: #ffd9e4;
-  color: #872a47;
+  background: #efd9cc;
+  color: #6d4d3e;
 }
 
 .floating-abuse-link {
@@ -176,18 +181,18 @@ body {
   gap: 8px;
   height: 52px;
   padding: 0 14px;
-  border: 1px solid #e3b1be;
+  border: 1px solid #ddc8bb;
   border-radius: 999px;
-  background: #ffe6ec;
-  color: #9a3654;
-  box-shadow: 0 10px 22px rgba(118, 65, 90, 0.18);
+  background: #f4e3d8;
+  color: #7b5a49;
+  box-shadow: 0 10px 22px rgba(124, 96, 78, 0.18);
   text-decoration: none;
 }
 
 .floating-abuse-link:hover,
 .floating-abuse-link:focus {
-  background: #ffd9e4;
-  color: #872a47;
+  background: #efd9cc;
+  color: #6d4d3e;
   text-decoration: none;
 }
 
@@ -681,13 +686,56 @@ textarea.form-control {
   width: 1px;
 }
 
+.welcome-hero {
+  min-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 42px 0 120px;
+}
+
+.welcome-hero-header {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 .reading-page {
   font-size: 16px;
   line-height: 1.65;
+  margin-top: 96px;
 }
 
 .reading-page p {
   margin-bottom: 18px;
+}
+
+.welcome-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 54px 0 30px;
+}
+
+.welcome-logo {
+  width: min(390px, 84vw);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 12px 28px rgba(255, 248, 239, 0.95));
+}
+
+html.dark-mode .welcome-logo {
+  filter:
+    drop-shadow(0 8px 16px rgba(255, 248, 239, 0.72))
+    drop-shadow(0 10px 14px rgba(0, 0, 0, 0.26));
+}
+
+.welcome-logo-tagline {
+  margin: 0 0 30px;
+  text-align: center;
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  font-size: 33px;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.25;
 }
 
 .sidebar-footer {
@@ -1718,27 +1766,27 @@ html.dark-mode .notification-menu-item.is-new {
 }
 
 html.dark-mode .floating-mail-link {
-  background: #5b2f42;
-  border-color: #8a5670;
-  color: #ffe5ef;
+  background: #745546;
+  border-color: #b69381;
+  color: #fff3ea;
 }
 
 html.dark-mode .floating-mail-link:hover,
 html.dark-mode .floating-mail-link:focus {
-  background: #6c3950;
-  color: #fff0f6;
+  background: #866352;
+  color: #fff8f2;
 }
 
 html.dark-mode .floating-abuse-link {
-  background: #6a2c3f;
-  border-color: #a35f77;
-  color: #ffe5ef;
+  background: #745546;
+  border-color: #b69381;
+  color: #fff3ea;
 }
 
 html.dark-mode .floating-abuse-link:hover,
 html.dark-mode .floating-abuse-link:focus {
-  background: #7a3349;
-  color: #fff0f6;
+  background: #866352;
+  color: #fff8f2;
 }
 
 html.dark-mode .chat-request-compose-help {
