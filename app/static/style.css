@@ -38,8 +38,8 @@ body {
   display: block;
   object-fit: cover;
   object-position: center;
-  clip-path: circle(50% at 50% 50%);
-  transform: scale(1.25);
+  clip-path: circle(42% at 50% 50%);
+  transform: scale(1.35);
   transform-origin: center;
 }
 
@@ -728,7 +728,7 @@ textarea.form-control {
   border-radius: 50%;
   object-fit: cover;
   object-position: center;
-  clip-path: circle(50% at 50% 50%);
+  clip-path: circle(42% at 50% 50%);
   filter: drop-shadow(0 12px 28px rgba(255, 248, 239, 0.95));
 }
 
