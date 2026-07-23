@@ -1,5 +1,10 @@
 (function () {
   let globalPreviewCard = null;
+  let activeMobilePreviewLink = null;
+
+  function isMobilePreviewMode() {
+    return window.matchMedia("(max-width: 1380px)").matches;
+  }
 
   function ensureGlobalPreviewCard() {
     if (globalPreviewCard) return globalPreviewCard;
@@ -22,6 +27,10 @@
     if (!globalPreviewCard) return;
     globalPreviewCard.style.display = "none";
     globalPreviewCard.innerHTML = "";
+    if (activeMobilePreviewLink) {
+      activeMobilePreviewLink.removeAttribute("data-preview-open");
+      activeMobilePreviewLink = null;
+    }
   }
 
   function showGlobalPreviewCard(user, evt) {
@@ -82,6 +91,23 @@
       link.addEventListener("mouseenter", (evt) => showGlobalPreviewCard(user, evt));
       link.addEventListener("mousemove", positionGlobalPreviewCard);
       link.addEventListener("mouseleave", hideGlobalPreviewCard);
+      link.addEventListener("click", function (evt) {
+        if (!isMobilePreviewMode()) {
+          return;
+        }
+        if (activeMobilePreviewLink === link) {
+          return;
+        }
+        evt.preventDefault();
+        evt.stopPropagation();
+        hideGlobalPreviewCard();
+        activeMobilePreviewLink = link;
+        link.setAttribute("data-preview-open", "true");
+        showGlobalPreviewCard(user, {
+          clientX: evt.clientX || link.getBoundingClientRect().left,
+          clientY: evt.clientY || link.getBoundingClientRect().bottom
+        });
+      });
     });
   }
 
@@ -408,6 +434,23 @@
               link.addEventListener("mouseenter", (evt) => showPreviewCard(u, evt));
               link.addEventListener("mousemove", positionPreviewCard);
               link.addEventListener("mouseleave", hidePreviewCard);
+              link.addEventListener("click", function (evt) {
+                if (!isMobilePreviewMode()) {
+                  return;
+                }
+                if (activeMobilePreviewLink === link) {
+                  return;
+                }
+                evt.preventDefault();
+                evt.stopPropagation();
+                hidePreviewCard();
+                activeMobilePreviewLink = link;
+                link.setAttribute("data-preview-open", "true");
+                showPreviewCard(u, {
+                  clientX: evt.clientX || link.getBoundingClientRect().left,
+                  clientY: evt.clientY || link.getBoundingClientRect().bottom
+                });
+              });
             }
 
             item.appendChild(link);
@@ -478,5 +521,24 @@
   document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll("[data-tag-widget]").forEach(initTagWidget);
     bindProfilePreviewLinks();
+  });
+
+  document.addEventListener("click", function (evt) {
+    if (!isMobilePreviewMode()) {
+      return;
+    }
+    if (
+      activeMobilePreviewLink &&
+      !activeMobilePreviewLink.contains(evt.target) &&
+      !(globalPreviewCard && globalPreviewCard.contains(evt.target))
+    ) {
+      hideGlobalPreviewCard();
+    }
+  });
+
+  window.addEventListener("resize", function () {
+    if (!isMobilePreviewMode()) {
+      hideGlobalPreviewCard();
+    }
   });
 })();
