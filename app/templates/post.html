@@ -10,18 +10,16 @@
     </h4>
 </div>
 <div class="post-form-wrap">
-    {% if current_user.can(Permission.WRITE_ARTICLES) %}
-        <form method="post" action="{{ url_for('main.post') }}" class="post-compose-form">
-            {{ form.hidden_tag() }}
-            <div class="form-group">
-                {{ form.body.label }}
-                {{ form.body(class="form-control", rows="4", placeholder="Write your post here.") }}
-            </div>
-            <div class="post-compose-actions">
-                {{ form.submit(class="btn btn-primary", value="Post") }}
-            </div>
-        </form>
-    {% endif %}
+    <form method="post" action="{{ url_for('main.post') }}" class="post-compose-form">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.body.label }}
+            {{ form.body(class="form-control", rows="4", placeholder="Write your post here.") }}
+        </div>
+        <div class="post-compose-actions">
+            {{ form.submit(class="btn btn-primary", value="Post") }}
+        </div>
+    </form>
 </div>
 
 <details

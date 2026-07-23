@@ -70,7 +70,7 @@ def feedback():
 def post():
     form = PostForm()
     reply_to_id = request.form.get('reply_to_id', type=int)
-    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
+    if form.validate_on_submit():
         parent_post = None
         if reply_to_id:
             parent_post = Post.query.get_or_404(reply_to_id)
