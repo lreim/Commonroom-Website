@@ -127,6 +127,11 @@
     Mobile visits: {{ device_stats.mobile }}. Desktop visits: {{ device_stats.desktop }}.
   </p>
 
+  <h3>Access type split</h3>
+  <p>
+    Logged-in visits: {{ auth_stats.logged_in }}. Public visits: {{ auth_stats.public }}.
+  </p>
+
   {% if page_stats %}
   <div class="table-responsive">
     <table class="table">

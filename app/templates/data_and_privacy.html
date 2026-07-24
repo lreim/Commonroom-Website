@@ -173,6 +173,13 @@
   </p>
 
   <p>
+    Just as important is what is not stored there.
+    This internal analytics is not designed to collect message content, profile text content, tag-search input, email addresses,
+    passwords, abuse-report text, contact-form text, or private chat metadata at the level of individual conversation content.
+    It also does not create a personal dossier about a user's thoughts, problems, or support requests.
+  </p>
+
+  <p>
     Some basic safeguards are built into this tracking route as well.
     It only accepts the predefined tracked pages, checks that the request comes from the same origin,
     rejects path / page-key combinations that do not fit together, limits the stored duration to a reasonable maximum,
@@ -187,8 +194,27 @@
   </p>
 
   <p>
+    That also means that I am not using this analytics to identify individuals through IP-based tracking,
+    fingerprinting, cross-site profiling, advertising logic, or hidden personal behavior scoring.
+    The point of the analytics is simply to understand which core pages are used, whether usage comes more from public or logged-in access,
+    and whether the platform is being used more from mobile or desktop contexts.
+  </p>
+
+  <p>
     In addition, administrator / host visits are excluded from the visible analytics evaluation,
     so that the operator's own testing and maintenance behavior does not distort the usage overview shown there.
+  </p>
+
+  <p>
+    The visible analytics overview can also distinguish between public visits and visits from logged-in accounts.
+    That distinction is based on whether a stored internal user id is attached to the visit record, not on public identity display or IP-based tracking.
+  </p>
+
+  <p>
+    In practice, the analytics is used as an aggregated product-health view, not as a tool to exploit user vulnerability or curiosity.
+    It is there to answer questions such as whether onboarding is being opened, whether people find the rules page,
+    whether the chat area is used, or whether most visits come from mobile devices.
+    It is not there to mine sensitive personal patterns out of users who come here for support.
   </p>
 
   <h3>Feedback and anonymity during the test phase</h3>

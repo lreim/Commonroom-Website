@@ -631,6 +631,11 @@ def analytics():
         if row.device_type in device_stats:
             device_stats[row.device_type] = int(row.visit_count or 0)
 
+    auth_stats = {
+        "logged_in": _tracked_page_visits_query().filter(PageVisit.user_id.isnot(None)).count(),
+        "public": _tracked_page_visits_query().filter(PageVisit.user_id.is_(None)).count(),
+    }
+
     root_post_count = Post.query.filter(Post.parent_id.is_(None)).count()
     reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
     conversation_count = Conversation.query.count()
@@ -642,6 +647,7 @@ def analytics():
         active_page=None,
         page_stats=page_stats,
         device_stats=device_stats,
+        auth_stats=auth_stats,
         visit_timeline=visit_timeline,
         selected_range=visit_timeline["range_key"],
         tracked_page_count=len(page_stats),
