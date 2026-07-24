@@ -180,6 +180,12 @@
     That does not make it mathematically impossible to manipulate, but it is meant to keep the tracking narrow, lightweight, and harder to pollute accidentally.
   </p>
 
+  <p>
+    Also important: this internal analytics currently counts visits, not unique persons.
+    This means that the same user can appear multiple times in the statistics if they visit the same page repeatedly or return later.
+    The current internal analytics table also does not use IP addresses to deduplicate visitors there.
+  </p>
+
   <h3>Feedback and anonymity during the test phase</h3>
   <p>
     The dedicated feedback form for the test phase is designed to stay low-threshold and as anonymous as possible.

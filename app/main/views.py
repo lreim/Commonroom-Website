@@ -577,17 +577,21 @@ def analytics():
         .all()
     )
 
+    page_row_map = {row.page_key: row for row in page_rows}
     page_stats = []
-    for row in page_rows:
+    for page_key, page_name in TRACKED_NAVBAR_PAGES.items():
+        row = page_row_map.get(page_key)
         page_stats.append(
             {
-                "page_key": row.page_key,
-                "page_name": TRACKED_NAVBAR_PAGES.get(row.page_key, row.page_key),
-                "visit_count": int(row.visit_count or 0),
-                "avg_duration_seconds": round(float(row.avg_duration_seconds or 0), 1),
-                "total_duration_seconds": int(row.total_duration_seconds or 0),
+                "page_key": page_key,
+                "page_name": page_name,
+                "visit_count": int(row.visit_count or 0) if row else 0,
+                "avg_duration_seconds": round(float(row.avg_duration_seconds or 0), 1) if row else 0.0,
+                "total_duration_seconds": int(row.total_duration_seconds or 0) if row else 0,
             }
         )
+
+    page_stats.sort(key=lambda item: (-item["visit_count"], item["page_name"].lower()))
 
     device_rows = (
         db.session.query(
