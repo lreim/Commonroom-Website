@@ -146,7 +146,7 @@
 {{ moment.include_moment() }}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const trackedPageKey = {{ active_page|tojson }};
+  const trackedPageKey = {{ active_page|default(None)|tojson }};
   const trackingUrl = {{ url_for('main.track_page_visit')|tojson }};
   const trackedPages = ["about", "onboarding", "rules", "feedback", "tag_search", "chat_index", "post", "get_help_now", "data_and_privacy"];
   if (!trackedPageKey || trackedPages.indexOf(trackedPageKey) === -1) {
