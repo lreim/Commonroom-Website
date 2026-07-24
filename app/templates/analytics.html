@@ -8,9 +8,123 @@
 </div>
 
 <div class="reading-page">
+  <style>
+    .analytics-range-switch {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 16px 0 24px;
+    }
+    .analytics-range-switch .btn {
+      min-width: 88px;
+    }
+    .analytics-chart-wrap {
+      margin: 18px 0 30px;
+      padding: 22px 22px 16px;
+      background: rgba(255, 251, 242, 0.88);
+      border: 1px solid #e6d9c4;
+      border-radius: 24px;
+    }
+    .analytics-chart {
+      display: flex;
+      align-items: end;
+      gap: 10px;
+      height: 240px;
+      padding: 16px 0 10px;
+      border-bottom: 1px solid #dbc9ab;
+    }
+    .analytics-chart-bar-group {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: end;
+      align-items: center;
+      gap: 10px;
+    }
+    .analytics-chart-bar-value {
+      font-size: 0.9em;
+      color: #7b6442;
+      line-height: 1;
+    }
+    .analytics-chart-bar {
+      width: 100%;
+      max-width: 26px;
+      min-height: 6px;
+      background: linear-gradient(180deg, #b67c67 0%, #6f342d 100%);
+      border-radius: 999px 999px 6px 6px;
+      box-shadow: 0 8px 20px rgba(111, 52, 45, 0.16);
+    }
+    .analytics-chart-labels {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .analytics-chart-label {
+      flex: 1 1 0;
+      min-width: 0;
+      font-size: 0.82em;
+      text-align: center;
+      color: #8d7552;
+      word-break: break-word;
+    }
+    html.dark-mode .analytics-chart-wrap {
+      background: rgba(41, 32, 27, 0.96);
+      border-color: #5f4636;
+    }
+    html.dark-mode .analytics-chart {
+      border-bottom-color: #6c5241;
+    }
+    html.dark-mode .analytics-chart-bar-value,
+    html.dark-mode .analytics-chart-label {
+      color: #dbc7b2;
+    }
+    html.dark-mode .analytics-chart-bar {
+      background: linear-gradient(180deg, #d5a588 0%, #97524f 100%);
+      box-shadow: none;
+    }
+  </style>
+
+  <h3>Visits over time</h3>
+  <p>
+    This diagram shows when the tracked navbar pages were visited in the selected recent time window.
+  </p>
+
+  <div class="analytics-range-switch">
+    <a class="btn {% if selected_range == '24h' %}btn-primary{% else %}btn-default{% endif %}" href="{{ url_for('main.analytics', range='24h') }}">24h</a>
+    <a class="btn {% if selected_range == '1w' %}btn-primary{% else %}btn-default{% endif %}" href="{{ url_for('main.analytics', range='1w') }}">1 week</a>
+    <a class="btn {% if selected_range == '1m' %}btn-primary{% else %}btn-default{% endif %}" href="{{ url_for('main.analytics', range='1m') }}">1 month</a>
+  </div>
+
+  <div class="analytics-chart-wrap">
+    <p>
+      Total tracked visits in this window: {{ visit_timeline.total_visits }}.
+      Highest bucket: {{ visit_timeline.max_count }}.
+    </p>
+    <div class="analytics-chart">
+      {% for point in visit_timeline.points %}
+      {% set height = 6 if visit_timeline.max_count == 0 else (point.count / visit_timeline.max_count * 180)|round(0, 'ceil')|int %}
+      <div class="analytics-chart-bar-group">
+        <div class="analytics-chart-bar-value">{{ point.count }}</div>
+        <div class="analytics-chart-bar" style="height: {{ height }}px;"></div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="analytics-chart-labels">
+      {% for point in visit_timeline.points %}
+      <div class="analytics-chart-label">{{ point.label }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
   <h3>Page visits</h3>
   <p>
     This table counts actual visits to the tracked navbar pages. The duration is measured from page load until the page is left or hidden.
+  </p>
+
+  <h3>Device split</h3>
+  <p>
+    Mobile visits: {{ device_stats.mobile }}. Desktop visits: {{ device_stats.desktop }}.
   </p>
 
   {% if page_stats %}

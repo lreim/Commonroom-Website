@@ -41,6 +41,7 @@ TRACKED_PAGE_PATH_PREFIXES = {
 }
 
 MAX_TRACKED_VISIT_SECONDS = 60 * 60 * 4
+VALID_DEVICE_TYPES = {"mobile", "desktop"}
 
 
 def _analytics_client_token():
@@ -93,6 +94,62 @@ def _analytics_request_has_same_origin():
 def _path_matches_tracked_page(page_key, path):
     prefixes = TRACKED_PAGE_PATH_PREFIXES.get(page_key, [])
     return any(path == prefix or path.startswith(f"{prefix}/") or path.startswith(f"{prefix}?") for prefix in prefixes)
+
+
+def _build_visit_timeline(range_key):
+    now = datetime.now(timezone.utc)
+    if range_key == "24h":
+        bucket_count = 24
+        bucket_size = timedelta(hours=1)
+        current_bucket_start = now.replace(minute=0, second=0, microsecond=0)
+        label_format = "%H:%M"
+    elif range_key == "1m":
+        bucket_count = 30
+        bucket_size = timedelta(days=1)
+        current_bucket_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        label_format = "%b %d"
+    else:
+        range_key = "1w"
+        bucket_count = 7
+        bucket_size = timedelta(days=1)
+        current_bucket_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        label_format = "%a"
+
+    first_bucket_start = current_bucket_start - bucket_size * (bucket_count - 1)
+    visits = (
+        PageVisit.query
+        .filter(PageVisit.started_at >= first_bucket_start)
+        .order_by(PageVisit.started_at.asc())
+        .all()
+    )
+
+    counts_by_index = {index: 0 for index in range(bucket_count)}
+    for visit in visits:
+        started_at = visit.started_at
+        if started_at.tzinfo is None:
+            started_at = started_at.replace(tzinfo=timezone.utc)
+        delta = started_at - first_bucket_start
+        index = int(delta.total_seconds() // bucket_size.total_seconds())
+        if 0 <= index < bucket_count:
+            counts_by_index[index] += 1
+
+    points = []
+    max_count = max(counts_by_index.values()) if counts_by_index else 0
+    for index in range(bucket_count):
+        bucket_start = first_bucket_start + bucket_size * index
+        points.append(
+            {
+                "label": bucket_start.strftime(label_format),
+                "count": counts_by_index[index],
+            }
+        )
+
+    return {
+        "range_key": range_key,
+        "points": points,
+        "max_count": max_count,
+        "total_visits": sum(point["count"] for point in points),
+    }
 
 #routes (view functions sind die index() etc.) for every page I have: @login_required before route to make it safe
 #für externe Inhalte, mails, magic links nutze external=True
@@ -157,9 +214,12 @@ def track_page_visit():
     path = (payload.get("path") or request.path or "").strip()
     duration_ms = payload.get("duration_ms", 0)
     visit_token = (payload.get("visit_token") or "").strip()
+    device_type = (payload.get("device_type") or "desktop").strip().lower()
 
     if page_key not in TRACKED_NAVBAR_PAGES:
         return ("", 204)
+    if device_type not in VALID_DEVICE_TYPES:
+        device_type = "desktop"
 
     try:
         duration_ms = max(int(duration_ms), 0)
@@ -192,6 +252,7 @@ def track_page_visit():
     visit = PageVisit(
         page_key=page_key,
         path=normalized_path,
+        device_type=device_type,
         visit_token=visit_token,
         user_id=current_user.id if current_user.is_authenticated else None,
         started_at=started_at,
@@ -503,6 +564,7 @@ def for_admins_only():
 @login_required
 @admin_required
 def analytics():
+    selected_range = request.args.get("range", "1w", type=str)
     page_rows = (
         db.session.query(
             PageVisit.page_key,
@@ -527,15 +589,32 @@ def analytics():
             }
         )
 
+    device_rows = (
+        db.session.query(
+            PageVisit.device_type,
+            func.count(PageVisit.id).label("visit_count"),
+        )
+        .group_by(PageVisit.device_type)
+        .all()
+    )
+    device_stats = {"mobile": 0, "desktop": 0}
+    for row in device_rows:
+        if row.device_type in device_stats:
+            device_stats[row.device_type] = int(row.visit_count or 0)
+
     root_post_count = Post.query.filter(Post.parent_id.is_(None)).count()
     reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
     conversation_count = Conversation.query.count()
     chat_stats = _compute_chat_count_stats()
+    visit_timeline = _build_visit_timeline(selected_range)
 
     return render_template(
         'analytics.html',
         active_page=None,
         page_stats=page_stats,
+        device_stats=device_stats,
+        visit_timeline=visit_timeline,
+        selected_range=visit_timeline["range_key"],
         tracked_page_count=len(page_stats),
         total_root_posts=root_post_count,
         total_replies=reply_count,

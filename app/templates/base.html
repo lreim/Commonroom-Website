@@ -155,6 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const startedAt = Date.now();
   const visitToken = trackedPageKey + "-" + startedAt + "-" + Math.random().toString(36).slice(2, 10);
+  const deviceType = window.matchMedia("(max-width: 1380px)").matches ? "mobile" : "desktop";
   let hasSentVisit = false;
 
   function sendVisit() {
@@ -167,7 +168,8 @@ document.addEventListener("DOMContentLoaded", function () {
       page_key: trackedPageKey,
       path: window.location.pathname + window.location.search,
       duration_ms: Date.now() - startedAt,
-      visit_token: visitToken
+      visit_token: visitToken,
+      device_type: deviceType
     });
 
     if (navigator.sendBeacon) {
