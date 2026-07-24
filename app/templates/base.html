@@ -60,10 +60,6 @@
         <li><a href="{{ url_for('main.post')}}"> Posts</a></li>
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
-        {%elif current_user.is_authenticated %}
-        <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
-        <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
-        <li><a href="{{ url_for('auth.logout')}}"> Sign Out</a></li>
         {%else%}
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
@@ -148,6 +144,53 @@
 {% block scripts %}
 {{ super() }}
 {{ moment.include_moment() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const trackedPageKey = {{ active_page|tojson }};
+  const trackingUrl = {{ url_for('main.track_page_visit')|tojson }};
+  const trackedPages = ["about", "onboarding", "rules", "feedback", "tag_search", "chat_index", "post", "get_help_now", "data_and_privacy"];
+  if (!trackedPageKey || trackedPages.indexOf(trackedPageKey) === -1) {
+    return;
+  }
+
+  const startedAt = Date.now();
+  const visitToken = trackedPageKey + "-" + startedAt + "-" + Math.random().toString(36).slice(2, 10);
+  let hasSentVisit = false;
+
+  function sendVisit() {
+    if (hasSentVisit) {
+      return;
+    }
+    hasSentVisit = true;
+
+    const payload = JSON.stringify({
+      page_key: trackedPageKey,
+      path: window.location.pathname + window.location.search,
+      duration_ms: Date.now() - startedAt,
+      visit_token: visitToken
+    });
+
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(trackingUrl, new Blob([payload], { type: "application/json" }));
+      return;
+    }
+
+    fetch(trackingUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true
+    }).catch(function () {});
+  }
+
+  window.addEventListener("pagehide", sendVisit);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") {
+      sendVisit();
+    }
+  });
+});
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const toggle = document.getElementById("theme-toggle");

@@ -1,10 +1,12 @@
-from datetime import datetime, timezone 
+from datetime import datetime, timezone, timedelta
+from math import sqrt
+from uuid import uuid4
 from sqlalchemy import func
 from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
 from .forms import PostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db
-from ..models import User, Post, Role, Tag
+from ..models import User, Post, Role, Tag, Conversation, PageVisit
 from ..tag_matching import match_tags, get_model
 from flask_login import login_required, current_user
 from app.decorators import admin_required, permission_required
@@ -12,6 +14,51 @@ from ..models import Permission
 from ..email import send_email
 
 #ATTENTION: with blueprint use main. iinstead of app. 
+
+TRACKED_NAVBAR_PAGES = {
+    "about": "About",
+    "onboarding": "Onboarding",
+    "rules": "Rules",
+    "feedback": "Feedback",
+    "tag_search": "Tagsearch",
+    "chat_index": "Chats",
+    "post": "Posts",
+    "get_help_now": "Get Help Now",
+    "data_and_privacy": "Data and Privacy",
+}
+
+
+def _analytics_client_token():
+    token = session.get("analytics_client_token")
+    if not token:
+        token = uuid4().hex
+        session["analytics_client_token"] = token
+    return token
+
+
+def _compute_chat_count_stats():
+    users = User.query.all()
+    conversation_counts = {user.id: 0 for user in users}
+
+    for conversation in Conversation.query.all():
+        conversation_counts[conversation.user_a_id] = conversation_counts.get(conversation.user_a_id, 0) + 1
+        conversation_counts[conversation.user_b_id] = conversation_counts.get(conversation.user_b_id, 0) + 1
+
+    counts = list(conversation_counts.values())
+    if not counts:
+        return {
+            "max_chats_per_user": 0,
+            "chat_count_std_dev": 0.0,
+            "user_count": 0,
+        }
+
+    mean = sum(counts) / len(counts)
+    variance = sum((count - mean) ** 2 for count in counts) / len(counts)
+    return {
+        "max_chats_per_user": max(counts),
+        "chat_count_std_dev": sqrt(variance),
+        "user_count": len(counts),
+    }
 
 #routes (view functions sind die index() etc.) for every page I have: @login_required before route to make it safe
 #für externe Inhalte, mails, magic links nutze external=True
@@ -64,6 +111,45 @@ def feedback():
         flash('Your feedback has been sent. Thanks for helping improve CommonRoom.')
         return redirect(url_for('main.feedback'))
     return render_template('feedback.html', form=form, active_page='feedback')
+
+
+@main.route('/analytics/page-visit', methods=['POST'])
+def track_page_visit():
+    payload = request.get_json(silent=True) or {}
+    page_key = (payload.get("page_key") or "").strip()
+    path = (payload.get("path") or request.path or "").strip()
+    duration_ms = payload.get("duration_ms", 0)
+    visit_token = (payload.get("visit_token") or "").strip()
+
+    if page_key not in TRACKED_NAVBAR_PAGES:
+        return ("", 204)
+
+    try:
+        duration_ms = max(int(duration_ms), 0)
+    except (TypeError, ValueError):
+        duration_ms = 0
+
+    if not visit_token:
+        visit_token = f"{_analytics_client_token()}-{uuid4().hex}"
+
+    duration_seconds = int(round(duration_ms / 1000.0))
+    ended_at = datetime.now(timezone.utc)
+    started_at = ended_at
+    if duration_seconds > 0:
+        started_at = ended_at - timedelta(seconds=duration_seconds)
+
+    visit = PageVisit(
+        page_key=page_key,
+        path=path[:255] or "/",
+        visit_token=visit_token[:64],
+        user_id=current_user.id if current_user.is_authenticated else None,
+        started_at=started_at,
+        ended_at=ended_at,
+        duration_seconds=duration_seconds,
+    )
+    db.session.add(visit)
+    db.session.commit()
+    return ("", 204)
 
 @main.route('/post', methods=['GET', 'POST'])
 @login_required
@@ -146,6 +232,7 @@ def post():
         selected_topics=', '.join(selected_topics),
         matched_topics=matched_topics,
         sort_by=sort_by,
+        active_page='post',
     )
 
 
@@ -285,11 +372,11 @@ def edit_profile_admin(id):
 def tag_search():
     all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
     profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
-    return render_template('tag_search.html', all_tags=all_tags, profile_label_choices=profile_label_choices)
+    return render_template('tag_search.html', all_tags=all_tags, profile_label_choices=profile_label_choices, active_page='tag_search')
 
 @main.route('/get-help-now')
 def get_help_now():
-    return render_template('get_help_now.html')
+    return render_template('get_help_now.html', active_page='get_help_now')
 
 @main.route('/tags/search')
 @login_required
@@ -359,6 +446,54 @@ def tag_search_api():
 @admin_required
 def for_admins_only():
     return "For administrators!"
+
+
+@main.route('/analytics')
+@login_required
+@admin_required
+def analytics():
+    page_rows = (
+        db.session.query(
+            PageVisit.page_key,
+            func.count(PageVisit.id).label("visit_count"),
+            func.avg(PageVisit.duration_seconds).label("avg_duration_seconds"),
+            func.sum(PageVisit.duration_seconds).label("total_duration_seconds"),
+        )
+        .group_by(PageVisit.page_key)
+        .order_by(func.count(PageVisit.id).desc())
+        .all()
+    )
+
+    page_stats = []
+    for row in page_rows:
+        page_stats.append(
+            {
+                "page_key": row.page_key,
+                "page_name": TRACKED_NAVBAR_PAGES.get(row.page_key, row.page_key),
+                "visit_count": int(row.visit_count or 0),
+                "avg_duration_seconds": round(float(row.avg_duration_seconds or 0), 1),
+                "total_duration_seconds": int(row.total_duration_seconds or 0),
+            }
+        )
+
+    root_post_count = Post.query.filter(Post.parent_id.is_(None)).count()
+    reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
+    conversation_count = Conversation.query.count()
+    chat_stats = _compute_chat_count_stats()
+
+    return render_template(
+        'analytics.html',
+        active_page=None,
+        page_stats=page_stats,
+        tracked_page_count=len(page_stats),
+        total_root_posts=root_post_count,
+        total_replies=reply_count,
+        total_posts_including_replies=root_post_count + reply_count,
+        total_conversations=conversation_count,
+        max_chats_per_user=chat_stats["max_chats_per_user"],
+        chat_count_std_dev=round(chat_stats["chat_count_std_dev"], 2),
+        tracked_user_count=chat_stats["user_count"],
+    )
 
 @main.route('/moderator')
 @login_required

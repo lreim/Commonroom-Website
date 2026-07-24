@@ -26,6 +26,13 @@
       click here to resend a confirmation email
     </a>.
   </p>
+
+  <p>
+    If you want to leave this account for now, you can
+    <a href="{{ url_for('auth.logout') }}">
+      sign out here
+    </a>.
+  </p>
 </div>
 
 {% endblock %}

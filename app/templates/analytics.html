@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+  <h1>Internal Analytics</h1>
+  <h4>This is the lightweight in-app tracking overview for the navbar pages, posts, and chats.</h4>
+</div>
+
+<div class="reading-page">
+  <h3>Page visits</h3>
+  <p>
+    This table counts actual visits to the tracked navbar pages. The duration is measured from page load until the page is left or hidden.
+  </p>
+
+  {% if page_stats %}
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Page</th>
+          <th>Visits</th>
+          <th>Average duration</th>
+          <th>Total duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in page_stats %}
+        <tr>
+          <td>{{ item.page_name }}</td>
+          <td>{{ item.visit_count }}</td>
+          <td>{{ item.avg_duration_seconds }} s</td>
+          <td>{{ item.total_duration_seconds }} s</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No tracked page visits exist yet.</p>
+  {% endif %}
+
+  <h3>Content and chat stats</h3>
+  <p>Tracked navbar pages with at least one visit: {{ tracked_page_count }}</p>
+  <p>Root posts: {{ total_root_posts }}</p>
+  <p>Replies on posts: {{ total_replies }}</p>
+  <p>Posts including replies: {{ total_posts_including_replies }}</p>
+  <p>1:1 chats: {{ total_conversations }}</p>
+  <p>Maximum number of chats for a single user: {{ max_chats_per_user }}</p>
+  <p>Standard deviation of chat count per user: {{ chat_count_std_dev }}</p>
+  <p>Users included in that chat distribution: {{ tracked_user_count }}</p>
+</div>
+{% endblock %}

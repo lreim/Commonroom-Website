@@ -503,3 +503,18 @@ class Tag(db.Model):
             if not Tag.query.filter_by(name=normalized_name).first():
                 db.session.add(Tag(name=normalized_name))
         db.session.commit()
+
+
+class PageVisit(db.Model):
+    __tablename__ = "page_visits"
+
+    id = db.Column(db.Integer, primary_key=True)
+    page_key = db.Column(db.String(64), nullable=False, index=True)
+    path = db.Column(db.String(255), nullable=False)
+    visit_token = db.Column(db.String(64), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
+    started_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    ended_at = db.Column(db.DateTime, nullable=False, index=True)
+    duration_seconds = db.Column(db.Integer, nullable=False, default=0)
+
+    user = db.relationship("User")

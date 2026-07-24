@@ -156,6 +156,7 @@ def index():     #Zeigt Übersicht aller Chats, in denen current_user involviert
         users=users,
         q=q,
         sort_by=sort_by,
+        active_page="chat_index",
     )
 
 
