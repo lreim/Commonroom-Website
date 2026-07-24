@@ -77,6 +77,19 @@ def _compute_chat_count_stats():
     }
 
 
+def _tracked_page_visits_query():
+    return (
+        PageVisit.query
+        .outerjoin(User, PageVisit.user_id == User.id)
+        .outerjoin(Role, User.role_id == Role.id)
+        .filter(
+            (PageVisit.user_id.is_(None)) |
+            (Role.name.is_(None)) |
+            (Role.name != 'Administrator')
+        )
+    )
+
+
 def _analytics_request_has_same_origin():
     origin = request.headers.get("Origin")
     referer = request.headers.get("Referer")
@@ -117,7 +130,7 @@ def _build_visit_timeline(range_key):
 
     first_bucket_start = current_bucket_start - bucket_size * (bucket_count - 1)
     visits = (
-        PageVisit.query
+        _tracked_page_visits_query()
         .filter(PageVisit.started_at >= first_bucket_start)
         .order_by(PageVisit.started_at.asc())
         .all()
@@ -207,6 +220,8 @@ def feedback():
 @main.route('/analytics/page-visit', methods=['POST'])
 def track_page_visit():
     if not _analytics_request_has_same_origin():
+        return ("", 204)
+    if current_user.is_authenticated and current_user.is_administrator():
         return ("", 204)
 
     payload = request.get_json(silent=True) or {}
@@ -566,7 +581,8 @@ def for_admins_only():
 def analytics():
     selected_range = request.args.get("range", "1w", type=str)
     page_rows = (
-        db.session.query(
+        _tracked_page_visits_query()
+        .with_entities(
             PageVisit.page_key,
             func.count(PageVisit.id).label("visit_count"),
             func.avg(PageVisit.duration_seconds).label("avg_duration_seconds"),
@@ -602,6 +618,15 @@ def analytics():
         .all()
     )
     device_stats = {"mobile": 0, "desktop": 0}
+    device_rows = (
+        _tracked_page_visits_query()
+        .with_entities(
+            PageVisit.device_type,
+            func.count(PageVisit.id).label("visit_count"),
+        )
+        .group_by(PageVisit.device_type)
+        .all()
+    )
     for row in device_rows:
         if row.device_type in device_stats:
             device_stats[row.device_type] = int(row.visit_count or 0)
