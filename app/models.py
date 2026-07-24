@@ -511,7 +511,7 @@ class PageVisit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     page_key = db.Column(db.String(64), nullable=False, index=True)
     path = db.Column(db.String(255), nullable=False)
-    visit_token = db.Column(db.String(64), nullable=False, index=True)
+    visit_token = db.Column(db.String(64), nullable=False, unique=True, index=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True, index=True)
     started_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     ended_at = db.Column(db.DateTime, nullable=False, index=True)

@@ -157,6 +157,29 @@
     in which the website runs and should therefore be mentioned transparently.
   </p>
 
+  <h3>Internal page analytics</h3>
+  <p>
+    In addition to hosting-level logs, the platform now also keeps a small internal analytics table for a limited set of public product pages.
+    This is currently restricted to the main navbar pages such as About, Onboarding, Rules, Feedback, Tagsearch, Chats, Posts,
+    Get Help Now, and Data and Privacy.
+    The goal is not to inspect private content, but to understand basic usage patterns of the platform itself.
+  </p>
+
+  <p>
+    What is stored there is intentionally narrow: the visited page key, the matching path, the visit duration in seconds,
+    a generated visit token to prevent duplicate records, the timestamp range of the visit, and, if the visitor is logged in,
+    the internal user id.
+    This analytics table is not meant to store chat content, post content, search text, or message bodies.
+  </p>
+
+  <p>
+    Some basic safeguards are built into this tracking route as well.
+    It only accepts the predefined tracked pages, checks that the request comes from the same origin,
+    rejects path / page-key combinations that do not fit together, limits the stored duration to a reasonable maximum,
+    and ignores duplicate visit tokens.
+    That does not make it mathematically impossible to manipulate, but it is meant to keep the tracking narrow, lightweight, and harder to pollute accidentally.
+  </p>
+
   <h3>Feedback and anonymity during the test phase</h3>
   <p>
     The dedicated feedback form for the test phase is designed to stay low-threshold and as anonymous as possible.

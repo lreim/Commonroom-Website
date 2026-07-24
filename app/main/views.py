@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from math import sqrt
+from urllib.parse import urlparse
 from uuid import uuid4
 from sqlalchemy import func
 from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
@@ -26,6 +27,20 @@ TRACKED_NAVBAR_PAGES = {
     "get_help_now": "Get Help Now",
     "data_and_privacy": "Data and Privacy",
 }
+
+TRACKED_PAGE_PATH_PREFIXES = {
+    "about": ["/about"],
+    "onboarding": ["/onboarding"],
+    "rules": ["/rules"],
+    "feedback": ["/feedback"],
+    "tag_search": ["/tags"],
+    "chat_index": ["/chat"],
+    "post": ["/post"],
+    "get_help_now": ["/get-help-now"],
+    "data_and_privacy": ["/data-and-privacy"],
+}
+
+MAX_TRACKED_VISIT_SECONDS = 60 * 60 * 4
 
 
 def _analytics_client_token():
@@ -59,6 +74,25 @@ def _compute_chat_count_stats():
         "chat_count_std_dev": sqrt(variance),
         "user_count": len(counts),
     }
+
+
+def _analytics_request_has_same_origin():
+    origin = request.headers.get("Origin")
+    referer = request.headers.get("Referer")
+    allowed_host = urlparse(request.host_url).netloc
+
+    for candidate in (origin, referer):
+        if not candidate:
+            continue
+        parsed = urlparse(candidate)
+        if parsed.netloc != allowed_host:
+            return False
+    return True
+
+
+def _path_matches_tracked_page(page_key, path):
+    prefixes = TRACKED_PAGE_PATH_PREFIXES.get(page_key, [])
+    return any(path == prefix or path.startswith(f"{prefix}/") or path.startswith(f"{prefix}?") for prefix in prefixes)
 
 #routes (view functions sind die index() etc.) for every page I have: @login_required before route to make it safe
 #für externe Inhalte, mails, magic links nutze external=True
@@ -115,6 +149,9 @@ def feedback():
 
 @main.route('/analytics/page-visit', methods=['POST'])
 def track_page_visit():
+    if not _analytics_request_has_same_origin():
+        return ("", 204)
+
     payload = request.get_json(silent=True) or {}
     page_key = (payload.get("page_key") or "").strip()
     path = (payload.get("path") or request.path or "").strip()
@@ -129,10 +166,24 @@ def track_page_visit():
     except (TypeError, ValueError):
         duration_ms = 0
 
+    duration_seconds = min(int(round(duration_ms / 1000.0)), MAX_TRACKED_VISIT_SECONDS)
+    if duration_seconds < 0:
+        duration_seconds = 0
+
     if not visit_token:
         visit_token = f"{_analytics_client_token()}-{uuid4().hex}"
 
-    duration_seconds = int(round(duration_ms / 1000.0))
+    if len(visit_token) > 64:
+        visit_token = visit_token[:64]
+
+    normalized_path = path[:255] or "/"
+    if not _path_matches_tracked_page(page_key, normalized_path):
+        return ("", 204)
+
+    existing_visit = PageVisit.query.filter_by(visit_token=visit_token).first()
+    if existing_visit is not None:
+        return ("", 204)
+
     ended_at = datetime.now(timezone.utc)
     started_at = ended_at
     if duration_seconds > 0:
@@ -140,8 +191,8 @@ def track_page_visit():
 
     visit = PageVisit(
         page_key=page_key,
-        path=path[:255] or "/",
-        visit_token=visit_token[:64],
+        path=normalized_path,
+        visit_token=visit_token,
         user_id=current_user.id if current_user.is_authenticated else None,
         started_at=started_at,
         ended_at=ended_at,
