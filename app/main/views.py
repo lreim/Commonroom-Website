@@ -109,7 +109,7 @@ def post():
         post_query = post_query.join(User, Post.author).join(User.tags).filter(Tag.name.in_(matched_topics)).distinct()
 
     if sort_by == 'most_recent':
-        post_query = post_query.order_by(Post.timestamp.desc())
+        post_query = post_query.order_by(Post.id.desc(), Post.timestamp.desc())
     elif sort_by == 'most_replies':
         reply_count_subquery = (
             db.session.query(
@@ -126,10 +126,10 @@ def post():
             .order_by(func.coalesce(reply_count_subquery.c.reply_count, 0).desc(), Post.timestamp.desc())
         )
     elif sort_by == 'oldest_first':
-        post_query = post_query.order_by(Post.timestamp.asc())
+        post_query = post_query.order_by(Post.id.asc(), Post.timestamp.asc())
     else:
         sort_by = 'most_recent'
-        post_query = post_query.order_by(Post.timestamp.desc())
+        post_query = post_query.order_by(Post.id.desc(), Post.timestamp.desc())
 
     pagination = post_query.paginate(
         page=page,
