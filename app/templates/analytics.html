@@ -138,9 +138,15 @@
       <thead>
         <tr>
           <th>Page</th>
-          <th>Visits</th>
-          <th>Average duration</th>
+          <th>Total visits</th>
+          <th>Total avg duration</th>
           <th>Total duration</th>
+          <th>Logged-in visits</th>
+          <th>Logged-in avg duration</th>
+          <th>Logged-in total duration</th>
+          <th>Public visits</th>
+          <th>Public avg duration</th>
+          <th>Public total duration</th>
         </tr>
       </thead>
       <tbody>
@@ -150,6 +156,12 @@
           <td>{{ item.visit_count }}</td>
           <td>{{ item.avg_duration_seconds }} s</td>
           <td>{{ item.total_duration_seconds }} s</td>
+          <td>{{ item.logged_in_visits }}</td>
+          <td>{{ item.logged_in_avg_duration_seconds }} s</td>
+          <td>{{ item.logged_in_total_duration_seconds }} s</td>
+          <td>{{ item.public_visits }}</td>
+          <td>{{ item.public_avg_duration_seconds }} s</td>
+          <td>{{ item.public_total_duration_seconds }} s</td>
         </tr>
         {% endfor %}
       </tbody>

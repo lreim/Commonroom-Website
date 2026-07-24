@@ -584,39 +584,60 @@ def analytics():
         _tracked_page_visits_query()
         .with_entities(
             PageVisit.page_key,
+            PageVisit.user_id,
             func.count(PageVisit.id).label("visit_count"),
             func.avg(PageVisit.duration_seconds).label("avg_duration_seconds"),
             func.sum(PageVisit.duration_seconds).label("total_duration_seconds"),
         )
-        .group_by(PageVisit.page_key)
-        .order_by(func.count(PageVisit.id).desc())
+        .group_by(PageVisit.page_key, PageVisit.user_id)
         .all()
     )
 
-    page_row_map = {row.page_key: row for row in page_rows}
+    page_row_map = {}
+    for row in page_rows:
+        bucket = page_row_map.setdefault(
+            row.page_key,
+            {
+                "logged_in_visits": 0,
+                "logged_in_total_duration_seconds": 0,
+                "public_visits": 0,
+                "public_total_duration_seconds": 0,
+            },
+        )
+        if row.user_id is None:
+            bucket["public_visits"] += int(row.visit_count or 0)
+            bucket["public_total_duration_seconds"] += int(row.total_duration_seconds or 0)
+        else:
+            bucket["logged_in_visits"] += int(row.visit_count or 0)
+            bucket["logged_in_total_duration_seconds"] += int(row.total_duration_seconds or 0)
+
     page_stats = []
     for page_key, page_name in TRACKED_NAVBAR_PAGES.items():
         row = page_row_map.get(page_key)
+        logged_in_visits = row["logged_in_visits"] if row else 0
+        public_visits = row["public_visits"] if row else 0
+        logged_in_total_duration_seconds = row["logged_in_total_duration_seconds"] if row else 0
+        public_total_duration_seconds = row["public_total_duration_seconds"] if row else 0
+        total_visits = logged_in_visits + public_visits
+        total_duration_seconds = logged_in_total_duration_seconds + public_total_duration_seconds
         page_stats.append(
             {
                 "page_key": page_key,
                 "page_name": page_name,
-                "visit_count": int(row.visit_count or 0) if row else 0,
-                "avg_duration_seconds": round(float(row.avg_duration_seconds or 0), 1) if row else 0.0,
-                "total_duration_seconds": int(row.total_duration_seconds or 0) if row else 0,
+                "visit_count": total_visits,
+                "avg_duration_seconds": round(total_duration_seconds / total_visits, 1) if total_visits else 0.0,
+                "total_duration_seconds": total_duration_seconds,
+                "logged_in_visits": logged_in_visits,
+                "logged_in_avg_duration_seconds": round(logged_in_total_duration_seconds / logged_in_visits, 1) if logged_in_visits else 0.0,
+                "logged_in_total_duration_seconds": logged_in_total_duration_seconds,
+                "public_visits": public_visits,
+                "public_avg_duration_seconds": round(public_total_duration_seconds / public_visits, 1) if public_visits else 0.0,
+                "public_total_duration_seconds": public_total_duration_seconds,
             }
         )
 
     page_stats.sort(key=lambda item: (-item["visit_count"], item["page_name"].lower()))
 
-    device_rows = (
-        db.session.query(
-            PageVisit.device_type,
-            func.count(PageVisit.id).label("visit_count"),
-        )
-        .group_by(PageVisit.device_type)
-        .all()
-    )
     device_stats = {"mobile": 0, "desktop": 0}
     device_rows = (
         _tracked_page_visits_query()
