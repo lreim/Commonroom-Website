@@ -20,3 +20,6 @@ class BasicsTestCase(unittest.TestCase):
 
     def test_app_is_testing(self):
         self.assertTrue(current_app.config['TESTING'])
+
+    def test_default_admin_email_is_configured(self):
+        self.assertEqual(current_app.config['TALKTO_ADMIN'], 'contact@commonroom.ch')

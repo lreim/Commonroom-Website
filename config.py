@@ -9,7 +9,7 @@ class Config:
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     TALKTO_MAIL_SUBJECT_PREFIX = '[COMMONROOM]'
     TALKTO_MAIL_SENDER = os.environ.get('TALKTO_MAIL_SENDER') or 'CommonRoom <noreply@commonroom.ch>'
-    TALKTO_ADMIN = os.environ.get('TALKTO_ADMIN')
+    TALKTO_ADMIN = os.environ.get('TALKTO_ADMIN') or 'contact@commonroom.ch'
     TALKTO_POSTS_PER_PAGE = 20
     POSTMARK_API_TOKEN = os.environ.get('POSTMARK_API_TOKEN')
     POSTMARK_MESSAGE_STREAM_REGISTRATION = os.environ.get('POSTMARK_MESSAGE_STREAM_REGISTRATION', 'registration')
@@ -145,4 +145,4 @@ config = {
 # - ---done noch bei data and privacy tracking erwähnen und lesbarkeit er email bei contaktaufnahme 
 
 
-# - schreibe der Nightline, dem VMP/VSETH, dem SPH, Chats, Flyer, in Bibs aushängen, Freunde raufholen,
+# - schreibe der Nightline (done), dem VMP/VSETH (done), dem SPH (booked onboarding, TODO danach: Coaching machen, dann support (done for now), Flyer (on Höngg Campus done for now), in Bibs aushängen, Freunde raufholen (some),

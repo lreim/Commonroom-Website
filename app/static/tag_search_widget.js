@@ -26,55 +26,74 @@
   function hideGlobalPreviewCard() {
     if (!globalPreviewCard) return;
     globalPreviewCard.style.display = "none";
-    globalPreviewCard.innerHTML = "";
+    globalPreviewCard.replaceChildren();
     if (activeMobilePreviewLink) {
       activeMobilePreviewLink.removeAttribute("data-preview-open");
       activeMobilePreviewLink = null;
     }
   }
 
+  function appendPreviewSection(container, label, value, valueClassName) {
+    if (!value) return;
+    const section = document.createElement("div");
+    section.className = "profile-preview-section";
+
+    const sectionLabel = document.createElement("div");
+    sectionLabel.className = "profile-preview-section-label";
+    sectionLabel.textContent = label;
+
+    const sectionValue = document.createElement("div");
+    sectionValue.className = valueClassName;
+    sectionValue.textContent = value;
+
+    section.append(sectionLabel, sectionValue);
+    container.appendChild(section);
+  }
+
   function showGlobalPreviewCard(user, evt) {
     const previewCard = ensureGlobalPreviewCard();
     const safeReason = user.match_reason || "Profile preview.";
     const safeName = user.name || user.username;
-    const safeLocation = user.location ? `Location: ${user.location}` : "";
+    const safeLocation = user.location || "";
     const safeAbout = user.about_me || "";
     const safeLabels = user.profile_labels || [];
     const safeTags = (user.matching_tags && user.matching_tags.length > 0)
       ? user.matching_tags
       : (user.tags || []);
 
-    previewCard.innerHTML = `
-      <div class="profile-preview-header">
-        <img class="profile-preview-avatar" src="${user.avatar_url || ""}" alt="${user.username}">
-        <div class="profile-preview-heading">
-          <div class="profile-preview-name">${safeName}</div>
-        </div>
-        ${safeLabels.length ? `<div class="profile-preview-header-labels">${safeLabels.join(", ")}</div>` : ""}
-      </div>
-      <div class="profile-preview-section">
-        <div class="profile-preview-section-label">Matching tags</div>
-        <div class="profile-preview-reason">${safeReason}</div>
-      </div>
-      ${safeLocation ? `
-        <div class="profile-preview-section">
-          <div class="profile-preview-section-label">Location</div>
-          <div class="profile-preview-location">${safeLocation.replace(/^Location:\s*/, "")}</div>
-        </div>
-      ` : ""}
-      ${safeAbout ? `
-        <div class="profile-preview-section">
-          <div class="profile-preview-section-label">About me</div>
-          <div class="profile-preview-about">${safeAbout}</div>
-        </div>
-      ` : ""}
-      ${safeTags.length ? `
-        <div class="profile-preview-section">
-          <div class="profile-preview-section-label">Tags</div>
-          <div class="profile-preview-tags">${safeTags.join(", ")}</div>
-        </div>
-      ` : ""}
-    `;
+    previewCard.replaceChildren();
+
+    const header = document.createElement("div");
+    header.className = "profile-preview-header";
+
+    const avatar = document.createElement("img");
+    avatar.className = "profile-preview-avatar";
+    avatar.src = user.avatar_url || "";
+    avatar.alt = user.username || "";
+
+    const heading = document.createElement("div");
+    heading.className = "profile-preview-heading";
+
+    const name = document.createElement("div");
+    name.className = "profile-preview-name";
+    name.textContent = safeName;
+    heading.appendChild(name);
+
+    header.append(avatar, heading);
+
+    if (safeLabels.length) {
+      const labels = document.createElement("div");
+      labels.className = "profile-preview-header-labels";
+      labels.textContent = safeLabels.join(", ");
+      header.appendChild(labels);
+    }
+
+    previewCard.appendChild(header);
+    appendPreviewSection(previewCard, "Matching tags", safeReason, "profile-preview-reason");
+    appendPreviewSection(previewCard, "Location", safeLocation, "profile-preview-location");
+    appendPreviewSection(previewCard, "About me", safeAbout, "profile-preview-about");
+    appendPreviewSection(previewCard, "Tags", safeTags.join(", "), "profile-preview-tags");
+
     previewCard.style.display = "block";
     positionGlobalPreviewCard(evt);
   }
