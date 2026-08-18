@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta, timezone
 
 from app import create_app, db
 from app.models import User, Role, AnonymousUser, Permission
@@ -47,6 +48,27 @@ class UserModelTestCase(unittest.TestCase):
     def test_anonymous_user(self):
         u = AnonymousUser()
         self.assertFalse(u.can(Permission.FOLLOW))
+
+    def test_login_throttling_fields_persist_on_user(self):
+        user = User(email="persist@example.com", password="cat")
+        db.session.add(user)
+        db.session.commit()
+
+        locked_until = datetime.now(timezone.utc) + timedelta(minutes=10)
+        user.failed_login_attempts = 4
+        user.login_locked_until = locked_until
+        user.login_lockout_count = 2
+        user.login_lockout_window_started_at = datetime.now(timezone.utc)
+        user.account_locked_until = datetime.now(timezone.utc) + timedelta(hours=24)
+        db.session.add(user)
+        db.session.commit()
+
+        loaded = User.query.get(user.id)
+        self.assertEqual(loaded.failed_login_attempts, 4)
+        self.assertIsNotNone(loaded.login_locked_until)
+        self.assertEqual(loaded.login_lockout_count, 2)
+        self.assertIsNotNone(loaded.login_lockout_window_started_at)
+        self.assertIsNotNone(loaded.account_locked_until)
 
 
 if __name__ == "__main__":

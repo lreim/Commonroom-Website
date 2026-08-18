@@ -8,30 +8,104 @@ from .. import db
 from ..email import send_email
 from datetime import datetime, timezone, timedelta
 
+LOGIN_ACCOUNT_MAX_FAILURES = 6
+LOGIN_ACCOUNT_LOCKOUT_MINUTES = 10
+LOGIN_LOCKOUT_WINDOW_HOURS = 24
+LOGIN_LOCKOUT_ESCALATION_COUNT = 3
+LOGIN_ACCOUNT_SUSPENSION_HOURS = 24
+
+
+def _send_security_email(user, subject, template, **kwargs):
+    send_email(
+        user.email,
+        subject,
+        template,
+        message_stream=current_app.config.get('POSTMARK_MESSAGE_STREAM_SECURITY'),
+        user=user,
+        **kwargs,
+    )
+
+
+def _reset_login_lockout_window_if_needed(user, now):
+    window_started_at = user.login_lockout_window_started_at
+    if window_started_at is None or window_started_at + timedelta(hours=LOGIN_LOCKOUT_WINDOW_HOURS) <= now:
+        user.login_lockout_window_started_at = now
+        user.login_lockout_count = 0
+
+
+def _register_account_lockout(user, now):
+    _reset_login_lockout_window_if_needed(user, now)
+    user.login_lockout_count += 1
+
+    if user.login_lockout_count >= LOGIN_LOCKOUT_ESCALATION_COUNT:
+        user.account_locked_until = now + timedelta(hours=LOGIN_ACCOUNT_SUSPENSION_HOURS)
+        user.login_locked_until = None
+        user.failed_login_attempts = 0
+        db.session.add(user)
+        db.session.commit()
+        _send_security_email(
+            user,
+            'Account temporarily locked',
+            'auth/email/account_locked',
+            account_locked_until=user.account_locked_until,
+            lockout_window_hours=LOGIN_LOCKOUT_WINDOW_HOURS,
+        )
+        return
+
+    user.login_locked_until = now + timedelta(minutes=LOGIN_ACCOUNT_LOCKOUT_MINUTES)
+    db.session.add(user)
+    db.session.commit()
+    _send_security_email(
+        user,
+        'Login temporarily locked',
+        'auth/email/login_lockout',
+        login_locked_until=user.login_locked_until,
+        remaining_lockout_count=max(LOGIN_LOCKOUT_ESCALATION_COUNT - user.login_lockout_count, 0),
+        lockout_window_hours=LOGIN_LOCKOUT_WINDOW_HOURS,
+    )
+
+
+def _clear_login_failures(user):
+    if user is None:
+        return
+    user.failed_login_attempts = 0
+    user.login_locked_until = None
+    db.session.add(user)
+    db.session.commit()
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():   
     form = LoginForm()
     if form.validate_on_submit():
+        now = datetime.now(timezone.utc)
         email = canonicalize_eth_email(form.email.data)
         user = User.query.filter_by(email=email).first()
 
         if user is not None:
-            now = datetime.now(timezone.utc)
+            if user.account_locked_until is not None and user.account_locked_until <= now:
+                user.account_locked_until = None
+                user.login_lockout_count = 0
+                user.login_lockout_window_started_at = None
+                db.session.add(user)
+                db.session.commit()
+
+            if user.account_locked_until is not None and user.account_locked_until > now:
+                flash("This account has been temporarily locked. Please check your email for details.")
+                return render_template('auth/login.html', form=form)
 
             if user.login_locked_until is not None and user.login_locked_until <= now:
                 user.login_locked_until = None
                 user.failed_login_attempts = 0
+                db.session.add(user)
+                db.session.commit()
 
             if user.login_locked_until is not None and user.login_locked_until > now:
                 flash("Too many failed login attempts. Please try again later.")
-                return render_template('index.html')
+                return render_template('auth/login.html', form=form)
 
             if user.verify_password(form.password.data):
-                user.failed_login_attempts = 0
-                user.login_locked_until = None
-                db.session.commit()
+                _clear_login_failures(user)
 
                 login_user(user, form.remember_me.data)
                 session.permanent = True
@@ -39,9 +113,11 @@ def login():
                 return redirect(request.args.get('next') or url_for('main.index'))
 
             user.failed_login_attempts += 1
-            if user.failed_login_attempts >= 6:
-                user.login_locked_until = now + timedelta(minutes=10)
-            db.session.commit()
+            if user.failed_login_attempts >= LOGIN_ACCOUNT_MAX_FAILURES:
+                _register_account_lockout(user, now)
+            else:
+                db.session.add(user)
+                db.session.commit()
         flash('Welp, invalid username or password, my friend.')
     return render_template('auth/login.html', form=form)
 

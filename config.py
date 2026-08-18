@@ -21,6 +21,7 @@ class Config:
     POSTMARK_MESSAGE_STREAM_RESEND_CONFIRMATION = os.environ.get('POSTMARK_MESSAGE_STREAM_RESEND_CONFIRMATION', 'resend-confirmation')
     POSTMARK_MESSAGE_STREAM_ADMIN_REGISTRATION = os.environ.get('POSTMARK_MESSAGE_STREAM_ADMIN_REGISTRATION', 'admin-registration')
     POSTMARK_MESSAGE_STREAM_FEEDBACK = os.environ.get('POSTMARK_MESSAGE_STREAM_FEEDBACK', 'admin-registration')
+    POSTMARK_MESSAGE_STREAM_SECURITY = os.environ.get('POSTMARK_MESSAGE_STREAM_SECURITY', 'security')
     #für Sicherheit bei Nutzung von Login session cookies 
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=20)   #damit man automatisch ausgeloggt werden kann nach einer bestimmten Zeitspanne, 
                                                      # der cookie überträgt login daten von request zu request

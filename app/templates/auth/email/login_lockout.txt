@@ -1,0 +1,10 @@
+Hello,
+
+we noticed repeated failed sign-in attempts for your CommonRoom account.
+
+Your login has been temporarily locked until {{ login_locked_until }}.
+
+If this was you, you can simply wait and try again later.
+If this was not you, please consider changing your password once the temporary lock has expired.
+
+Additional repeated lockouts within roughly {{ lockout_window_hours }} hours may trigger a longer temporary account lock.

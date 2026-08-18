@@ -87,6 +87,11 @@ class User(UserMixin, db.Model):
     funny_fact = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+    failed_login_attempts = db.Column(db.Integer, nullable=False, default=0)
+    login_locked_until = db.Column(db.DateTime(), nullable=True, index=True)
+    login_lockout_count = db.Column(db.Integer, nullable=False, default=0)
+    login_lockout_window_started_at = db.Column(db.DateTime(), nullable=True)
+    account_locked_until = db.Column(db.DateTime(), nullable=True, index=True)
     tags = db.relationship('Tag', secondary=user_tags, back_populates='users', lazy='subquery')
     blocks_initiated = db.relationship(
         "UserBlock",
@@ -116,8 +121,6 @@ class User(UserMixin, db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
-    failed_login_attempts = 0
-    login_locked_until = None
     profile_label = db.Column(db.String(32))  
     
     def __repr__(self):
@@ -448,7 +451,7 @@ class ChatRequest(db.Model):
         return chat_request
 
 
-class Message(db.Model):    #einzelne Nachricht 
+class Message(db.Model):    #einzelne Nachricht
     __tablename__ = "messages"
     id = db.Column(db.Integer, primary_key=True)
     conversation_id = db.Column(db.Integer, db.ForeignKey("conversations.id"), nullable=False, index=True)
