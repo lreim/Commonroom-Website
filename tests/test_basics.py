@@ -23,3 +23,6 @@ class BasicsTestCase(unittest.TestCase):
 
     def test_default_admin_email_is_configured(self):
         self.assertEqual(current_app.config['TALKTO_ADMIN'], 'contact@commonroom.ch')
+
+    def test_testing_secret_key_is_not_public_fallback(self):
+        self.assertEqual(current_app.config['SECRET_KEY'], 'testing-secret-key')

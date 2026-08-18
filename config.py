@@ -1,11 +1,12 @@
 import os
+import secrets
 from datetime import timedelta
 
 basedir = os.path.abspath(os.path.dirname(__file__)) #nötig für path con database 
 
 #configurations used in all cases  
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess string'  #CSRF Schutz
+    SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     TALKTO_MAIL_SUBJECT_PREFIX = '[COMMONROOM]'
     TALKTO_MAIL_SENDER = os.environ.get('TALKTO_MAIL_SENDER') or 'CommonRoom <noreply@commonroom.ch>'
@@ -30,7 +31,21 @@ class Config:
 
     @staticmethod
     def init_app(app):
-        pass
+        if app.config.get('SECRET_KEY'):
+            return
+
+        if app.config.get('TESTING'):
+            app.config['SECRET_KEY'] = 'testing-secret-key'
+            return
+
+        if app.config.get('DEBUG'):
+            app.config['SECRET_KEY'] = secrets.token_hex(32)
+            app.logger.warning(
+                'SECRET_KEY is not set. Generated a temporary development key; set SECRET_KEY before deploying.'
+            )
+            return
+
+        raise RuntimeError('SECRET_KEY must be set in the environment for non-development deployments.')
 
 #for using flash mail via t-online 
 class DevelopmentConfig(Config):
