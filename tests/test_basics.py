@@ -31,3 +31,6 @@ class BasicsTestCase(unittest.TestCase):
     def test_production_cookies_are_secure(self):
         self.assertTrue(ProductionConfig.SESSION_COOKIE_SECURE)
         self.assertTrue(ProductionConfig.REMEMBER_COOKIE_SECURE)
+
+    def test_socketio_is_not_wildcard_open(self):
+        self.assertIsNone(current_app.config['TALKTO_SITE_ORIGIN'])

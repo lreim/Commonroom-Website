@@ -17,7 +17,7 @@ mail = Mail()
 moment = Moment()
 db = SQLAlchemy()
 migrate = Migrate()
-socketio = SocketIO(cors_allowed_origins='*')
+socketio = SocketIO()
 csrf = CSRFProtect()
 
 login_manager = LoginManager()
@@ -39,7 +39,10 @@ def create_app(config_name):
     db.init_app(app)
     migrate.init_app(app,db)
     login_manager.init_app(app)
-    socketio.init_app(app)
+    socketio.init_app(
+        app,
+        cors_allowed_origins=app.config.get('TALKTO_SITE_ORIGIN'),
+    )
     csrf.init_app(app)
     
 

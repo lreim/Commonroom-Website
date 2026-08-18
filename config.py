@@ -11,6 +11,7 @@ class Config:
     TALKTO_MAIL_SUBJECT_PREFIX = '[COMMONROOM]'
     TALKTO_MAIL_SENDER = os.environ.get('TALKTO_MAIL_SENDER') or 'CommonRoom <noreply@commonroom.ch>'
     TALKTO_ADMIN = os.environ.get('TALKTO_ADMIN') or 'contact@commonroom.ch'
+    TALKTO_SITE_ORIGIN = os.environ.get('TALKTO_SITE_ORIGIN')
     TALKTO_POSTS_PER_PAGE = 20
     POSTMARK_API_TOKEN = os.environ.get('POSTMARK_API_TOKEN')
     POSTMARK_MESSAGE_STREAM_REGISTRATION = os.environ.get('POSTMARK_MESSAGE_STREAM_REGISTRATION', 'registration')
