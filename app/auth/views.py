@@ -6,6 +6,7 @@ from ..models import User
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
 from .. import db 
 from ..email import send_email
+from ..security import is_safe_local_redirect_target
 from datetime import datetime, timezone, timedelta
 
 LOGIN_ACCOUNT_MAX_FAILURES = 6
@@ -79,6 +80,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         now = datetime.now(timezone.utc)
+        next_url = request.args.get('next')
         email = canonicalize_eth_email(form.email.data)
         user = User.query.filter_by(email=email).first()
 
@@ -110,7 +112,7 @@ def login():
                 login_user(user, form.remember_me.data)
                 session.permanent = True
                 flash(f"{user.username} is now locked in!")
-                return redirect(request.args.get('next') or url_for('main.index'))
+                return redirect(next_url if is_safe_local_redirect_target(next_url) else url_for('main.index'))
 
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= LOGIN_ACCOUNT_MAX_FAILURES:

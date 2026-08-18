@@ -13,6 +13,7 @@ from flask_login import login_required, current_user
 from app.decorators import admin_required, permission_required
 from ..models import Permission
 from ..email import send_email
+from ..security import is_safe_local_redirect_target
 
 #ATTENTION: with blueprint use main. iinstead of app. 
 
@@ -400,6 +401,7 @@ def post_thread(post_id):
 @main.route('/user/<username>')
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
+    return_to = request.args.get('return_to', type=str)
     posts = user.posts.order_by(Post.timestamp.desc()).all()
     recommend_profiles = request.args.get('recommend', 0, type=int) == 1
     recommended_users = []
@@ -433,6 +435,7 @@ def user(username):
         'user.html',
         user=user,
         posts=posts,
+        return_to=return_to if is_safe_local_redirect_target(return_to) else None,
         recommend_profiles=recommend_profiles,
         recommended_users=recommended_users,
     )

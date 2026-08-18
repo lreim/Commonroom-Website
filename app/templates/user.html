@@ -3,9 +3,9 @@
 {% block page_content %}
 <div data-inline-chat-request-root>
 <div class="page-header">
-  {% if request.args.get('return_to', '').startswith('/') %}
+  {% if return_to %}
   <p>
-    <a class="btn btn-default" href="{{ request.args.get('return_to') }}">Back to matchings</a>
+    <a class="btn btn-default" href="{{ return_to }}">Back to matchings</a>
   </p>
   {% endif %}
   <h1>{{ user.username }}</h1>

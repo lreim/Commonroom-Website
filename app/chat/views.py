@@ -10,6 +10,7 @@ from .. import db
 from ..email import send_email
 from ..models import User, Conversation, Message, UserBlock, ChatRequest
 from ..notifications import mark_notifications_seen_now
+from ..security import is_safe_local_redirect_target
 
 
 def _pair_ids(user1_id, user2_id):
@@ -18,7 +19,7 @@ def _pair_ids(user1_id, user2_id):
 
 def _safe_next_url(default_endpoint="chat.index", anchor=None):
     next_url = request.form.get("next") or request.args.get("next")
-    if next_url and next_url.startswith("/"):
+    if is_safe_local_redirect_target(next_url):
         return next_url
     target = url_for(default_endpoint)
     if anchor:
