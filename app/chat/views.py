@@ -12,6 +12,8 @@ from ..models import User, Conversation, Message, UserBlock, ChatRequest
 from ..notifications import mark_notifications_seen_now
 from ..security import is_safe_local_redirect_target
 
+CHAT_REQUEST_MESSAGE_MAX_LENGTH = 2000
+
 
 def _pair_ids(user1_id, user2_id):
     return (user1_id, user2_id) if user1_id < user2_id else (user2_id, user1_id)
@@ -241,6 +243,9 @@ def request_chat():
         abort(400)
     if not body:
         flash("Please write a short request message first.")
+        return redirect(next_url)
+    if len(body) > CHAT_REQUEST_MESSAGE_MAX_LENGTH:
+        flash(f"Your chat request is too long. Please keep it under {CHAT_REQUEST_MESSAGE_MAX_LENGTH} characters.")
         return redirect(next_url)
 
     other = User.query.get_or_404(requested_id)

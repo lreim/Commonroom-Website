@@ -204,7 +204,7 @@
       <form method="post" action="{{ url_for('chat.request_chat') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="requested_user_id" id="chat-requested-user-id">
-        <textarea id="chat-request-message" name="message" class="form-control" rows="7" placeholder="Write your request message here."></textarea>
+        <textarea id="chat-request-message" name="message" class="form-control" rows="7" maxlength="2000" placeholder="Write your request message here."></textarea>
         <div class="chat-request-compose-actions">
           <button type="submit" class="btn btn-primary">Send request</button>
           <button type="button" class="btn btn-default" id="chat-request-cancel">Cancel</button>

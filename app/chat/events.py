@@ -5,6 +5,8 @@ from flask import url_for
 from .. import socketio, db
 from ..models import Conversation, Message
 
+CHAT_MESSAGE_MAX_LENGTH = 2000
+
 
 def _room_name(conversation_id):
     return f"conversation_{conversation_id}"
@@ -35,6 +37,9 @@ def send_message(data):
     body = (data.get("body") or "").strip()
     if not body:
         emit("chat_error", {"message": "Empty message"})
+        return
+    if len(body) > CHAT_MESSAGE_MAX_LENGTH:
+        emit("chat_error", {"message": f"Message too long. Please keep it under {CHAT_MESSAGE_MAX_LENGTH} characters."})
         return
 
     conversation = Conversation.query.get(conversation_id)

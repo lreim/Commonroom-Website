@@ -4,6 +4,9 @@ from wtforms.validators import DataRequired, Email, Length, Regexp, EqualTo
 from wtforms import ValidationError 
 from ..models import User 
 
+MAX_EMAIL_LENGTH = 64
+MAX_PASSWORD_LENGTH = 128
+
 
 def canonicalize_eth_email(email):
     email = User.canonicalize_eth_email(email)
@@ -16,8 +19,8 @@ def canonicalize_eth_email(email):
 
 
 class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
+    email = StringField("Email", validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()])
+    password = PasswordField("Password", validators=[DataRequired(), Length(1, MAX_PASSWORD_LENGTH)])
     remember_me = BooleanField("Keep me logged in")
     submit = SubmitField("Let's Lock in ;)")
 
@@ -25,7 +28,7 @@ class LoginForm(FlaskForm):
         canonicalize_eth_email(field.data)
 
 class EmailForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired(), Email()], render_kw={"placeholder": "hello@blah.com"})
+    email = StringField("Email", validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()], render_kw={"placeholder": "hello@blah.com"})
     submit = SubmitField("Send verification token to reset password")
     def validate_email(self, field):
         canonicalize_eth_email(field.data)
@@ -43,8 +46,8 @@ class ResetForm(FlaskForm):
     submit = SubmitField("Save new password")
 
 class RegistrationForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Length(8, 64), Email()], render_kw={"placeholder": "hello@blah.com"})
-    password = PasswordField('Password', validators=[DataRequired(), Length(8, 128),
+    email = StringField('Email', validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()], render_kw={"placeholder": "hello@blah.com"})
+    password = PasswordField('Password', validators=[DataRequired(), Length(8, MAX_PASSWORD_LENGTH),
         Regexp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$', message='Password must contain uppercase, lowercase, and a number.'), 
         EqualTo('password2', message='Passwords must match.')], render_kw={"placeholder": "8-128 characters, include upper/lowercase and a number"})
     password2 = PasswordField('Confirm password', validators=[DataRequired()])
@@ -62,14 +65,14 @@ class RegistrationForm(FlaskForm):
 
        
 class ChangePasswordForm(FlaskForm):
-    old_password = PasswordField('Old password', validators=[DataRequired()])
-    password = PasswordField('New password', validators=[DataRequired(), Length(8, 128), EqualTo('password2', message='Passwords must match.')], render_kw={"placeholder": "8-128 characters, include upper/lowercase and a number"})
+    old_password = PasswordField('Old password', validators=[DataRequired(), Length(1, MAX_PASSWORD_LENGTH)])
+    password = PasswordField('New password', validators=[DataRequired(), Length(8, MAX_PASSWORD_LENGTH), EqualTo('password2', message='Passwords must match.')], render_kw={"placeholder": "8-128 characters, include upper/lowercase and a number"})
     password2 = PasswordField('Confirm new password', validators=[DataRequired()])
     submit = SubmitField('Update Password')
 
 class ChangeEmailForm(FlaskForm):
-    email = StringField('New email', validators=[DataRequired(), Length(8, 64), Email()], render_kw={"placeholder": "hello@blah.com"})
-    password = PasswordField('Password', validators=[DataRequired()])
+    email = StringField('New email', validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()], render_kw={"placeholder": "hello@blah.com"})
+    password = PasswordField('Password', validators=[DataRequired(), Length(1, MAX_PASSWORD_LENGTH)])
     submit = SubmitField('Update Email Address')
 
     #test valid ethz domain 

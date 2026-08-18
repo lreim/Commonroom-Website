@@ -45,7 +45,7 @@
   </ul>
 
   <form id="chat-form" class="chat-form"{% if is_blocked %} style="display:none;"{% endif %}>
-    <input id="chat-input" type="text" autocomplete="off" placeholder="Nachricht..." />
+    <input id="chat-input" type="text" autocomplete="off" maxlength="2000" placeholder="Nachricht..." />
     <button type="submit">Senden</button>
   </form>
 </div>

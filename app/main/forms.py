@@ -5,13 +5,21 @@ from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
 from ..models import User, Role
 
+MAX_POST_BODY_LENGTH = 4000
+MAX_PROFILE_ABOUT_ME_LENGTH = 1500
+MAX_FUNNY_FACT_LENGTH = 500
+
 
 class MultiCheckboxField(SelectMultipleField):
     widget = ListWidget(prefix_label=False)
     option_widget = CheckboxInput()
 
 class PostForm(FlaskForm):
-    body = TextAreaField("What's on your mind?", validators=[DataRequired()])
+    body = TextAreaField(
+        "What's on your mind?",
+        validators=[DataRequired(), Length(1, MAX_POST_BODY_LENGTH)],
+        render_kw={"maxlength": MAX_POST_BODY_LENGTH},
+    )
     submit = SubmitField('Submit')
 
 
@@ -56,11 +64,20 @@ class FeedbackForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
-    about_me = TextAreaField('About me', render_kw={"placeholder": "I study..., issues I struggle with are..., I have gone through... and can tell something about..."})
+    about_me = TextAreaField(
+        'About me',
+        validators=[Length(0, MAX_PROFILE_ABOUT_ME_LENGTH)],
+        render_kw={
+            "placeholder": "I study..., issues I struggle with are..., I have gone through... and can tell something about...",
+            "maxlength": MAX_PROFILE_ABOUT_ME_LENGTH,
+        },
+    )
     funny_fact = TextAreaField(
         'Fun fact about me',
+        validators=[Length(0, MAX_FUNNY_FACT_LENGTH)],
         render_kw={
-            "placeholder": "Tell us a fun fact about yourself or answer one of those:\nWhat is your go-to food?\nWhich study place is the best and why?\nWhich cantine cooks?"
+            "placeholder": "Tell us a fun fact about yourself or answer one of those:\nWhat is your go-to food?\nWhich study place is the best and why?\nWhich cantine cooks?",
+            "maxlength": MAX_FUNNY_FACT_LENGTH,
         },
     )
     tags = StringField('Tags (comma separated)', validators=[Length(0, 256)])
@@ -84,8 +101,8 @@ class EditProfileAdminForm(FlaskForm):
     )
     confirmed = BooleanField('Confirmed')
     role = SelectField('Role', coerce=int)
-    about_me = TextAreaField('About me')
-    funny_fact = TextAreaField('Funny fact about me')
+    about_me = TextAreaField('About me', validators=[Length(0, MAX_PROFILE_ABOUT_ME_LENGTH)], render_kw={"maxlength": MAX_PROFILE_ABOUT_ME_LENGTH})
+    funny_fact = TextAreaField('Funny fact about me', validators=[Length(0, MAX_FUNNY_FACT_LENGTH)], render_kw={"maxlength": MAX_FUNNY_FACT_LENGTH})
     tags = StringField('Tags (comma separated)', validators=[Length(0, 256)])
     submit = SubmitField('Submit')
 
