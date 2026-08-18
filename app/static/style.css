@@ -595,11 +595,38 @@ html.theme-toggle-ready .theme-switch {
   text-decoration: none;
 }
 
+.profile-menu-dropdown form {
+  margin: 0 0 10px;
+}
+
+.profile-menu-dropdown form:last-child {
+  margin-bottom: 0;
+}
+
+.profile-menu-link-button,
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.profile-menu-link-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: #2d1d00;
+}
+
 .profile-menu-dropdown a:last-child {
   margin-bottom: 0;
 }
 
-.profile-menu-dropdown a:hover {
+.profile-menu-dropdown a:hover,
+.profile-menu-link-button:hover,
+.link-button:hover {
   text-decoration: underline;
 }
 

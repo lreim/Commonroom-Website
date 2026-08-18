@@ -46,7 +46,7 @@ def login():
     return render_template('auth/login.html', form=form)
 
 
-@auth.route('/logout')
+@auth.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()     #removes and resets the user session
@@ -154,7 +154,7 @@ def unconfirmed():     #prüft, ob der user schon confirmed hat, sonst unconfirm
         return redirect(url_for('main.index'))
     return render_template('auth/unconfirmed.html')
 
-@auth.route('/confirm')
+@auth.route('/confirm', methods=['POST'])
 @login_required
 def resend_confirmation():
     token = current_user.generate_confirmation_token()

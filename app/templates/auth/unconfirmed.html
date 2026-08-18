@@ -22,16 +22,18 @@
 
   <p>
     If the email did not arrive or the link expired, you can
-    <a href="{{ url_for('auth.resend_confirmation') }}">
-      click here to resend a confirmation email
-    </a>.
+    <form method="post" action="{{ url_for('auth.resend_confirmation') }}" style="display:inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="link-button">click here to resend a confirmation email</button>
+    </form>.
   </p>
 
   <p>
     If you want to leave this account for now, you can
-    <a href="{{ url_for('auth.logout') }}">
-      sign out here
-    </a>.
+    <form method="post" action="{{ url_for('auth.logout') }}" style="display:inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="link-button">sign out here</button>
+    </form>.
   </p>
 </div>
 
