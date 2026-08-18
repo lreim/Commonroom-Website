@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
-from flask import render_template, redirect, url_for, request, abort, jsonify, flash
+from flask import render_template, redirect, url_for, request, abort, jsonify, flash, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 
