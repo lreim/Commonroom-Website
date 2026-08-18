@@ -182,7 +182,7 @@ def search_users():
     })
 
 
-@chat.route("/notifications/mark-seen")
+@chat.route("/notifications/mark-seen", methods=["POST"])
 @login_required
 def mark_notifications_seen():
     mark_notifications_seen_now()

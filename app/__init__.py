@@ -9,6 +9,7 @@ from config import config
 from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_login import current_user
+from flask_wtf.csrf import CSRFProtect
 
 #erst nur definieren, damit nicht direkt die App importiert werden muss (gut für Tests)
 bootstrap = Bootstrap()
@@ -17,6 +18,7 @@ moment = Moment()
 db = SQLAlchemy()
 migrate = Migrate()
 socketio = SocketIO(cors_allowed_origins='*')
+csrf = CSRFProtect()
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'      #endpoint for the login page 
@@ -38,6 +40,7 @@ def create_app(config_name):
     migrate.init_app(app,db)
     login_manager.init_app(app)
     socketio.init_app(app)
+    csrf.init_app(app)
     
 
     from .main import main as main_blueprint

@@ -90,9 +90,11 @@
         {% if item.direction == "outgoing" %}
         <div class="chat-search-start-form chat-request-actions">
           <form method="post" action="{{ url_for('chat.resend_request', request_id=item.request.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="chat-start-action-button">Resend request</button>
           </form>
           <form method="post" action="{{ url_for('chat.withdraw_request', request_id=item.request.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-default chat-request-withdraw-button">Withdraw</button>
           </form>
         </div>
@@ -200,6 +202,7 @@
       <h4 id="chat-request-compose-title">Send chat request</h4>
       <p class="chat-request-compose-help">This message will be sent by email together with Accept and Reject links.</p>
       <form method="post" action="{{ url_for('chat.request_chat') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="requested_user_id" id="chat-requested-user-id">
         <textarea id="chat-request-message" name="message" class="form-control" rows="7" placeholder="Write your request message here."></textarea>
         <div class="chat-request-compose-actions">

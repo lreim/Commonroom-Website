@@ -24,6 +24,7 @@
       } catch (e) {}
     })();
   </script>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='Logo_Website_CommonRoom.png') }}">
 {% endblock %}
@@ -261,6 +262,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const trigger = document.getElementById("notification-menu-trigger");
   const dropdown = document.getElementById("notification-menu-dropdown");
   const navbar = document.querySelector(".navbar");
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
   if (!trigger || !dropdown) {
     return;
   }
@@ -302,7 +304,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!hasMarkedSeen) {
       hasMarkedSeen = true;
       trigger.classList.remove("has-unseen");
-      fetch(trigger.dataset.markSeenUrl, { headers: { Accept: "application/json" } }).catch(function () {});
+      fetch(trigger.dataset.markSeenUrl, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "X-CSRFToken": csrfToken
+        }
+      }).catch(function () {});
     }
     syncMobileNavbarExpansion();
   }

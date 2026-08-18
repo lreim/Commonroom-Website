@@ -6,7 +6,7 @@ from sqlalchemy import func
 from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
 from .forms import PostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
-from .. import db
+from .. import db, csrf
 from ..models import User, Post, Role, Tag, Conversation, PageVisit
 from ..tag_matching import match_tags, get_model
 from flask_login import login_required, current_user
@@ -218,6 +218,7 @@ def feedback():
 
 
 @main.route('/analytics/page-visit', methods=['POST'])
+@csrf.exempt
 def track_page_visit():
     if not _analytics_request_has_same_origin():
         return ("", 204)
