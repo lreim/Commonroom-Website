@@ -24,6 +24,9 @@ class Config:
     #für Sicherheit bei Nutzung von Login session cookies 
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=20)   #damit man automatisch ausgeloggt werden kann nach einer bestimmten Zeitspanne, 
                                                      # der cookie überträgt login daten von request zu request
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = "Lax"
     REMEMBER_COOKIE_DURATION = timedelta(days=7)        # cookie, der den user wiedererkennt, wenn remember_me aktiviert wurde, damit man sich nicht einloggen muss.
     REMEMBER_COOKIE_HTTPONLY = True #True für Deploy!!!!!# !!!!!!!!!!!!!!!!!!!!!!
     REMEMBER_COOKIE_SECURE = False
@@ -68,6 +71,8 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
     'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+    SESSION_COOKIE_SECURE = True
+    REMEMBER_COOKIE_SECURE = True
 
 #dictionary for switching cases, these are the classes from above 
 config = {

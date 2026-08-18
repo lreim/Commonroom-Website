@@ -1,6 +1,7 @@
 import unittest
 from flask import current_app
 from app import create_app, db
+from config import ProductionConfig
 
 class BasicsTestCase(unittest.TestCase):
     def setUp(self):
@@ -26,3 +27,7 @@ class BasicsTestCase(unittest.TestCase):
 
     def test_testing_secret_key_is_not_public_fallback(self):
         self.assertEqual(current_app.config['SECRET_KEY'], 'testing-secret-key')
+
+    def test_production_cookies_are_secure(self):
+        self.assertTrue(ProductionConfig.SESSION_COOKIE_SECURE)
+        self.assertTrue(ProductionConfig.REMEMBER_COOKIE_SECURE)
