@@ -7,7 +7,24 @@
   <h1>Chat Request</h1>
 </div>
 
-{% if status == "accepted" %}
+{% if status == "confirm" %}
+  <p>
+    <strong>{{ chat_request.requester.username }}</strong> would like to start a conversation with you on CommonRoom.
+  </p>
+  <p><strong>Request message:</strong></p>
+  <p>{{ chat_request.message }}</p>
+  {% if action == "accept" %}
+    <p>If you want to continue, confirm below to accept this request.</p>
+  {% else %}
+    <p>If you want to continue, confirm below to reject this request.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('chat.accept_request', token=token) if action == 'accept' else url_for('chat.reject_request', token=token) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-primary">
+      {% if action == "accept" %}Confirm accept{% else %}Confirm reject{% endif %}
+    </button>
+  </form>
+{% elif status == "accepted" %}
   <p>The chat request has been accepted.</p>
   <p>You can now sign in to CommonRoom and continue there.</p>
 {% elif status == "rejected" %}

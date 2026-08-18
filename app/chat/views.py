@@ -70,6 +70,28 @@ def _send_chat_request_email(chat_request, message_stream=None):
     )
 
 
+def _render_request_response_page(token, action):
+    chat_request = ChatRequest.resolve_response_token(token, expected_action=action)
+    if chat_request is None:
+        return render_template("chat/request_response.html", status="invalid", action=action)
+
+    if chat_request.status != ChatRequest.STATUS_PENDING:
+        return render_template(
+            "chat/request_response.html",
+            status="already_processed",
+            action=action,
+            chat_request=chat_request,
+        )
+
+    return render_template(
+        "chat/request_response.html",
+        status="confirm",
+        action=action,
+        token=token,
+        chat_request=chat_request,
+    )
+
+
 def _serialize_chat_candidate(user):
     pending_request = _pending_request_between(current_user.id, user.id)
     return {
@@ -326,12 +348,14 @@ def detail(conversation_id):    #lädt Konversation
     )
 
 
-@chat.route("/request/accept/<token>")
+@chat.route("/request/accept/<token>", methods=["GET", "POST"])
 def accept_request(token):
+    if request.method == "GET":
+        return _render_request_response_page(token, "accept")
+
     chat_request = ChatRequest.resolve_response_token(token, expected_action="accept")
     if chat_request is None:
         return render_template("chat/request_response.html", status="invalid", action="accept")
-
     if chat_request.status != ChatRequest.STATUS_PENDING:
         return render_template(
             "chat/request_response.html",
@@ -339,7 +363,6 @@ def accept_request(token):
             action="accept",
             chat_request=chat_request,
         )
-
     if chat_request.requester.has_block_relationship(chat_request.requested):
         chat_request.status = ChatRequest.STATUS_REJECTED
         chat_request.responded_at = datetime.now(timezone.utc)
@@ -366,12 +389,14 @@ def accept_request(token):
     )
 
 
-@chat.route("/request/reject/<token>")
+@chat.route("/request/reject/<token>", methods=["GET", "POST"])
 def reject_request(token):
+    if request.method == "GET":
+        return _render_request_response_page(token, "reject")
+
     chat_request = ChatRequest.resolve_response_token(token, expected_action="reject")
     if chat_request is None:
         return render_template("chat/request_response.html", status="invalid", action="reject")
-
     if chat_request.status != ChatRequest.STATUS_PENDING:
         return render_template(
             "chat/request_response.html",
@@ -379,7 +404,6 @@ def reject_request(token):
             action="reject",
             chat_request=chat_request,
         )
-
     chat_request.status = ChatRequest.STATUS_REJECTED
     chat_request.responded_at = datetime.now(timezone.utc)
     db.session.add(chat_request)
