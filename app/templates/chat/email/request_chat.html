@@ -3,7 +3,7 @@
 <p><strong>{{ requester.username }}</strong> would like to start a conversation with you on CommonRoom.</p>
 
 <p><strong>Request message:</strong></p>
-<p>{{ chat_request.message|replace('\n', '<br>')|safe }}</p>
+<div style="white-space: pre-line;">{{ chat_request.message }}</div>
 
 <p>
   <a href="{{ accept_url }}">Review accept request</a>
