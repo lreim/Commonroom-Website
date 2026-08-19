@@ -46,7 +46,7 @@ class ResetForm(FlaskForm):
     submit = SubmitField("Save new password")
 
 class RegistrationForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()], render_kw={"placeholder": "hello@blah.com"})
+    email = StringField('Email', validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()], render_kw={"placeholder": "username@ethz.ch"})
     password = PasswordField('Password', validators=[DataRequired(), Length(8, MAX_PASSWORD_LENGTH),
         Regexp(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$', message='Password must contain uppercase, lowercase, and a number.'), 
         EqualTo('password2', message='Passwords must match.')], render_kw={"placeholder": "8-128 characters, include upper/lowercase and a number"})

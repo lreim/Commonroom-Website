@@ -87,7 +87,7 @@
 <p>
     Just a quick note for legal and responsibility reasons:
     This is neither a professional website nor the only platform you should choose and use in cases of severe mental illness or severe struggles.
-    In those cases, please refer to ...... [add websites, emergency numbers, counselling services, etc.].
+    In those cases, please visit <a href="{{ url_for('main.get_help_now') }}">Get Help Now</a>.
     If you want to talk to someone who has received training in listening to people with struggles, please check out the Nightline service and other professional support services.
 </p>
 
@@ -100,7 +100,7 @@
 <h3>Questions or concerns?</h3>
 <p>
     If any questions arise, if you miss features here, or if you want to report abuse, please do not hesitate to reach out to me.
-    Please <a href = "mailto:lissy@example.com?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">send me an email</a>.
+    Please <a href = "mailto:contact@commonroom.ch?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">send me an email</a>.
 </p>
 </div>
 

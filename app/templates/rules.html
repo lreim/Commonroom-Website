@@ -27,7 +27,14 @@
       This platform is for exchanging experiences regarding any kind of issue, struggle, or situation in life.
       Yet, it is definitely <strong>not</strong> for dating or making friends.
       Make sure never to take the conversation in that direction and stick to the struggles you connected over.
-      In case you feel uncomfortable, reach out to me via [contact email] and describe the issue.
+      In case you feel uncomfortable, reach out to me via <a href = "mailto:report-abuse@commonroom.ch?subject=Report%20abuse%20%E2%80%94%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">this e-mail</a>.
+</p>
+</div>
+
+{% endblock %}
+
+
+<!--Inhalt: and describe the issue.
       I am happy to help, and it is important to me that you feel safe here.
   </p>
 
