@@ -95,8 +95,8 @@ class EditProfileAdminForm(FlaskForm):
         validators=[
             DataRequired(),
             Length(1, 64),
-            Regexp('^[A-Za-z][A-Za-z0-9_.]*$', 0,
-                   'Usernames must have only letters, numbers, dots or underscores.')
+            Regexp('^[A-Za-z][A-Za-z0-9_.-]*$', 0,
+                   'Usernames must have only letters, numbers, hyphens, dots or underscores.')
         ]
     )
     confirmed = BooleanField('Confirmed')
