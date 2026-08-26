@@ -773,6 +773,16 @@ html.dark-mode .welcome-logo {
   line-height: 1.25;
 }
 
+.homepage-profile-example-image {
+  display: block;
+  width: min(100%, 980px);
+  height: auto;
+  margin: 0 0 34px;
+  border-radius: 22px;
+  border: 1px solid rgba(125, 91, 26, 0.16);
+  box-shadow: 0 20px 42px rgba(91, 58, 20, 0.12);
+}
+
 .sidebar-footer {
   margin-top: auto;
 }

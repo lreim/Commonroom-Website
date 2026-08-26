@@ -55,6 +55,7 @@ class Config:
 #for using flash mail via t-online 
 class DevelopmentConfig(Config):
     DEBUG = True    #debug Hilfe 
+    TEMPLATES_AUTO_RELOAD = True
     MAIL_SERVER = 'securesmtp.t-online.de'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
