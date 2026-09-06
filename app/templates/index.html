@@ -4,20 +4,106 @@
 {% block page_content %}
 <div class="welcome-hero">
   <div class="page-header text-center welcome-hero-header">
-  <div class="welcome-logo-wrap">
+    <div class="welcome-bubbles" aria-label="What CommonRoom offers">
+      <div class="welcome-bubble"><strong>COMMUNITY</strong><em>Share what’s on your mind with posts.</em></div>
+      <div class="welcome-bubble"><strong>1:1 CHAT</strong><em>Talk to someone who gets it.</em></div>
+      <div class="welcome-bubble"><strong>ANONYMOUS</strong><em>Be open. Stay anonymous.</em></div>
+      <div class="welcome-bubble"><strong>ETH ONLY</strong><em>By ETH students, for ETH students.</em></div>
+      <div class="welcome-bubble"><strong>OPEN SOURCE</strong><em>Transparent &amp; non-profit.</em></div>
+    </div>
+    <div class="welcome-logo-wrap welcome-title-wrap">
       <h1>Welcome to CommonRoom</h1>
-  </div>
+    </div>
   
-  <div class="welcome-logo-wrap">
+  <div class="welcome-logo-wrap welcome-image-wrap">
     <img
       src="{{ url_for('static', filename='Logo_Website_larger.jpg') }}"
       alt="CommonRoom logo"
       class="welcome-logo"
     >
   </div>
-  <h2 class="welcome-logo-tagline">By ETH students, for ETH students. A space for anonymous peer support, shared struggles, and honest conversations.</h2>
+  <h2 class="welcome-logo-tagline">Share what’s on your mind. Find people who get it.</h2>
+  <p class="welcome-logo-friendline">Come as you are, as you were, as a friend.</p>
+  <p class="welcome-logo-disclaimer">Disclaimer: Not a dating/friend-finding platform, marketplace, event board or general ETH Q&amp;A forum.</p>
   </div>
 </div>
+
+<section class="homepage-post-showcase" aria-labelledby="homepage-post-showcase-title">
+  <div class="homepage-post-showcase-header">
+    <div>
+      <h2 id="homepage-post-showcase-title">From the community</h2>
+      <p>Anonymous thoughts from ETH students</p>
+    </div>
+    <a href="{{ url_for('main.post') }}">Explore all posts &rarr;</a>
+  </div>
+
+  <div class="homepage-post-wall">
+    <article class="post homepage-example-post">
+      <div class="profile-thumbnail">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=1&amp;size=80" alt="Avatar of light-vector-9721">
+      </div>
+      <div class="post-content">
+        <div class="post-date">2 hours ago</div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">light-vector-9721</a></div>
+        <div class="post-body">I passed the exam, but I still feel like I’m falling behind everyone else. Does anyone know this feeling?</div>
+        <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 4 replies</a></div>
+      </div>
+      <div class="post-side-actions"><a class="homepage-post-reply" href="{{ url_for('main.post') }}">Reply</a></div>
+    </article>
+
+    <article class="post homepage-example-post">
+      <div class="profile-thumbnail">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=2&amp;size=80" alt="Avatar of lucid-prime-8729">
+      </div>
+      <div class="post-content">
+        <div class="post-date">yesterday</div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">lucid-prime-8729</a></div>
+        <div class="post-body">Making friends after the first semester feels much harder than people admit.</div>
+        <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 9 replies</a></div>
+      </div>
+      <div class="post-side-actions"><a class="homepage-post-reply" href="{{ url_for('main.post') }}">Reply</a></div>
+    </article>
+
+    <article class="post homepage-example-post">
+      <div class="profile-thumbnail">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=3&amp;size=80" alt="Avatar of bright-eigen-9787">
+      </div>
+      <div class="post-content">
+        <div class="post-date">3 days ago</div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">bright-eigen-9787</a></div>
+        <div class="post-body">Today I finally asked someone from my lecture to have coffee. It was less scary than I expected.</div>
+        <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 6 replies</a></div>
+      </div>
+      <div class="post-side-actions"><a class="homepage-post-reply" href="{{ url_for('main.post') }}">Reply</a></div>
+    </article>
+
+    <article class="post homepage-example-post">
+      <div class="profile-thumbnail">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=4&amp;size=80" alt="Avatar of quiet-spectrum-5994">
+      </div>
+      <div class="post-content">
+        <div class="post-date">4 days ago</div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">quiet-spectrum-5994</a></div>
+        <div class="post-body">How do you let yourself rest without feeling guilty about not studying?</div>
+        <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 12 replies</a></div>
+      </div>
+      <div class="post-side-actions"><a class="homepage-post-reply" href="{{ url_for('main.post') }}">Reply</a></div>
+    </article>
+
+    <article class="post homepage-example-post">
+      <div class="profile-thumbnail">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=1&amp;size=80" alt="Avatar of light-vector-9721">
+      </div>
+      <div class="post-content">
+        <div class="post-date">last week</div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">light-vector-9721</a></div>
+        <div class="post-body">I don’t know whether I chose the wrong degree or whether I’m simply exhausted.</div>
+        <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 8 replies</a></div>
+      </div>
+      <div class="post-side-actions"><a class="homepage-post-reply" href="{{ url_for('main.post') }}">Reply</a></div>
+    </article>
+  </div>
+</section>
 
 <div class="reading-page welcome-reading-page">
   <h2>Hi, friend!</h2>
