@@ -64,7 +64,26 @@
         {%else%}
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
-        <li><a href="{{ url_for('auth.login')}}"> Sign In</a></li>
+        <li class="navbar-signin-item">
+          <a href="{{ url_for('auth.login')}}">Sign In</a>
+          {% if active_page|default('') == 'index' %}
+          <span class="navbar-signin-hint" aria-hidden="true">
+            <span>create a profile</span>
+            <svg viewBox="0 0 255 140" focusable="false">
+              <defs>
+                <marker id="navbar-signin-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                  <path d="M0,0 L8,4 L0,8 Z"></path>
+                </marker>
+              </defs>
+              <path
+                class="navbar-signin-hint-line"
+                d="M245 125 C185 165, 130 135, 155 75 C172 28, 250 45, 218 94 C210 120, 140 113, 18 12"
+                marker-end="url(#navbar-signin-arrowhead)"
+              ></path>
+            </svg>
+          </span>
+          {% endif %}
+        </li>
         {%endif%}
       </ul>
       <div class="navbar-right-controls">
@@ -361,6 +380,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (summary) {
       summary.addEventListener("click", function () {
+        if (panel.classList.contains("floating-abuse-panel")) {
+          panel.classList.add("has-been-opened");
+        }
         panels.forEach(function (otherPanel) {
           if (otherPanel !== panel) {
             otherPanel.open = false;
@@ -509,7 +531,6 @@ document.addEventListener("DOMContentLoaded", function () {
       </a>
     </div>
   </details>
-  {% if current_user.is_authenticated and current_user.confirmed %}
   <details class="floating-contact-panel floating-abuse-panel" data-floating-panel>
     <summary
       class="floating-abuse-link"
@@ -518,6 +539,23 @@ document.addEventListener("DOMContentLoaded", function () {
     >
       <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
       <span class="floating-abuse-text">Report abuse</span>
+      {% if active_page|default('') == 'index' %}
+      <span class="floating-abuse-hint" aria-hidden="true">
+        <span>Let’s keep it safe</span>
+        <svg viewBox="0 0 255 140" focusable="false">
+          <defs>
+            <marker id="floating-abuse-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z"></path>
+            </marker>
+          </defs>
+          <path
+            class="floating-abuse-hint-line"
+            d="M18 24 C100 -2, 150 20, 125 60 C105 92, 55 77, 70 42 C88 2, 213 25, 250 132"
+            marker-end="url(#floating-abuse-arrowhead)"
+          ></path>
+        </svg>
+      </span>
+      {% endif %}
     </summary>
     <div class="floating-contact-card floating-abuse-card">
       <button type="button" class="floating-contact-close" data-floating-panel-close aria-label="Close report abuse form">
@@ -533,7 +571,6 @@ document.addEventListener("DOMContentLoaded", function () {
       </a>
     </div>
   </details>
-  {% endif %}
 </div>
 {% endblock %}
 

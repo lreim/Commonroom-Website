@@ -5,11 +5,37 @@
 <div class="welcome-hero">
   <div class="page-header text-center welcome-hero-header">
     <div class="welcome-bubbles" aria-label="What CommonRoom offers">
-      <div class="welcome-bubble"><strong>COMMUNITY</strong><em>Share what’s on your mind with posts.</em></div>
-      <div class="welcome-bubble"><strong>1:1 CHAT</strong><em>Talk to someone who gets it.</em></div>
-      <div class="welcome-bubble"><strong>ANONYMOUS</strong><em>Be open. Stay anonymous.</em></div>
-      <div class="welcome-bubble"><strong>ETH ONLY</strong><em>By ETH students, for ETH students.</em></div>
-      <div class="welcome-bubble"><strong>OPEN SOURCE</strong><em>Transparent &amp; non-profit.</em></div>
+      <a
+        class="welcome-bubble welcome-bubble-link"
+        href="{{ url_for('main.post') }}"
+        aria-label="Look at community posts"
+      >
+        <strong>COMMUNITY</strong>
+        <em>Share what’s on your mind with posts</em>
+        <span class="welcome-bubble-link-preview" aria-hidden="true">look at community posts</span>
+      </a>
+      <div class="welcome-bubble"><strong>1:1 CHAT</strong><em>Talk to someone who gets it</em></div>
+      <a
+        class="welcome-bubble welcome-bubble-link"
+        href="{{ url_for('main.data_and_privacy') }}"
+        aria-label="Read about data and privacy"
+      >
+        <strong>ANONYMOUS</strong>
+        <em>Be open, stay anonymous</em>
+        <span class="welcome-bubble-link-preview" aria-hidden="true">read about data &amp; privacy</span>
+      </a>
+      <div class="welcome-bubble"><strong>ETH ONLY</strong><em>By ETH students, for ETH students</em></div>
+      <a
+        class="welcome-bubble welcome-bubble-link"
+        href="https://github.com/lreim/Commonroom-Website.git"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open the CommonRoom source code on GitHub"
+      >
+        <strong>OPEN SOURCE</strong>
+        <em>Transparent &amp; non-profit.</em>
+        <span class="welcome-bubble-link-preview" aria-hidden="true">https://github.com/lreim/Commonroom-Website.git</span>
+      </a>
     </div>
     <div class="welcome-logo-wrap welcome-title-wrap">
       <h1>Welcome to CommonRoom</h1>
@@ -40,11 +66,11 @@
   <div class="homepage-post-wall">
     <article class="post homepage-example-post">
       <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=1&amp;size=80" alt="Avatar of light-vector-9721">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=gentle-nebula-4318&amp;size=80" alt="Avatar of gentle-nebula-4318">
       </div>
       <div class="post-content">
         <div class="post-date">2 hours ago</div>
-        <div class="post-author"><a href="{{ url_for('main.post') }}">light-vector-9721</a></div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">gentle-nebula-4318</a></div>
         <div class="post-body">I passed the exam, but I still feel like I’m falling behind everyone else. Does anyone know this feeling?</div>
         <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 4 replies</a></div>
       </div>
@@ -53,11 +79,11 @@
 
     <article class="post homepage-example-post">
       <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=2&amp;size=80" alt="Avatar of lucid-prime-8729">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=cosmic-tensor-7642&amp;size=80" alt="Avatar of cosmic-tensor-7642">
       </div>
       <div class="post-content">
         <div class="post-date">yesterday</div>
-        <div class="post-author"><a href="{{ url_for('main.post') }}">lucid-prime-8729</a></div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">cosmic-tensor-7642</a></div>
         <div class="post-body">Making friends after the first semester feels much harder than people admit.</div>
         <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 9 replies</a></div>
       </div>
@@ -66,11 +92,11 @@
 
     <article class="post homepage-example-post">
       <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=3&amp;size=80" alt="Avatar of bright-eigen-9787">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=patient-photon-2856&amp;size=80" alt="Avatar of patient-photon-2856">
       </div>
       <div class="post-content">
         <div class="post-date">3 days ago</div>
-        <div class="post-author"><a href="{{ url_for('main.post') }}">bright-eigen-9787</a></div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">patient-photon-2856</a></div>
         <div class="post-body">Today I finally asked someone from my lecture to have coffee. It was less scary than I expected.</div>
         <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 6 replies</a></div>
       </div>
@@ -79,11 +105,11 @@
 
     <article class="post homepage-example-post">
       <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=4&amp;size=80" alt="Avatar of quiet-spectrum-5994">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=amber-lattice-9137&amp;size=80" alt="Avatar of amber-lattice-9137">
       </div>
       <div class="post-content">
         <div class="post-date">4 days ago</div>
-        <div class="post-author"><a href="{{ url_for('main.post') }}">quiet-spectrum-5994</a></div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">amber-lattice-9137</a></div>
         <div class="post-body">How do you let yourself rest without feeling guilty about not studying?</div>
         <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 12 replies</a></div>
       </div>
@@ -92,11 +118,11 @@
 
     <article class="post homepage-example-post">
       <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=1&amp;size=80" alt="Avatar of light-vector-9721">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=curious-quasar-5463&amp;size=80" alt="Avatar of curious-quasar-5463">
       </div>
       <div class="post-content">
         <div class="post-date">last week</div>
-        <div class="post-author"><a href="{{ url_for('main.post') }}">light-vector-9721</a></div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">curious-quasar-5463</a></div>
         <div class="post-body">I don’t know whether I chose the wrong degree or whether I’m simply exhausted.</div>
         <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 8 replies</a></div>
       </div>
