@@ -64,26 +64,7 @@
         {%else%}
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
-        <li class="navbar-signin-item">
-          <a href="{{ url_for('auth.login')}}">Sign In</a>
-          {% if active_page|default('') == 'index' %}
-          <span class="navbar-signin-hint" aria-hidden="true">
-            <span>create a profile</span>
-            <svg viewBox="0 0 255 140" focusable="false">
-              <defs>
-                <marker id="navbar-signin-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                  <path d="M0,0 L8,4 L0,8 Z"></path>
-                </marker>
-              </defs>
-              <path
-                class="navbar-signin-hint-line"
-                d="M245 125 C185 165, 130 135, 155 75 C172 28, 250 45, 218 94 C210 120, 140 113, 18 12"
-                marker-end="url(#navbar-signin-arrowhead)"
-              ></path>
-            </svg>
-          </span>
-          {% endif %}
-        </li>
+        <li><a href="{{ url_for('auth.login')}}">Sign In</a></li>
         {%endif%}
       </ul>
       <div class="navbar-right-controls">

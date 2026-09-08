@@ -4,43 +4,7 @@
 {% block page_content %}
 <div class="welcome-hero">
   <div class="page-header text-center welcome-hero-header">
-    <div class="welcome-bubbles" aria-label="What CommonRoom offers">
-      <a
-        class="welcome-bubble welcome-bubble-link"
-        href="{{ url_for('main.post') }}"
-        aria-label="Look at community posts"
-      >
-        <strong>COMMUNITY</strong>
-        <em>Share what’s on your mind with posts</em>
-        <span class="welcome-bubble-link-preview" aria-hidden="true">look at community posts</span>
-      </a>
-      <div class="welcome-bubble"><strong>1:1 CHAT</strong><em>Talk to someone who gets it</em></div>
-      <a
-        class="welcome-bubble welcome-bubble-link"
-        href="{{ url_for('main.data_and_privacy') }}"
-        aria-label="Read about data and privacy"
-      >
-        <strong>ANONYMOUS</strong>
-        <em>Be open, stay anonymous</em>
-        <span class="welcome-bubble-link-preview" aria-hidden="true">read about data &amp; privacy</span>
-      </a>
-      <div class="welcome-bubble"><strong>ETH ONLY</strong><em>By ETH students, for ETH students</em></div>
-      <a
-        class="welcome-bubble welcome-bubble-link"
-        href="https://github.com/lreim/Commonroom-Website.git"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Open the CommonRoom source code on GitHub"
-      >
-        <strong>OPEN SOURCE</strong>
-        <em>Transparent &amp; non-profit.</em>
-        <span class="welcome-bubble-link-preview" aria-hidden="true">https://github.com/lreim/Commonroom-Website.git</span>
-      </a>
-    </div>
-    <div class="welcome-logo-wrap welcome-title-wrap">
-      <h1>Welcome to CommonRoom</h1>
-    </div>
-  
+  <h2 class="welcome-logo-tagline">Share what’s on your mind. Find people who get it.</h2>
   <div class="welcome-logo-wrap welcome-image-wrap">
     <img
       src="{{ url_for('static', filename='Logo_Website_larger.jpg') }}"
@@ -48,19 +12,63 @@
       class="welcome-logo"
     >
   </div>
-  <h2 class="welcome-logo-tagline">Share what’s on your mind. Find people who get it.</h2>
   <p class="welcome-logo-friendline">Come as you are, as you were, as a friend.</p>
-  <p class="welcome-logo-disclaimer">Disclaimer: Not a dating/friend-finding platform, marketplace, event board or general ETH Q&amp;A forum.</p>
+  <div class="welcome-bubbles" aria-label="What CommonRoom offers">
+    <a
+      class="welcome-bubble welcome-bubble-link"
+      href="#community-examples-heading"
+      aria-label="Jump to community post examples"
+    >
+      <strong>COMMUNITY</strong>
+      <em>Share what’s on your mind with posts</em>
+      <span class="welcome-bubble-link-preview" aria-hidden="true">look at community posts</span>
+    </a>
+    <div class="welcome-bubble"><strong>1:1 CHAT</strong><em>Talk to someone who gets it</em></div>
+    <a
+      class="welcome-bubble welcome-bubble-link"
+      href="{{ url_for('main.data_and_privacy') }}"
+      aria-label="Read about data and privacy"
+    >
+      <strong>ANONYMOUS</strong>
+      <em>Be open, stay anonymous</em>
+      <span class="welcome-bubble-link-preview" aria-hidden="true">read about data &amp; privacy</span>
+    </a>
+    <div class="welcome-bubble"><strong>ETH ONLY</strong><em>By ETH students, for ETH students</em></div>
+    <a
+      class="welcome-bubble welcome-bubble-link"
+      href="https://github.com/lreim/Commonroom-Website.git"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Open the CommonRoom source code on GitHub"
+    >
+      <strong>OPEN SOURCE</strong>
+      <em>Transparent &amp; non-profit.</em>
+      <span class="welcome-bubble-link-preview" aria-hidden="true">https://github.com/lreim/Commonroom-Website.git</span>
+    </a>
+  </div>
+  <a class="welcome-scroll-cue" href="#community-examples-heading" aria-label="Scroll to community post examples">
+    <svg viewBox="0 0 28 34" aria-hidden="true" focusable="false">
+      <path d="M5 7 L14 16 L23 7"></path>
+      <path d="M5 18 L14 27 L23 18"></path>
+    </svg>
+  </a>
   </div>
 </div>
 
-<section class="homepage-post-showcase" aria-labelledby="homepage-post-showcase-title">
+<h2 id="community-examples-heading" class="homepage-post-intro-title">
+  Big worries. Small moments. Random thoughts.
+  <span>Share yours, or just see what others are thinking.</span>
+</h2>
+<section id="community-examples" class="homepage-post-showcase" aria-labelledby="homepage-post-showcase-title">
   <div class="homepage-post-showcase-header">
     <div>
-      <h2 id="homepage-post-showcase-title">From the community</h2>
-      <p>Anonymous thoughts from ETH students</p>
+      <h3 id="homepage-post-showcase-title">Things you could talk about</h3>
+      <p>example posts</p>
     </div>
-    <a href="{{ url_for('main.post') }}">Explore all posts &rarr;</a>
+    <div class="homepage-post-showcase-links">
+      <a href="{{ url_for('main.post') }}">Explore all posts &rarr;</a>
+      <span>no profile needed, just take a look</span>
+    </div>
   </div>
 
   <div class="homepage-post-wall">
@@ -128,8 +136,23 @@
       </div>
       <div class="post-side-actions"><a class="homepage-post-reply" href="{{ url_for('main.post') }}">Reply</a></div>
     </article>
+
+    <article class="post homepage-example-post">
+      <div class="profile-thumbnail">
+        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&amp;size=80" alt="Avatar of steady-orbit-6724">
+      </div>
+      <div class="post-content">
+        <div class="post-date">last week</div>
+        <div class="post-author"><a href="{{ url_for('main.post') }}">steady-orbit-6724</a></div>
+        <div class="post-body">How do people actually manage lectures, exercise, cooking, friends and enough sleep?</div>
+        <div class="post-thread-row"><a class="post-thread-link" href="{{ url_for('main.post') }}">&#8627; 15 replies</a></div>
+      </div>
+      <div class="post-side-actions"><a class="homepage-post-reply" href="{{ url_for('main.post') }}">Reply</a></div>
+    </article>
   </div>
 </section>
+
+<p class="welcome-logo-disclaimer homepage-post-attention">Attention: Not a dating/friend-finding platform, marketplace, event board or general ETH Q&amp;A forum.</p>
 
 <div class="reading-page welcome-reading-page">
   <h2>Hi, friend!</h2>
