@@ -379,6 +379,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  const scrollRevealHint = document.querySelector("[data-floating-hint-reveal-target]");
+  if (scrollRevealHint) {
+    const revealTarget = document.getElementById(scrollRevealHint.dataset.floatingHintRevealTarget);
+
+    if (revealTarget) {
+      const revealHint = function () {
+        scrollRevealHint.classList.add("is-visible");
+      };
+
+      if ("IntersectionObserver" in window) {
+        const hintObserver = new IntersectionObserver(function (entries) {
+          if (entries.some(function (entry) { return entry.isIntersecting; })) {
+            revealHint();
+            hintObserver.disconnect();
+          }
+        }, {
+          threshold: 0.12,
+          rootMargin: "0px 0px -10% 0px"
+        });
+
+        hintObserver.observe(revealTarget);
+      } else {
+        const revealOnScroll = function () {
+          if (revealTarget.getBoundingClientRect().top <= window.innerHeight * 0.9) {
+            revealHint();
+            window.removeEventListener("scroll", revealOnScroll);
+          }
+        };
+
+        window.addEventListener("scroll", revealOnScroll, { passive: true });
+        revealOnScroll();
+      }
+    }
+  }
+
   document.addEventListener("click", function (event) {
     panels.forEach(function (panel) {
       if (!panel.contains(event.target)) {
@@ -520,8 +555,12 @@ document.addEventListener("DOMContentLoaded", function () {
     >
       <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
       <span class="floating-abuse-text">Report abuse</span>
-      {% if active_page|default('') == 'index' %}
-      <span class="floating-abuse-hint" aria-hidden="true">
+      {% if active_page|default('') in ['index', 'about'] %}
+      <span
+        class="floating-abuse-hint{% if active_page|default('') == 'about' %} floating-abuse-hint-scroll-reveal{% endif %}"
+        {% if active_page|default('') == 'about' %}data-floating-hint-reveal-target="about-important-limits"{% endif %}
+        aria-hidden="true"
+      >
         <span>Let’s keep it safe</span>
         <svg viewBox="0 0 255 140" focusable="false">
           <defs>
