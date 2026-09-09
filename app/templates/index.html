@@ -56,7 +56,7 @@
 </div>
 
 <h2 id="community-examples-heading" class="homepage-post-intro-title">
-  Big worries. Small moments. Random thoughts.
+  Big worries, small moments, random thoughts 
   <span>Share yours, or just see what others are thinking.</span>
 </h2>
 <section id="community-examples" class="homepage-post-showcase" aria-labelledby="homepage-post-showcase-title">
@@ -152,70 +152,33 @@
   </div>
 </section>
 
-<p class="welcome-logo-disclaimer homepage-post-attention">Attention: Not a dating/friend-finding platform, marketplace, event board or general ETH Q&amp;A forum.</p>
+<section class="landing-summary" aria-labelledby="landing-summary-title">
+  <h2 id="landing-summary-title">A room for student life</h2>
+  <div class="landing-summary-copy">
+    <p>
+      CommonRoom is an anonymous space for ETH students to share thoughts, questions and experiences —
+      from everyday student life to the things that are harder to talk about.
+    </p>
+    <p>Read, post, reply, or talk 1:1. You decide how much you want to share.</p>
+  </div>
 
-<div class="reading-page welcome-reading-page">
-  <h2>Hi, friend!</h2>
-  <p>
-    CommonRoom is a space for ETH students to find other students who may understand what they are going through.
-    The idea is simple: sometimes what helps most is not general advice, but talking to someone who has felt
-    something similar before.
+  <div class="landing-summary-links">
+    <a class="landing-summary-card" href="{{ url_for('main.onboarding') }}">
+      <strong>New here?</strong>
+      <span>See how CommonRoom works &rarr;</span>
+    </a>
+    <a class="landing-summary-card" href="{{ url_for('main.about') }}">
+      <strong>Curious about us?</strong>
+      <span>Why CommonRoom exists &rarr;</span>
+    </a>
+    <a class="landing-summary-card" href="{{ url_for('main.get_help_now') }}">
+      <strong>Need support right now?</strong>
+      <span>Find professional and immediate help &rarr;</span>
+    </a>
+  </div>
+
+  <p class="landing-summary-disclaimer">
+    CommonRoom is a peer community, not professional counselling or a crisis service.
   </p>
-
-  <p>
-    Here, you can stay anonymous, choose tags that describe your situation, browse profiles, and send a chat request
-    to someone whose experience or perspective feels relevant to you. You can also join as someone who is open to
-    listening, sharing insight, and supporting others.
-  </p>
-
-  <h3>What you can do here</h3>
-  <p>
-    You can create a profile, select tags that match your struggles or experiences, search for people with similar topics,
-    and start conversations in a low-pressure way. Chat requests are first sent by email and only become an active chat
-    if the other person accepts. You can also read thoughts and questions from the community and post your own thoughts anonymously.
-  </p>
-
-  <h4>Here is what your profile can look like:</h4>
-  <img
-  src="{{ url_for('static', filename='profile-example-homepage.png') }}"
-  alt="Example CommonRoom profile"
-  class="homepage-profile-example-image"
-  >
-
-  <h3>Who this is for</h3>
-  <p>
-    CommonRoom is for ETH students who feel stuck, lonely, overwhelmed, unsure, or simply in need of exchange.
-    It is just as much for students who want to give something back by listening and sharing what they have learned
-    through their own experiences.
-  </p>
-
-  <h3>What this platform is not</h3>
-  <p>
-    CommonRoom is not a crisis service, not professional therapy, and not a substitute for urgent support.
-    If you are in immediate danger or need acute help, please use the <a href="{{ url_for('main.get_help_now') }}">Get Help Now</a> page
-    and contact an appropriate emergency or counselling service directly.
-  </p>
-
-  <h3>How to get started</h3>
-  <p>
-    If you are new here, start with the <a href="{{ url_for('main.onboarding') }}">Onboarding</a> page and the
-    <a href="{{ url_for('main.rules') }}">Rules</a>. You do not have to complete your whole profile right away:
-    you can also just register first, join the community, look around a little, and fill in your profile text,
-    labels, and tags later.
-  </p>
-
-  <p>
-    If and when you feel ready, you can then complete your profile, choose your tags,
-    and explore who might be a good fit for a conversation.
-  </p>
-
-  <p>
-    {% if current_user.is_authenticated %}
-      You are signed in already. You can continue with your profile, chats, or tag search.
-    {% else %}
-      If you already have an account, you can <a href="{{ url_for('auth.login') }}">sign in</a>.
-      If you are new, you can <a href="{{ url_for('auth.register') }}">register here</a>.
-    {% endif %}
-  </p>
-</div>
+</section>
 {% endblock %}
