@@ -11,9 +11,9 @@
 <h4 id="your-chats">Your Chats</h4>
 
 
-<div style="margin-bottom: 50px;">
+<div class="chat-sort-row">
   <form method="get">
-    <select class="sort-select" name="sort" style="padding: 12px 16px; font-size: 16px; min-width: 150px;" 
+    <select class="sort-select chat-page-sort" name="sort"
       onchange="this.form.submit()">
       <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Most Recent</option>
       <option value="most_active" {% if sort_by == "most_active" %}selected{% endif %}>Most Active</option>

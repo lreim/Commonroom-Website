@@ -2,150 +2,215 @@
 {% block title %}Onboarding{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
+<main class="onboarding-page">
+  <header class="page-header text-center onboarding-hero">
     <h1>Let's get you on board</h1>
-    <h4>How to: Talk to someone who understands you</h4>
-</div>
 
-<div class="reading-page">
-  <p>
-    <strong>In short:</strong> This page shows you how to get started on CommonRoom and where to go next once you have signed up.
-    It explains what parts of your profile matter, how tags and labels help other people find you, and how to move toward chats or posts depending on what you need.
-    You do not have to do everything at once, and you can always come back later to complete your profile.
-    If you want a practical walkthrough of the platform, this page is your guide.
-  </p>
-  <h3>Getting started</h3>
-  <p>
-    Let's not wait anymore and get you started!
-  </p>
-  <p>
-    This platform aims to be easy to use and navigate, as simple as possible but not simpler, and welcoming.
-    This is why it has just a few features and a simple design.
-    You should start by:
-  </p>
-  <p>
-    Useful shortcuts in case you want to jump there directly:
-    {% if current_user.is_authenticated %}
-    <a href="{{ url_for('main.user', username=current_user.username) }}">your profile</a>,
-    <a href="{{ url_for('main.settings') }}">settings</a>,
-    <a href="{{ url_for('chat.index') }}">chat index</a>,
-    <a href="{{ url_for('main.tag_search') }}">tagsearch</a>,
-    and <a href="{{ url_for('main.post') }}">posts</a>.
-    {% else %}
-    <a href="{{ url_for('auth.login') }}">sign in</a>,
-    <a href="{{ url_for('main.about') }}">about</a>,
-    <a href="{{ url_for('main.rules') }}">rules</a>,
-    <a href="{{ url_for('main.get_help_now') }}">get help now</a>,
-    and <a href="{{ url_for('main.data_and_privacy') }}">data and privacy</a>.
-    After signing in, you will also find your profile, settings, chat index, tagsearch, and posts from here.
-    {% endif %}
-  </p>
-
-  <h3>First steps</h3>
-  <ol>
-    <li>
-    <p>
-      Register and directly set up your user profile.
-      Your username is generated automatically, so you cannot give yourself your own name here.
-      Once you are in, you can find your profile and settings through the avatar menu at the top right.
-      You also do not have to fill out everything immediately: you can simply join first, look around, and be part of the community already, then come back later and add profile text, labels, or tags whenever you want.
+    <p class="onboarding-in-short">
+      <strong>In short:</strong><br>
+      You don't need to know exactly what you're looking for. Start by <strong><em>looking around</em></strong>.
+      Read what others are sharing, reply when something resonates, <strong><em>drop off a thought yourself</em></strong> — and if you want
+      a more personal exchange, find someone to <strong><em>talk to anonymously 1:1</em></strong>.
     </p>
-    <h4>Here is what your profile can look like:</h4>
-    <img
-      src="{{ url_for('static', filename='profile-example-homepage.png') }}"
-      alt="Example CommonRoom profile"
-      class="profile-example-image"
-    >
-    </li>
-    <li>
-    <p>
-      In the "About Me" section, you are free to add additional information about yourself that you find important or would like to share in order to make the profile more personal.
-      You can always change or add something later.
-      Just do not forget that after changing something in your profile or settings, you still have to save the changes with the save button at the bottom.
-    </p></li>
-    <p>
-      Please remember: this is supposed to be an anonymous space where nobody can be identified, for their own safety and privacy, but also to lower the barrier for people who want to talk to you.
-      I believe that not knowing the person behind the words can lower the barrier and, due to the absence of prejudice, allow you to focus entirely on the words you exchange.
-    </p>
-    <li>
-    <p>
-      Add a funny fact about yourself or answer my icebreaker questions (sorry about that already...) to make your profile look less like a soulless bot profile.
-    </p></li>
-    <li>
-    <p>
-      Choose whether you are "Open to share experience", "Need advice urgently", "Happy to talk", or even an "Allrounder".
-      This makes it easier for your peers to approach you, categorize you, and decide whether you are suitable for them.
-      You can also leave that field empty.
-      The difference between "Open to share experience" and "Happy to talk" is that with the latter, you express more interest in talking and exchanging.
-    </p></li>
-    <li>
-    <p>
-      Most importantly, assign tags to your profile and add as many tags as describe the struggles you deal with or have dealt with, but still keep it simple.
-      This will be interesting and helpful for other users.
-      I chose not to allow you to create your own tags, since I want to avoid redundancy and Aufsplitterung, as well as tags that are outside the topic and use case of this platform.
-      In case any tags are missing, feel free to reach out to me.
-    </p></li>
-    <li>
-    <p>
-      Next, please take a look at the rules that apply to this website.
-      For this platform to be a safe space where everyone feels welcome and free to help and be helped, it is highly important to remember the rules at all times.
-      It depends on you, and only you, whether this place dies or flourishes.
-      So please be a lovely part of this safe space!
-    </p></li>
-  </ol>
+  </header>
 
-  <h3>How to continue</h3>
-  <ol start="7">
-    <li>
-    <p>
-      Depending on the intention and reason you had for registering here, continue with the following:
-    </p>
-    <ul>
-        <li>
-          If you have struggles you want to talk about with someone who has experienced or is experiencing something similar,
-          go on by browsing through the matching profiles that show up in your user profile after adding tags.
-          If you don't find the user profiles suitable for your case, go ahead and browse through the tag search library to find your matches and send a connection request.
-          There, you can either type a topic into the search bar or simply click on tags from the right-side tag list.
-          You can also combine several tags, because the selected tags are collected right below the search bar and all get packed into the semantic search together.
-          So yes, you can build your own little mix of struggles, uni chaos and topics and see what comes out of it.
-          On the right side, the colors help a bit: selected tags are highlighted, and tags that currently match your search show up in light blue.
-          Based on that, matching profiles will be listed for the tags that overlap with what you searched for, or at least with some of it, which is exactly the point here.
-          And because just seeing a username is a bit dry, you can hover over the matching profiles and get a small preview, with the profile labels in the top right, so you can place people a bit better before clicking on their profile.
-        </li>
-        <li>
-          If you registered as a person who is willing to share insights and experiences without currently having a need to talk to someone,
-          also check out the matches and the tag search library and feel free to send requests to matching user profiles to lower the barrier for those who might want to start a chat but haven't managed to do so yet.
-          Take the first step!
+  <section class="onboarding-step" aria-labelledby="onboarding-look-around">
+    <div class="onboarding-step-copy">
+      <span class="onboarding-step-number" aria-hidden="true">1</span>
+      <h2 id="onboarding-look-around">Start by looking around</h2>
+      <p>You don't need to fill out your profile or have something to share immediately. Just have a look around first.</p>
+      <p>The community is where students drop off whatever is on their minds — questions, random thoughts, small wins, frustrations, experiences, or things they would like another perspective on.</p>
+      <p>If something feels familiar, you can reply and share your own experience.</p>
+      <p class="onboarding-emphasis">Nothing has to be serious enough to belong here.</p>
+    </div>
 
-          Otherwise, even though you don't have an urgent topic to talk about, you might still want to chat about some issue without any urgency.
-          That is just as valid, and that is what this platform is for as well!
-          Go ahead and send a request to matching user profiles.
-        </li>
-        <li>
-          If you don't feel like starting a connection and conversation, you are free to browse the Posts section, which collects thoughts and questions on any topic, or add your own thoughts anonymously.
-        </li>
-    </ul></li>
-  </ol>
+    <div class="onboarding-visual onboarding-post-examples" aria-label="Two example posts from the CommonRoom community">
+      <article class="post onboarding-example-post">
+        <div class="profile-thumbnail"><img src="https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&amp;size=80" alt="Avatar of steady-orbit-6724"></div>
+        <div class="post-content">
+          <div class="post-date">12 minutes ago</div>
+          <div class="post-author">steady-orbit-6724</div>
+          <div class="post-body">How do people actually manage uni, sports, friends AND sleep?</div>
+          <div class="post-thread-row"><span class="post-thread-link">&#8627; 6 replies</span></div>
+        </div>
+        <div class="post-side-actions"><span class="onboarding-example-action">Reply</span></div>
+      </article>
+      <article class="post onboarding-example-post">
+        <div class="profile-thumbnail"><img src="https://api.dicebear.com/9.x/thumbs/svg?seed=bright-photon-2856&amp;size=80" alt="Avatar of bright-photon-2856"></div>
+        <div class="post-content">
+          <div class="post-date">34 minutes ago</div>
+          <div class="post-author">bright-photon-2856</div>
+          <div class="post-body">I finally passed that exam :')</div>
+          <div class="post-thread-row"><span class="post-thread-link">&#8627; 4 replies</span></div>
+        </div>
+        <div class="post-side-actions"><span class="onboarding-example-action">Reply</span></div>
+      </article>
+    </div>
+  </section>
 
-  <h3>After sending a request</h3>
-  <p>
-      After sending a connection request to a matching user, you have to wait for their response.
-      In case of acceptance, you can start chatting! Yayyyyy! The chat itself is always a 1:1 chat between you and exactly one other user.
-      To make it less individually awkward and more personal, the fun fact or icebreaker in your profile is added to the email (still awkward, I know).
-      Write a few lines about your intention and click send!
-      After that, your request will first appear under requested chats in the Chat Index.
-      If the other person accepts or rejects it, you will also get that update through the little bell at the top right, so you don't have to keep checking manually all the time.
-      Just click on the activity bell and jump to the right place from there.
-  </p>
+  <section class="onboarding-step onboarding-step-reverse" aria-labelledby="onboarding-drop-it-off">
+    <div class="onboarding-step-copy">
+      <span class="onboarding-step-number" aria-hidden="true">2</span>
+      <h2 id="onboarding-drop-it-off">Got something on your mind? Drop it off.</h2>
+      <p>You don't need a perfectly formulated question or an important problem. Post a thought, ask something, rant for a minute, share something nice that happened, or ask for another perspective.</p>
+      <p>Sometimes a few lines are enough for someone else to go: <em>oh. same.</em></p>
+      <p class="onboarding-side-note">Keep it personal rather than using CommonRoom as a general ETH Q&amp;A, marketplace, advertising board, dating, or friend-finding space.</p>
+    </div>
 
-  <h3>Where to find your chats and updates</h3>
-  <p>
-      You can find your requested chats as well as your active chats under Chat Index.
-      For updates, take a look at the bell icon in the top right corner of the page.
-      Whenever you receive a new message, a new incoming chat request, or a response to one of your own requests, a green dot appears on the bell.
-      If you click on it, a small activity menu opens and shows you the latest updates individually.
-      From there, you can directly jump to the relevant place in the Chat Index, for example to your requested chats or the specific conversation where the new message appeared.
-  </p>
- </div>
+    <div class="onboarding-visual onboarding-compose-example" aria-label="Example of the CommonRoom post form">
+      <label class="onboarding-compose-label">What's on your mind?</label>
+      <div class="onboarding-compose-field">Write your post here.</div>
+      <span class="btn btn-primary onboarding-example-button">Post</span>
+      <div class="onboarding-topic-filter-bar">
+        <span>Filter posts by topics</span>
+        <span aria-hidden="true">+</span>
+      </div>
+    </div>
+  </section>
 
+  <section class="onboarding-step" aria-labelledby="onboarding-profile">
+    <div class="onboarding-step-copy">
+      <span class="onboarding-step-number" aria-hidden="true">3</span>
+      <h2 id="onboarding-profile">Your anonymous little corner</h2>
+      <p>Your username is generated automatically. Your profile gives others a little context about the person behind the anonymous name — without revealing who you actually are.</p>
+      <p>You don't have to complete it before doing anything else. Look around first and come back to it whenever you want. Once you are signed in, you can find your profile and settings through the avatar menu in the top right.</p>
+      <p>Add something in “About me”, share a funny fact, or answer an icebreaker so your profile feels less like a soulless bot profile. You can change everything later — just remember to save your changes.</p>
+      <h3>Tags are things you can relate to</h3>
+      <p>Add things you have experienced, are currently dealing with, or simply know something about. They help others find people who might understand where they are coming from.</p>
+      <p class="onboarding-side-note">The tag list is shared rather than fully custom, so similar experiences stay findable instead of being split across lots of almost-identical tags. If something important is missing, you can suggest it through contact or feedback.</p>
+    </div>
+
+    <div class="onboarding-visual onboarding-profile-example" aria-label="Example anonymous CommonRoom profile">
+      <div class="onboarding-profile-heading">
+        <img class="onboarding-profile-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=quiet-nebula-4318&amp;size=180" alt="Avatar of quiet-nebula-4318">
+        <div>
+          <h3>quiet-nebula-4318</h3>
+          <span class="profile-label-badge">Happy to talk</span>
+          <span class="profile-label-badge">Open to share experience</span>
+        </div>
+      </div>
+      <div class="onboarding-profile-block"><strong>About me</strong><p>Still figuring out what balance is supposed to look like. Always happy to compare notes.</p></div>
+      <div class="onboarding-profile-block"><strong>Funny fact about me</strong><p>I once took the wrong tram for twenty minutes and only noticed when I saw cows.</p></div>
+      <div class="onboarding-profile-block">
+        <strong>Tags</strong>
+        <div class="onboarding-tag-list">
+          <span class="label label-info">exam stress</span><span class="label label-info">procrastination</span>
+          <span class="label label-info">motivation</span><span class="label label-info">loneliness</span>
+          <span class="label label-info">career uncertainty</span><span class="label label-info">work life balance</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="onboarding-step onboarding-step-reverse" aria-labelledby="onboarding-find-someone">
+    <div class="onboarding-step-copy">
+      <span class="onboarding-step-number" aria-hidden="true">4</span>
+      <h2 id="onboarding-find-someone">Sometimes you want to talk more personally</h2>
+      <p>Sometimes posting something to the room is enough. Sometimes you come across a person and think: okay, this person might actually get what I mean.</p>
+      <p>That's what profiles, tags and 1:1 chats are for.</p>
+      <p>Search for one or several things you want to talk about. CommonRoom will show you anonymous profiles with overlapping experiences. Have a look around and see whether someone feels like a good fit.</p>
+      <p class="onboarding-side-note">Selected tags stay highlighted, and matching profiles show which experiences overlap. You can combine tags or use semantic search when you do not know the exact wording. Other students can also find you through the things you have chosen to share — and may take the first step themselves.</p>
+    </div>
+
+    <div class="onboarding-visual onboarding-search-example" aria-label="Example CommonRoom tag search and matching profiles">
+      <div class="onboarding-visual-title">Find someone who might get it</div>
+      <div class="onboarding-search-field"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> exam pressure, concentration</div>
+      <div class="onboarding-search-section-label">Selected Tags</div>
+      <div class="onboarding-selected-tags"><span class="label label-primary">academic pressure</span><span class="label label-primary">concentration</span></div>
+      <div class="onboarding-search-section-label">Matches</div>
+      <div class="onboarding-tag-results">
+        <article class="onboarding-tag-result">
+          <div><span class="label label-info">academic pressure</span><span class="onboarding-tag-score">score 0.82</span></div>
+          <span class="onboarding-tag-result-label">Matching profile:</span>
+          <a
+            href="{{ url_for('main.tag_search') }}"
+            class="onboarding-tag-profile-link"
+            data-profile-preview='{{ {
+              "username": "lucid-prime-8729",
+              "name": "lucid-prime-8729",
+              "about_me": "Still figuring out how to handle pressure without losing sight of everything else.",
+              "matching_tags": ["academic pressure", "concentration"],
+              "tags": ["academic pressure", "concentration", "procrastination"],
+              "profile_labels": ["Open to share experience", "Happy to talk"],
+              "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-prime-8729&size=120"
+            }|tojson }}'
+          >lucid-prime-8729</a>
+        </article>
+        <article class="onboarding-tag-result">
+          <div><span class="label label-info">concentration</span><span class="onboarding-tag-score">score 0.74</span></div>
+          <span class="onboarding-tag-result-label">Matching profile:</span>
+          <a
+            href="{{ url_for('main.tag_search') }}"
+            class="onboarding-tag-profile-link"
+            data-profile-preview='{{ {
+              "username": "steady-orbit-6724",
+              "name": "steady-orbit-6724",
+              "about_me": "Learning to make university life a little less all-or-nothing.",
+              "matching_tags": ["concentration"],
+              "tags": ["concentration", "motivation", "work life balance"],
+              "profile_labels": ["Open to share experience"],
+              "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&size=120"
+            }|tojson }}'
+          >steady-orbit-6724</a>
+        </article>
+      </div>
+      <p class="onboarding-search-hint">Hover over a username to preview the profile and matching experiences.</p>
+    </div>
+  </section>
+
+  <section class="onboarding-step" aria-labelledby="onboarding-say-hi">
+    <div class="onboarding-step-copy">
+      <span class="onboarding-step-number" aria-hidden="true">5</span>
+      <h2 id="onboarding-say-hi">Found someone? Say hi.</h2>
+      <p>Send them a short chat request and tell them what you'd like to talk about. They can accept or decline it — no awkward commitment on either side.</p>
+      <p>Your fun fact or icebreaker is included with the request to make the first contact a little less anonymous and awkward. Once they accept: yayyyyy! You can start talking anonymously 1:1.</p>
+      <p class="onboarding-side-note">Your requests and active conversations live in the Chat Index. New messages and request updates show up under the activity bell, where a green dot lets you know that something new happened.</p>
+    </div>
+
+    <div class="onboarding-visual onboarding-chat-request-example" aria-label="Example of sending a CommonRoom chat request">
+      <div class="onboarding-chat-request-person">
+        <div class="onboarding-chat-request-profile">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-vector-1842&amp;size=100" alt="Avatar of lucid-vector-1842">
+          <strong>lucid-vector-1842</strong>
+        </div>
+        <span class="chat-start-action-button onboarding-example-button">Start a conversation</span>
+      </div>
+      <div class="onboarding-chat-request-compose">
+        <h4>Send chat request to lucid-vector-1842</h4>
+        <p>This message will be sent by email together with Accept and Reject links.</p>
+        <div class="onboarding-chat-request-message">Hi lucid-vector-1842,<br><br>I found your profile on CommonRoom and would like to start a conversation with you.<br><br>What I would like to talk about:<br>– career uncertainty</div>
+        <div class="onboarding-chat-request-actions">
+          <span class="btn btn-primary onboarding-example-button">Send request</span>
+          <span class="btn btn-default onboarding-example-button">Cancel</span>
+        </div>
+      </div>
+      <div class="onboarding-chat-next-step"><span>after they accept</span></div>
+      <div class="onboarding-chat-preview">
+        <div class="onboarding-chat-header">
+          <div class="onboarding-chat-person"><img src="https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-vector-1842&amp;size=100" alt="Avatar of lucid-vector-1842"><div><strong>lucid-vector-1842</strong><span>anonymous 1:1 chat</span></div></div>
+          <span class="onboarding-chat-status">accepted</span>
+        </div>
+        <div class="chat-message"><div class="chat-bubble"><div class="chat-meta"><span class="chat-author">lucid-vector-1842</span><span class="chat-time">18:42</span></div><div class="chat-body">I saw you've also dealt with career uncertainty. How did you figure out whether your direction was right?</div></div></div>
+        <div class="chat-message chat-message-own"><div class="chat-bubble"><div class="chat-meta"><span class="chat-author">gentle-lattice-9721</span><span class="chat-time">18:44</span></div><div class="chat-body">Honestly, it took me quite a while. But I can tell you what eventually helped me decide :)</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="onboarding-ending" aria-labelledby="onboarding-before-you-go">
+    <p class="onboarding-ending-kicker">One last thing</p>
+    <h2 id="onboarding-before-you-go">Before you run off…</h2>
+    <p>CommonRoom only works if people treat each other with respect and remember that there is an actual human behind every anonymous username.</p>
+    <p>Please have a quick look at the rules before joining in. The goal is a low-barrier space for peer exchange, not professional counselling or crisis support.</p>
+    <p class="onboarding-emphasis">It depends on you whether this place dies or flourishes. So please be a lovely part of the room :)</p>
+    <div class="onboarding-next-links">
+      <a class="landing-summary-card" href="{{ url_for('main.rules') }}"><strong>Rules to remember</strong><span>A quick guide to keeping the room thoughtful and safe &rarr;</span></a>
+      <a class="landing-summary-card" href="{{ url_for('main.data_and_privacy') }}"><strong>Data &amp; Privacy</strong><span>See what anonymity means here and how your data is handled &rarr;</span></a>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
 {% endblock %}
