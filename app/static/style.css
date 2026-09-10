@@ -2635,7 +2635,7 @@ html.dark-mode .profile-menu-timeout {
 
 .about-editorial-intro {
   max-width: none;
-  padding: 54px 0 82px;
+  padding: 54px 0 40px;
 }
 
 .about-editorial-kicker {
@@ -2649,7 +2649,7 @@ html.dark-mode .profile-menu-timeout {
 
 .about-editorial-intro h1 {
   margin: 0 0 25px;
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 400;
   line-height: 1.08;
 }
@@ -2657,7 +2657,7 @@ html.dark-mode .profile-menu-timeout {
 .about-editorial-summary {
   max-width: none;
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.7;
 }
 
@@ -2673,8 +2673,8 @@ html.dark-mode .profile-menu-timeout {
 .about-editorial-section h2 {
   margin: 0 0 25px;
   color: #2d1d00;
-  font-size: 24px;
-  font-weight: 400;
+  font-size: 22px;
+  font-weight: 600;
   line-height: 1.2;
 }
 
@@ -2688,18 +2688,29 @@ html.dark-mode .profile-menu-timeout {
 
 .about-editorial-founder {
   display: grid;
-  grid-template-columns: 118px minmax(0, 1fr);
+  padding-top: 40px;
+  grid-template-columns: 132px minmax(0, 1fr);
   gap: clamp(28px, 5vw, 52px);
   align-items: center;
 }
 
 .about-founder-silhouette {
   display: block;
-  width: 112px;
+  width: 124px;
   aspect-ratio: 1344 / 1170;
   background: #5f2f2a;
   -webkit-mask: url("about-brush-founder-avatar.png") center / contain no-repeat;
   mask: url("about-brush-founder-avatar.png") center / contain no-repeat;
+}
+
+.about-story-turn {
+  margin: 44px 0 !important;
+  color: #5f2f2a;
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .about-editorial-quote {
@@ -2708,8 +2719,9 @@ html.dark-mode .profile-menu-timeout {
   padding: 30px 0;
   border: 0;
   color: #672d28;
-  font-size: 24px;
+  font-size: 18px;
   font-style: italic;
+  font-weight: 600;
   line-height: 1.28;
   text-align: center;
   transform: translateX(-50%);
@@ -2730,8 +2742,8 @@ html.dark-mode .profile-menu-timeout {
 .about-editorial-thought strong {
   margin-top: 7px;
   color: #672d28;
-  font-size: 24px;
-  font-weight: 400;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .about-student-figure {
@@ -2742,7 +2754,7 @@ html.dark-mode .profile-menu-timeout {
 @media (min-width: 768px) {
   .about-student-figure .about-brush-student-scene,
   .about-profile-network-figure .about-brush-student-scene {
-    min-height: 350px;
+    min-height: 380px;
   }
 
   .about-student-figure .about-brush-person-wrap,
@@ -2879,46 +2891,46 @@ html.dark-mode .profile-menu-timeout {
 }
 
 .about-brush-person-one {
-  background: #efd9d2;
+  background: #dfb7aa;
   transform: rotate(-2deg);
 }
 
 .about-brush-person-two {
-  background: #e4dfef;
+  background: #cfc5df;
 }
 
 .about-brush-person-three {
-  background: #d9e8ed;
+  background: #bdd6de;
   transform: rotate(2deg);
 }
 
 .about-brush-person-four {
-  background: #f1e4c9;
+  background: #dfc997;
   transform: rotate(2deg);
 }
 
 .about-brush-person-five {
-  background: #e3ecd8;
+  background: #c9ddb7;
   transform: rotate(-2deg);
 }
 
 .about-brush-person-six {
-  background: #efd9d2;
+  background: #dfb7aa;
   transform: rotate(1deg);
 }
 
 .about-brush-person-seven {
-  background: #e4dfef;
+  background: #cfc5df;
   transform: rotate(-1deg);
 }
 
 .about-brush-person-eight {
-  background: #f1e4c9;
+  background: #dfc997;
   transform: rotate(2deg);
 }
 
 .about-brush-person-nine {
-  background: #e3ecd8;
+  background: #c9ddb7;
   transform: rotate(-2deg);
 }
 
@@ -2955,9 +2967,11 @@ html.dark-mode .profile-menu-timeout {
 
 .about-profile-icon {
   display: block;
-  width: 96px;
-  height: 96px;
-  border: 4px solid #efd9d2;
+  box-sizing: border-box;
+  width: 112.5px;
+  height: 112.5px;
+  margin-top: 6.25px;
+  border: 4px solid #dfb7aa;
   border-radius: 50%;
   background: #fffdf7;
   object-fit: cover;
@@ -2970,22 +2984,22 @@ html.dark-mode .profile-menu-timeout {
 
 .about-profile-icon-two,
 .about-profile-icon-seven {
-  border-color: #e4dfef;
+  border-color: #cfc5df;
 }
 
 .about-profile-icon-three {
-  border-color: #d9e8ed;
+  border-color: #bdd6de;
   transform: rotate(2deg);
 }
 
 .about-profile-icon-four,
 .about-profile-icon-eight {
-  border-color: #f1e4c9;
+  border-color: #dfc997;
   transform: rotate(2deg);
 }
 
 .about-profile-icon-five {
-  border-color: #e3ecd8;
+  border-color: #c9ddb7;
   transform: rotate(-2deg);
 }
 
@@ -2993,12 +3007,17 @@ html.dark-mode .profile-menu-timeout {
   transform: rotate(1deg);
 }
 
+.about-profile-icon-seven {
+  transform: rotate(-1deg);
+}
+
 .about-editorial-emphasis {
   width: min(820px, calc(100vw - 40px));
   margin: 48px 0 48px 50% !important;
   color: #5f2925;
-  font-size: 24px;
+  font-size: 18px;
   font-style: italic;
+  font-weight: 600;
   line-height: 1.45;
   text-align: center;
   transform: translateX(-50%);
@@ -3009,7 +3028,7 @@ html.dark-mode .profile-menu-timeout {
 }
 
 .about-editorial-compact h2 {
-  font-size: 24px;
+  font-size: 22px;
 }
 
 .about-next-links {
@@ -3053,6 +3072,10 @@ html.dark-mode .about-editorial-section h2 {
   color: #eee7dc;
 }
 
+html.dark-mode .about-story-turn {
+  color: #f0c5bf;
+}
+
 html.dark-mode .about-editorial-thought {
   color: #bdb2a4;
 }
@@ -3078,7 +3101,7 @@ html.dark-mode .about-editorial-note {
 
 @media (max-width: 767px) {
   .about-editorial-intro {
-    padding: 34px 0 52px;
+    padding: 34px 0 26px;
   }
 
   .about-editorial-section {
@@ -3087,10 +3110,11 @@ html.dark-mode .about-editorial-note {
 
   .about-editorial-founder {
     grid-template-columns: 1fr;
+    padding-top: 28px;
   }
 
   .about-founder-silhouette {
-    width: 96px;
+    width: 106px;
     margin: 0 auto;
   }
 
@@ -3185,8 +3209,9 @@ html.dark-mode .about-editorial-note {
   }
 
   .about-profile-icon {
-    width: 72px;
-    height: 72px;
+    width: 79.2px;
+    height: 79.2px;
+    margin-top: 4.4px;
     border-width: 3px;
   }
 }

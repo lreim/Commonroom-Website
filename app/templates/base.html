@@ -384,28 +384,27 @@ document.addEventListener("DOMContentLoaded", function () {
     const revealTarget = document.getElementById(scrollRevealHint.dataset.floatingHintRevealTarget);
 
     if (revealTarget) {
-      const revealHint = function () {
-        scrollRevealHint.classList.add("is-visible");
+      const setHintVisibility = function (isVisible) {
+        scrollRevealHint.classList.toggle("is-visible", isVisible);
       };
 
       if ("IntersectionObserver" in window) {
         const hintObserver = new IntersectionObserver(function (entries) {
-          if (entries.some(function (entry) { return entry.isIntersecting; })) {
-            revealHint();
-            hintObserver.disconnect();
-          }
+          const targetEntry = entries.find(function (entry) {
+            return entry.target === revealTarget;
+          });
+          setHintVisibility(Boolean(targetEntry && targetEntry.isIntersecting));
         }, {
-          threshold: 0.12,
-          rootMargin: "0px 0px -10% 0px"
+          threshold: 0
         });
 
         hintObserver.observe(revealTarget);
       } else {
         const revealOnScroll = function () {
-          if (revealTarget.getBoundingClientRect().top <= window.innerHeight * 0.9) {
-            revealHint();
-            window.removeEventListener("scroll", revealOnScroll);
-          }
+          const targetRect = revealTarget.getBoundingClientRect();
+          const isVisible = targetRect.top < window.innerHeight
+            && targetRect.bottom > 0;
+          setHintVisibility(isVisible);
         };
 
         window.addEventListener("scroll", revealOnScroll, { passive: true });
