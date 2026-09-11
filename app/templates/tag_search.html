@@ -4,14 +4,15 @@
 
 {% block page_content %}
 <div data-inline-chat-request-root>
-<div class="page-header">
+<div class="page-header tag-search-header">
+  <div class="tag-search-eyebrow">FIND BY TOPIC</div>
   <h1>Tagsearch</h1>
   <h4>Use one search bar to find existing tags with semantic matching.</h4>
 </div>
 
 <div
   id="tag-search-widget"
-  class="tag-two-column-layout"
+  class="tag-two-column-layout tag-design-widget"
   data-tag-widget="search"
   data-search-endpoint="{{ url_for('main.tag_search_api') }}"
   data-all-tags='{{ all_tags|tojson }}'

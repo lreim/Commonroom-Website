@@ -52,7 +52,6 @@
 
   function showGlobalPreviewCard(user, evt) {
     const previewCard = ensureGlobalPreviewCard();
-    const safeReason = user.match_reason || "Profile preview.";
     const safeName = user.name || user.username;
     const safeLocation = user.location || "";
     const safeAbout = user.about_me || "";
@@ -89,7 +88,12 @@
     }
 
     previewCard.appendChild(header);
-    appendPreviewSection(previewCard, "Matching tags", safeReason, "profile-preview-reason");
+    appendPreviewSection(
+      previewCard,
+      "Matching tags",
+      safeTags.join(", "),
+      "profile-preview-reason"
+    );
     appendPreviewSection(previewCard, "Location", safeLocation, "profile-preview-location");
     appendPreviewSection(previewCard, "About me", safeAbout, "profile-preview-about");
     appendPreviewSection(previewCard, "Tags", safeTags.join(", "), "profile-preview-tags");
@@ -393,7 +397,11 @@
         const row = document.createElement("div");
         row.style.marginBottom = "12px";
 
-        const chip = createTagChip(m.name, "label label-info");
+        const isExactSelectedTag = selected.has(m.name.toLowerCase());
+        const chip = createTagChip(
+          m.name,
+          isExactSelectedTag ? "label label-primary" : "label label-info"
+        );
         chip.style.cursor = "pointer";
         chip.title = mode === "picker" ? "Click to toggle selection" : "Click to search this tag";
         chip.addEventListener("click", () => {
@@ -418,8 +426,11 @@
 
         const meta = document.createElement("small");
         meta.className = "text-muted";
-        const reasonText = (m.reasons || []).map(toTitle).join(" + ");
-        meta.textContent = ` score ${Number(m.score).toFixed(2)} (${reasonText})`;
+        const reasonText = (m.reasons || [])
+          .filter((reason) => String(reason).toLowerCase() !== "lexical")
+          .map(toTitle)
+          .join(" + ");
+        meta.textContent = ` score ${Number(m.score).toFixed(2)}${reasonText ? ` (${reasonText})` : ""}`;
 
         row.appendChild(chip);
         row.appendChild(meta);

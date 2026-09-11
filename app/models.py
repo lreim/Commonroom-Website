@@ -49,6 +49,13 @@ user_tags = db.Table(
     db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True),
 )
 
+post_likes = db.Table(
+    'post_likes',
+    db.Column('post_id', db.Integer, db.ForeignKey('posts.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('created_at', db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False),
+)
+
 
 class UserBlock(db.Model):
     __tablename__ = "user_blocks"
@@ -68,10 +75,10 @@ class UserBlock(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     PROFILE_LABEL_CHOICES = [
-        ("listener", "Open to share experience"),
-        ("peer_support", "Need advice urgently"),
-        ("practical_advice", "Happy to talk"),
-        ("all", "Allrounder"),
+        ("been_through_this", "Been Through This"),
+        ("currently_dealing_with_this", "Currently Dealing With This"),
+        ("happy_to_listen", "Happy to Listen"),
+        ("happy_to_share_experience", "Happy to Share Experience"),
     ]
     PROFILE_LABEL_MAP = dict(PROFILE_LABEL_CHOICES)
 
@@ -82,6 +89,7 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id')) #column is interpreted as having id calues from rows in role table
     confirmed = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+    liked_posts = db.relationship('Post', secondary=post_likes, back_populates='liked_by', lazy='dynamic')
     name = db.Column(db.String(64))
     about_me = db.Column(db.Text())
     funny_fact = db.Column(db.Text())
@@ -121,7 +129,7 @@ class User(UserMixin, db.Model):
         lazy="dynamic",
         cascade="all, delete-orphan",
     )
-    profile_label = db.Column(db.String(32))  
+    profile_label = db.Column(db.String(128))
     
     def __repr__(self):
         return '<User %r>' % self.username
@@ -361,6 +369,8 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     parent_id = db.Column(db.Integer, db.ForeignKey('posts.id'), index=True)
+    post_type = db.Column(db.String(16), nullable=False, default='relate', index=True)
+    liked_by = db.relationship('User', secondary=post_likes, back_populates='liked_posts', lazy='dynamic')
 
     parent = db.relationship(
         'Post',
@@ -371,6 +381,11 @@ class Post(db.Model):
     @property
     def is_reply(self):
         return self.parent_id is not None
+
+    def is_liked_by(self, user):
+        if user is None or not getattr(user, 'is_authenticated', False):
+            return False
+        return self.liked_by.filter(User.id == user.id).first() is not None
 
 class Conversation(db.Model):
     __tablename__ = "conversations"
@@ -468,40 +483,52 @@ class Tag(db.Model):
     name = db.Column(db.String(64), unique=True, index=True, nullable=False)
     users = db.relationship('User', secondary=user_tags, back_populates='tags', lazy='dynamic')
 
+    DEFAULT_NAMES = (
+        # Studies & Uni
+        'exam stress', 'failed an exam', 'study motivation', 'procrastination',
+        'study pressure', 'overwhelmed by uni', 'study routine', 'group projects',
+        'first semester', 'starting at eth', 'changing degree', 'study doubts',
+
+        # Decisions & Future
+        'career uncertainty', 'internship search', "master's decision", 'phd thoughts',
+        'feeling lost', 'finding direction',
+
+        # Social Life
+        'making friends', 'finding your people', 'feeling left out', 'loneliness',
+        'social anxiety', 'friendships', 'friendship problems', 'enjoying being alone',
+
+        # Relationships & People
+        'relationships', 'breakups', 'family pressure', 'setting boundaries',
+
+        # Mind & Emotions
+        'stress', 'overthinking', 'self doubt', 'imposter syndrome', 'low motivation',
+        'feeling motivated', 'feeling overwhelmed', 'feeling stuck', 'comparison',
+        'fear of failure',
+
+        # Everyday Life
+        'sleep', 'bad sleep schedule', 'work life balance', 'routines', 'flatmates',
+        'living in zurich',
+
+        # Health & Energy
+        'exercise', 'low energy', 'rest and recovery', 'body image',
+
+        # Good Stuff :)
+        'small wins', 'proud of myself', 'good day', 'bad day', 'finally passed',
+
+    )
+
     def __repr__(self):
         return f'<Tag {self.name}>'
 
+    @classmethod
+    def library_names(cls):
+        """Return the curated public tag library currently stored in the database."""
+        rows = cls.query.filter(cls.name.in_(cls.DEFAULT_NAMES)).order_by(cls.name.asc()).all()
+        return [tag.name for tag in rows]
+
     @staticmethod
     def seed_defaults():
-        tag_pool = [
-            # Academic pressure and study process
-            'exam stress', 'exam anxiety', 'finals pressure', 'study strategy',
-            'study planning', 'focus', 'concentration', 'procrastination', 'time management',
-            'thesis stress', 'master thesis pressure', 'phd pressure', 'lab stress',
-            'group projects', 'deadline pressure', 'presentation anxiety',
-            'oral exam anxiety', 'academic pressure', 'finding internships',
-            'feeling behind', 'fear of failure', 'career uncertainty',
-
-            # Mental and emotional struggles
-            'mental load', 'overthinking', 'self doubt', 'motivation', 'burnout',
-            'study burnout', 'imposter syndrome', 'panic feelings', 'stress management',
-            'coping skills', 'perfectionism', 'decision fatigue', 'sleep issues',
-            'low energy', 'restlessness', 'morning anxiety', 'depressive thoughts',
-            'anxiety spirals', 'grief', 'self worth', 'guilt', 'shame',
-            'emotional numbness', 'constant comparison', 'fear of the future',
-            'fear of disappointing others', 'difficulty asking for help',
-
-            # Social and belonging-related struggles
-            'loneliness', 'homesickness', 'social anxiety', 'belonging',
-            'emotional support', 'isolation', 'family pressure',
-
-            # Daily life and environment
-            'work life balance', 'financial stress', 'lack of structure',
-            'messy routine', 'conflict with flatmates', 'household',
-            'digital overload', 'phone addiction', 'body image', 'seasonal blues'
-        ]
-
-        for name in tag_pool:
+        for name in Tag.DEFAULT_NAMES:
             normalized_name = name.strip().lower()
             if not Tag.query.filter_by(name=normalized_name).first():
                 db.session.add(Tag(name=normalized_name))

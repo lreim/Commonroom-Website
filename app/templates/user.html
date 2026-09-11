@@ -2,24 +2,34 @@
 {% block title %}User{% endblock %}
 {% block page_content %}
 <div data-inline-chat-request-root>
-<div class="page-header">
+<div class="page-header profile-page-header">
   {% if return_to %}
-  <p>
+  <p class="profile-page-back">
     <a class="btn btn-default" href="{{ return_to }}">Back to matchings</a>
   </p>
   {% endif %}
-  <h1>{{ user.username }}</h1>
-  {% if user.profile_label_values %}
-  <div class="profile-label-badges">
-    {% for label_text in user.profile_label_texts %}
-    <div class="profile-label-badge">{{ label_text }}</div>
-    {% endfor %}
+  <div class="profile-page-identity">
+    <img src="{{ user.gravatar(size=120) }}" class="profile-avatar-large" alt="Avatar of {{ user.username }}">
+    <div class="profile-page-heading">
+      <div class="profile-page-kicker">ANONYMOUS PROFILE</div>
+      <h1>{{ user.username }}</h1>
+      {% if user.profile_label_values %}
+      <div class="profile-label-badges">
+        {% for label_text in user.profile_label_texts %}
+        <div class="profile-label-badge">{{ label_text }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <div class="profile-page-activity-summary">
+        Member since {{ moment(user.member_since).format('L') }} · Last seen {{ moment(user.last_seen).fromNow() }}
+      </div>
+    </div>
   </div>
-  {% endif %}
-  <img src="{{ user.gravatar(size=100) }}" class="img-rounded profile-avatar-large">
   {% if current_user.is_administrator() %}
-  <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+  <p class="profile-admin-email"><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
   {% endif %}
+
+  <div class="profile-page-details">
   {% if user.about_me %}
   <div class="profile-detail-block">
     <div class="profile-detail-label">About me</div>
@@ -33,7 +43,7 @@
   </div>
   {% endif %}
   {% if user.tags %}
-  <div class="profile-detail-block">
+  <div class="profile-detail-block profile-tags-block">
     <div class="profile-detail-label">Tags</div>
     <div class="profile-detail-value">
     {% for tag in user.tags|sort(attribute='name') %}
@@ -42,17 +52,12 @@
     </div>
   </div>
   {% endif %}
-  <div class="profile-detail-block">
-    <div class="profile-detail-label">Activity</div>
-    <div class="profile-detail-value">
-      Member since {{ moment(user.member_since).format('L') }}.
-      Last seen {{ moment(user.last_seen).fromNow() }}.
-    </div>
   </div>
+
+  <div class="profile-page-actions">
   {% if current_user.is_authenticated and user == current_user %}
-  <p>
-    <a class="btn btn-default" href="{{ url_for('main.user', username=user.username, recommend=1) }}">Show suitable profiles</a>
-  </p>
+  <a class="btn btn-primary" href="{{ url_for('.edit_profile') }}">Edit profile</a>
+  <a class="btn btn-default" href="{{ url_for('main.user', username=user.username, recommend=1) }}">Show suitable profiles</a>
   {% endif %}
   {% if current_user.is_authenticated and user != current_user %}
   <button
@@ -67,6 +72,7 @@
   {% if current_user.is_administrator() %}
   <a class="btn btn-primary" href="{{ url_for('.edit_profile_admin', id=user.id) }}">Edit Profile [Admin]</a>
   {% endif %}
+  </div>
 </div>
 
 {% if current_user.is_authenticated and user == current_user and recommend_profiles %}
@@ -149,7 +155,9 @@
 </div>
 {% endif %}
 
-<ul class="posts">
+<section class="profile-posts-panel">
+<h3>Posts</h3>
+<ul class="posts profile-post-list">
   {% for post in posts %}
   <li class="post">
     <div class="post-date">{{ moment(post.timestamp).fromNow() }}</div>
@@ -157,6 +165,7 @@
   </li>
   {% endfor %}
 </ul>
+</section>
 </div>
 {% endblock %}
 

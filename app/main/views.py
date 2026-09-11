@@ -5,9 +5,9 @@ from uuid import uuid4
 from sqlalchemy import func
 from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
-from .forms import PostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
+from .forms import PostForm, ReplyForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db, csrf
-from ..models import User, Post, Role, Tag, Conversation, PageVisit
+from ..models import User, Post, Role, Tag, Conversation, PageVisit, post_likes
 from ..tag_matching import match_tags, get_model
 from flask_login import login_required, current_user
 from app.decorators import admin_required, permission_required
@@ -281,20 +281,24 @@ def track_page_visit():
     return ("", 204)
 
 @main.route('/post', methods=['GET', 'POST'])
-@login_required
 def post():
     form = PostForm()
+    reply_form = ReplyForm()
     reply_to_id = request.form.get('reply_to_id', type=int)
-    if form.validate_on_submit():
+    if request.method == 'POST' and not current_user.is_authenticated:
+        return redirect(url_for('auth.register', next=request.url))
+    submitted_form = reply_form if reply_to_id else form
+    if submitted_form.validate_on_submit():
         parent_post = None
         if reply_to_id:
             parent_post = Post.query.get_or_404(reply_to_id)
             if parent_post.parent is not None:
                 parent_post = parent_post.parent
         post = Post(
-            body=form.body.data,
+            body=submitted_form.body.data,
             author=current_user._get_current_object(),
             parent=parent_post,
+            post_type=parent_post.post_type if parent_post is not None else form.post_type.data,
         )
         db.session.add(post)
         db.session.commit()
@@ -302,7 +306,7 @@ def post():
             return redirect(url_for('main.post_thread', post_id=parent_post.id))
         return redirect(url_for('main.post'))
 
-    all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
+    all_tags = Tag.library_names()
     topic_query = request.args.get('topics', '', type=str).strip()
     selected_topics = []
     seen_topics = set()
@@ -318,8 +322,13 @@ def post():
         matched_topics = [item["name"] for item in match_tags(topic_query, all_tags)]
 
     sort_by = request.args.get('sort', 'most_recent', type=str)
+    post_type_filter = request.args.get('type', 'all', type=str).lower()
+    if post_type_filter not in {'all', 'relate', 'question'}:
+        post_type_filter = 'all'
     page = request.args.get('page', 1, type=int)
     post_query = Post.query.filter(Post.parent_id.is_(None))
+    if post_type_filter != 'all':
+        post_query = post_query.filter(Post.post_type == post_type_filter)
     if matched_topics:
         post_query = post_query.join(User, Post.author).join(User.tags).filter(Tag.name.in_(matched_topics)).distinct()
 
@@ -340,6 +349,20 @@ def post():
             .outerjoin(reply_count_subquery, Post.id == reply_count_subquery.c.root_post_id)
             .order_by(func.coalesce(reply_count_subquery.c.reply_count, 0).desc(), Post.timestamp.desc())
         )
+    elif sort_by == 'most_relatable':
+        like_count_subquery = (
+            db.session.query(
+                post_likes.c.post_id.label('liked_post_id'),
+                func.count(post_likes.c.user_id).label('like_count'),
+            )
+            .group_by(post_likes.c.post_id)
+            .subquery()
+        )
+        post_query = (
+            post_query
+            .outerjoin(like_count_subquery, Post.id == like_count_subquery.c.liked_post_id)
+            .order_by(func.coalesce(like_count_subquery.c.like_count, 0).desc(), Post.timestamp.desc())
+        )
     elif sort_by == 'oldest_first':
         post_query = post_query.order_by(Post.id.asc(), Post.timestamp.asc())
     else:
@@ -355,14 +378,32 @@ def post():
     return render_template(
         'post.html',
         form=form,
+        reply_form=reply_form,
         posts=posts,
         pagination=pagination,
         all_tags=all_tags,
         selected_topics=', '.join(selected_topics),
         matched_topics=matched_topics,
         sort_by=sort_by,
+        post_type_filter=post_type_filter,
         active_page='post',
     )
+
+
+@main.route('/post/<int:post_id>/like', methods=['POST'])
+@login_required
+def toggle_post_like(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.parent_id is not None:
+        return jsonify({'error': 'Only community posts can be liked.'}), 400
+
+    liked = post.is_liked_by(current_user)
+    if liked:
+        post.liked_by.remove(current_user)
+    else:
+        post.liked_by.append(current_user)
+    db.session.commit()
+    return jsonify({'liked': not liked, 'count': post.liked_by.count()})
 
 
 @main.route('/post/<int:post_id>', methods=['GET', 'POST'])
@@ -372,7 +413,7 @@ def post_thread(post_id):
     if root_post.parent is not None:
         return redirect(url_for('main.post_thread', post_id=root_post.parent_id))
 
-    form = PostForm()
+    form = ReplyForm()
     reply_to_id = request.form.get('reply_to_id', type=int)
     if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
         parent_post = root_post
@@ -445,7 +486,7 @@ def user(username):
 @login_required
 def edit_profile():
     form = EditProfileForm()
-    all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
+    all_tags = Tag.library_names()
     if form.validate_on_submit():
         current_user.about_me = form.about_me.data
         current_user.funny_fact = form.funny_fact.data
@@ -473,7 +514,7 @@ def edit_profile():
 def edit_profile_admin(id):
     user = User.query.get_or_404(id)
     form = EditProfileAdminForm(user=user)
-    all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
+    all_tags = Tag.library_names()
     if form.validate_on_submit():
         user.email = form.email.data
         user.username = form.username.data
@@ -499,9 +540,10 @@ def edit_profile_admin(id):
 
 
 @main.route('/tags')
-@login_required
 def tag_search():
-    all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.register', next=request.url))
+    all_tags = Tag.library_names()
     profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
     return render_template('tag_search.html', all_tags=all_tags, profile_label_choices=profile_label_choices, active_page='tag_search')
 
@@ -516,7 +558,7 @@ def tag_search_api():
     requested_profile_labels = {
         value.strip() for value in request.args.getlist('labels') if value and value.strip()
     }
-    all_tags = [t.name for t in Tag.query.order_by(Tag.name.asc()).all()]
+    all_tags = Tag.library_names()
     matches = match_tags(query, all_tags)
     matched_tag_names = {m["name"] for m in matches}
     tag_map = {

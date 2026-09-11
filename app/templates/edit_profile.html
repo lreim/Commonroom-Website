@@ -3,15 +3,18 @@
 {% block title %}Edit Profile{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
+<div class="edit-profile-page">
+<div class="page-header tag-search-header edit-profile-header">
+  <div class="tag-search-eyebrow">YOUR PROFILE</div>
   <h1>{% if is_admin_edit %}Edit Profile (Admin){% else %}Edit Your Profile{% endif %}</h1>
+  <h4>Choose what you want to share and what other students can find you through.</h4>
 </div>
 
 <form method="post" novalidate>
   {{ form.hidden_tag() }}
   <div
     id="tag-picker-widget"
-    class="tag-two-column-layout"
+    class="tag-two-column-layout tag-design-widget"
     data-tag-widget="picker"
     data-search-endpoint="{{ url_for('main.tag_search_api') }}"
     data-all-tags='{{ all_tags|tojson }}'
@@ -98,21 +101,24 @@
         <p class="help-block">Only the developer can create new tags. Search for matching tags or select from existing tags. In case of missing tags, <a href="mailto:contact@commonroom.ch?subject=Missing%20tags%20%E2%80%94%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">reach out</a>!</p>
       </div>
 
-      <h5>Selected Tags</h5>
+      <h4>Selected Tags</h4>
       <div id="tag-selected-list" class="tag-list"></div>
 
-      <h5>Matches</h5>
+      <h4>Matches</h4>
       <div id="tag-search-results" class="tag-results"></div>
 
-      {{ form.submit(class="btn btn-primary") }}
+      <div class="edit-profile-submit-row">
+        {{ form.submit(class="btn btn-primary", value="Save profile") }}
+      </div>
     </div>
 
     <aside class="tag-side-column">
-      <h5>Existing Tags</h5>
+      <h4>Existing Tags</h4>
       <div id="tag-existing-list" class="tag-list"></div>
     </aside>
   </div>
 </form>
+</div>
 {% endblock %}
 
 {% block scripts %}

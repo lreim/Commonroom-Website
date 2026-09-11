@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField, SelectMultipleField
+from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField, SelectMultipleField, RadioField
 from wtforms.widgets import ListWidget, CheckboxInput
 from wtforms.validators import DataRequired, Length, Email, Regexp
 from wtforms import ValidationError
@@ -17,6 +17,20 @@ class MultiCheckboxField(SelectMultipleField):
 class PostForm(FlaskForm):
     body = TextAreaField(
         "What's on your mind?",
+        validators=[DataRequired(), Length(1, MAX_POST_BODY_LENGTH)],
+        render_kw={"maxlength": MAX_POST_BODY_LENGTH},
+    )
+    post_type = RadioField(
+        "What kind of post is this?",
+        choices=[("relate", "Relate"), ("question", "Question")],
+        validators=[DataRequired()],
+    )
+    submit = SubmitField('Submit')
+
+
+class ReplyForm(FlaskForm):
+    body = TextAreaField(
+        "Your reply",
         validators=[DataRequired(), Length(1, MAX_POST_BODY_LENGTH)],
         render_kw={"maxlength": MAX_POST_BODY_LENGTH},
     )

@@ -523,6 +523,23 @@ document.addEventListener("DOMContentLoaded", function () {
   
   {% block page_content %}{% endblock %}
 </div>
+<footer class="commonroom-site-footer">
+  <div class="commonroom-site-footer-inner">
+    <span>Built by an ETH student</span>
+    <div class="commonroom-site-footer-logos">
+      <img
+        class="commonroom-site-footer-eth-logo"
+        src="{{ url_for('static', filename='ETH_SPH_Logo.svg') }}"
+        alt="ETH Student Project House"
+      >
+      <img
+        class="commonroom-site-footer-vmp-logo"
+        src="{{ url_for('static', filename='VMP_logo.png') }}"
+        alt="VMP"
+      >
+    </div>
+  </div>
+</footer>
 <div class="floating-contact-links">
   <details class="floating-contact-panel" id="floating-contact-panel" data-floating-panel>
     <summary
@@ -554,10 +571,10 @@ document.addEventListener("DOMContentLoaded", function () {
     >
       <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
       <span class="floating-abuse-text">Report abuse</span>
-      {% if active_page|default('') in ['index', 'about'] %}
+      {% if active_page|default('') == 'about' %}
       <span
-        class="floating-abuse-hint{% if active_page|default('') == 'about' %} floating-abuse-hint-scroll-reveal{% endif %}"
-        {% if active_page|default('') == 'about' %}data-floating-hint-reveal-target="about-important-limits"{% endif %}
+        class="floating-abuse-hint floating-abuse-hint-scroll-reveal"
+        data-floating-hint-reveal-target="about-important-limits"
         aria-hidden="true"
       >
         <span>Let’s keep it safe</span>

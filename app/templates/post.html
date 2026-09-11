@@ -4,7 +4,8 @@
 
 {% block page_content %}
 <div class="page-header post-page-header">
-    <h1>Take a look at some posts!</h1>
+    <div class="post-page-eyebrow">FROM THE COMMUNITY</div>
+    <h1>What’s on your mind?</h1>
     <h4>
         These are public posts from all of your peers here. Feel free to read around and share your thoughts!
     </h4>
@@ -13,63 +14,54 @@
     <form method="post" action="{{ url_for('main.post') }}" class="post-compose-form">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            {{ form.body.label }}
-            {{ form.body(class="form-control", rows="4", placeholder="Write your post here.") }}
+            <label for="{{ form.body.id }}">Drop off a thought</label>
+            {{ form.body(class="form-control", rows="4", placeholder="How do people actually manage lectures, exercise, cooking, friends and enough sleep?") }}
+            <p class="post-compose-examples" aria-label="Example post categories">
+                <span>rant</span><span>relatable</span><span>win</span><span>struggle</span><span>question</span>
+            </p>
         </div>
+        <fieldset class="post-type-fieldset">
+            <legend>What kind of post is this?</legend>
+            {% for option in form.post_type %}
+            <label class="post-type-option">
+                {{ option(required=true) }}
+                <span>{{ option.label.text }}</span>
+            </label>
+            {% endfor %}
+        </fieldset>
+        {% for error in form.post_type.errors %}
+        <div class="post-type-error" role="alert">{{ error }}</div>
+        {% endfor %}
         <div class="post-compose-actions">
-            {{ form.submit(class="btn btn-primary", value="Post") }}
+            <div class="post-compose-submit">
+                {{ form.submit(
+                    class="btn btn-primary",
+                    value="Post",
+                    disabled=(not form.post_type.data)
+                ) }}
+                <span class="post-compose-username">
+                {% if current_user.is_authenticated %}
+                    as {{ current_user.username }}
+                {% else %}
+                    <a href="{{ url_for('auth.login', next=request.url) }}">(log in)</a>
+                {% endif %}
+                </span>
+            </div>
         </div>
     </form>
 </div>
 
-<details
-    class="post-topic-filter"
-    data-tag-widget="picker"
-    data-hidden-input-id="post-topic-filter-input"
-    data-search-endpoint="{{ url_for('main.tag_search_api') }}"
-    data-all-tags='{{ all_tags|tojson }}'
-    {% if selected_topics %}open{% endif %}
->
-    <summary>Filter posts by topics</summary>
-    <form method="get" action="{{ url_for('main.post') }}" class="post-topic-filter-form">
-        <div class="tag-two-column-layout post-tag-layout">
-            <div class="tag-main-column">
-                <div class="page-subheader">
-                    <p>Use the same topic tags as in tagsearch. The filter shows posts from users whose profile tags match your selected topics.</p>
-                </div>
-                <div class="form-group">
-                    <input id="tag-picker-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, motivation, loneliness)">
-                    <input type="hidden" id="post-topic-filter-input" name="topics" value="{{ selected_topics }}">
-                </div>
-
-                <h4>Selected Topics</h4>
-                <div id="tag-selected-list" class="tag-list"></div>
-
-                <h4>Matches</h4>
-                <div id="tag-search-results" class="tag-results"></div>
-
-                <div class="post-topic-filter-actions">
-                    <button type="submit" class="btn btn-primary">Apply filter</button>
-                    <a href="{{ url_for('main.post') }}" class="btn btn-default">Clear filter</a>
-                </div>
-                {% if matched_topics %}
-                <p class="text-muted post-topic-filter-status">Currently matching topics: {{ matched_topics|join(", ") }}</p>
-                {% endif %}
-            </div>
-
-            <aside class="tag-side-column">
-                <h4>Existing Tags</h4>
-                <div id="tag-existing-list" class="tag-list"></div>
-            </aside>
-        </div>
-    </form>
-</details>
-
 <div class="post-sort-row">
+    <nav class="post-type-filter" aria-label="Filter by post type">
+        <a class="{% if post_type_filter == 'all' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='all') }}">All</a>
+        <a class="{% if post_type_filter == 'relate' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='relate') }}">Relate</a>
+        <a class="{% if post_type_filter == 'question' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='question') }}">Question</a>
+    </nav>
     <form method="get" action="{{ url_for('main.post') }}">
-        <input type="hidden" name="topics" value="{{ selected_topics }}">
+        <input type="hidden" name="type" value="{{ post_type_filter }}">
         <select class="sort-select post-page-sort" name="sort" onchange="this.form.submit()">
             <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Most Recent</option>
+            <option value="most_relatable" {% if sort_by == "most_relatable" %}selected{% endif %}>Most Relatable</option>
             <option value="most_replies" {% if sort_by == "most_replies" %}selected{% endif %}>Most Replies</option>
             <option value="oldest_first" {% if sort_by == "oldest_first" %}selected{% endif %}>Oldest First</option>
         </select>
@@ -104,6 +96,26 @@
                 </a>
             </div>
             <div class="post-body">{{ post.body }}</div>
+            <div class="post-meta-actions">
+                {% if current_user.is_authenticated %}
+                <button
+                    type="button"
+                    class="post-like-button{% if post.is_liked_by(current_user) %} is-liked{% endif %}"
+                    data-like-url="{{ url_for('main.toggle_post_like', post_id=post.id) }}"
+                    aria-pressed="{{ 'true' if post.is_liked_by(current_user) else 'false' }}"
+                >
+                    <span class="post-relate-label">{{ 'Related' if post.is_liked_by(current_user) else 'Relate' }}</span>
+                    <span aria-hidden="true">·</span>
+                    <span class="post-like-count">{{ post.liked_by.count() }}</span>
+                </button>
+                {% else %}
+                <a class="post-like-button" href="{{ url_for('auth.login', next=request.url) }}">
+                    <span class="post-relate-label">Relate</span>
+                    <span aria-hidden="true">·</span>
+                    <span class="post-like-count">{{ post.liked_by.count() }}</span>
+                </a>
+                {% endif %}
+            </div>
             {% if post.replies.count() > 0 %}
             <div class="post-thread-row">
                 <a class="post-thread-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">
@@ -113,17 +125,21 @@
             {% endif %}
         </div>
         <div class="post-side-actions">
+            {% if current_user.is_authenticated %}
             <details class="post-reply-box" data-reply-toggle>
                 <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
                 <form method="post" action="{{ url_for('main.post') }}">
-                    {{ form.hidden_tag() }}
+                    {{ reply_form.hidden_tag() }}
                     <input type="hidden" name="reply_to_id" value="{{ post.id }}">
-                    {{ form.body(class="form-control", rows="4", placeholder="Write your reply here.") }}
+                    {{ reply_form.body(class="form-control", rows="4", placeholder="Write your reply here.") }}
                     <div class="post-reply-actions">
-                        {{ form.submit(class="btn btn-primary", value="Send reply") }}
+                        {{ reply_form.submit(class="btn btn-primary", value="Send reply") }}
                     </div>
                 </form>
             </details>
+            {% else %}
+            <a class="post-reply-register" href="{{ url_for('auth.register', next=request.url) }}">Reply</a>
+            {% endif %}
         </div>
     </li>
     {% else %}
@@ -154,6 +170,48 @@ document.querySelectorAll('[data-reply-toggle]').forEach(function (replyBox) {
 
   syncReplyLabel();
   replyBox.addEventListener('toggle', syncReplyLabel);
+});
+
+var postSubmitButton = document.querySelector('.post-compose-form input[type="submit"]');
+var postTypeOptions = document.querySelectorAll('.post-compose-form input[name="post_type"]');
+if (postSubmitButton) {
+  function syncPostSubmitState() {
+    var hasSelectedType = Array.prototype.some.call(postTypeOptions, function (option) {
+      return option.checked;
+    });
+    postSubmitButton.disabled = !hasSelectedType;
+  }
+
+  postTypeOptions.forEach(function (option) {
+    option.addEventListener('change', syncPostSubmitState);
+  });
+  syncPostSubmitState();
+}
+
+document.querySelectorAll('[data-like-url]').forEach(function (likeButton) {
+  likeButton.addEventListener('click', function () {
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    likeButton.disabled = true;
+    fetch(likeButton.dataset.likeUrl, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('Like request failed');
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        likeButton.classList.toggle('is-liked', data.liked);
+        likeButton.setAttribute('aria-pressed', String(data.liked));
+        likeButton.querySelector('.post-relate-label').textContent = data.liked ? 'Related' : 'Relate';
+        likeButton.querySelector('.post-like-count').textContent = data.count;
+      })
+      .finally(function () {
+        likeButton.disabled = false;
+      });
+  });
 });
 </script>
 {% endblock %}

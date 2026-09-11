@@ -31,7 +31,10 @@
           <div class="post-date">12 minutes ago</div>
           <div class="post-author">steady-orbit-6724</div>
           <div class="post-body">How do people actually manage uni, sports, friends AND sleep?</div>
-          <div class="post-thread-row"><span class="post-thread-link">&#8627; 6 replies</span></div>
+          <div class="onboarding-post-meta">
+            <span class="onboarding-relate-button">Relate · 12</span>
+            <span class="post-thread-link">&#8627; 6 replies</span>
+          </div>
         </div>
         <div class="post-side-actions"><span class="onboarding-example-action">Reply</span></div>
       </article>
@@ -41,7 +44,10 @@
           <div class="post-date">34 minutes ago</div>
           <div class="post-author">bright-photon-2856</div>
           <div class="post-body">I finally passed that exam :')</div>
-          <div class="post-thread-row"><span class="post-thread-link">&#8627; 4 replies</span></div>
+          <div class="onboarding-post-meta">
+            <span class="onboarding-relate-button">Relate · 18</span>
+            <span class="post-thread-link">&#8627; 4 replies</span>
+          </div>
         </div>
         <div class="post-side-actions"><span class="onboarding-example-action">Reply</span></div>
       </article>
@@ -58,12 +64,18 @@
     </div>
 
     <div class="onboarding-visual onboarding-compose-example" aria-label="Example of the CommonRoom post form">
-      <label class="onboarding-compose-label">What's on your mind?</label>
-      <div class="onboarding-compose-field">Write your post here.</div>
-      <span class="btn btn-primary onboarding-example-button">Post</span>
-      <div class="onboarding-topic-filter-bar">
-        <span>Filter posts by topics</span>
-        <span aria-hidden="true">+</span>
+      <label class="onboarding-compose-label">Drop off a thought</label>
+      <div class="onboarding-compose-field">How do people actually manage lectures, exercise, cooking, friends and enough sleep?</div>
+      <div class="onboarding-compose-prompts">rant <i>·</i> relatable <i>·</i> win <i>·</i> struggle <i>·</i> question</div>
+      <div class="onboarding-post-type">
+        <span>What kind of post is this?</span>
+        <div><strong>Relate</strong><strong>Question</strong></div>
+      </div>
+      <div class="onboarding-compose-actions">
+        <div>
+          <span class="btn btn-primary onboarding-example-button">Post</span>
+          <small>as steady-orbit-6724</small>
+        </div>
       </div>
     </div>
   </section>
@@ -85,8 +97,8 @@
         <img class="onboarding-profile-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=quiet-nebula-4318&amp;size=180" alt="Avatar of quiet-nebula-4318">
         <div>
           <h3>quiet-nebula-4318</h3>
-          <span class="profile-label-badge">Happy to talk</span>
-          <span class="profile-label-badge">Open to share experience</span>
+          <span class="profile-label-badge">Happy to Listen</span>
+          <span class="profile-label-badge">Happy to Share Experience</span>
         </div>
       </div>
       <div class="onboarding-profile-block"><strong>About me</strong><p>Still figuring out what balance is supposed to look like. Always happy to compare notes.</p></div>
@@ -95,7 +107,7 @@
         <strong>Tags</strong>
         <div class="onboarding-tag-list">
           <span class="label label-info">exam stress</span><span class="label label-info">procrastination</span>
-          <span class="label label-info">motivation</span><span class="label label-info">loneliness</span>
+          <span class="label label-info">study motivation</span><span class="label label-info">loneliness</span>
           <span class="label label-info">career uncertainty</span><span class="label label-info">work life balance</span>
         </div>
       </div>
@@ -114,13 +126,13 @@
 
     <div class="onboarding-visual onboarding-search-example" aria-label="Example CommonRoom tag search and matching profiles">
       <div class="onboarding-visual-title">Find someone who might get it</div>
-      <div class="onboarding-search-field"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> exam pressure, concentration</div>
+      <div class="onboarding-search-field"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> exam stress, study motivation</div>
       <div class="onboarding-search-section-label">Selected Tags</div>
-      <div class="onboarding-selected-tags"><span class="label label-primary">academic pressure</span><span class="label label-primary">concentration</span></div>
+      <div class="onboarding-selected-tags"><span class="label label-primary">exam stress</span><span class="label label-primary">study motivation</span></div>
       <div class="onboarding-search-section-label">Matches</div>
       <div class="onboarding-tag-results">
         <article class="onboarding-tag-result">
-          <div><span class="label label-info">academic pressure</span><span class="onboarding-tag-score">score 0.82</span></div>
+          <div><span class="label label-primary">exam stress</span><span class="onboarding-tag-score">score 1.00</span></div>
           <span class="onboarding-tag-result-label">Matching profile:</span>
           <a
             href="{{ url_for('main.tag_search') }}"
@@ -129,15 +141,15 @@
               "username": "lucid-prime-8729",
               "name": "lucid-prime-8729",
               "about_me": "Still figuring out how to handle pressure without losing sight of everything else.",
-              "matching_tags": ["academic pressure", "concentration"],
-              "tags": ["academic pressure", "concentration", "procrastination"],
-              "profile_labels": ["Open to share experience", "Happy to talk"],
+              "matching_tags": ["exam stress", "study motivation"],
+              "tags": ["exam stress", "study motivation", "procrastination"],
+              "profile_labels": ["Happy to Share Experience", "Happy to Listen"],
               "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-prime-8729&size=120"
             }|tojson }}'
           >lucid-prime-8729</a>
         </article>
         <article class="onboarding-tag-result">
-          <div><span class="label label-info">concentration</span><span class="onboarding-tag-score">score 0.74</span></div>
+          <div><span class="label label-info">study pressure</span><span class="onboarding-tag-score">score 0.74</span></div>
           <span class="onboarding-tag-result-label">Matching profile:</span>
           <a
             href="{{ url_for('main.tag_search') }}"
@@ -146,9 +158,9 @@
               "username": "steady-orbit-6724",
               "name": "steady-orbit-6724",
               "about_me": "Learning to make university life a little less all-or-nothing.",
-              "matching_tags": ["concentration"],
-              "tags": ["concentration", "motivation", "work life balance"],
-              "profile_labels": ["Open to share experience"],
+              "matching_tags": ["study pressure"],
+              "tags": ["study pressure", "study motivation", "work life balance"],
+              "profile_labels": ["Happy to Share Experience"],
               "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&size=120"
             }|tojson }}'
           >steady-orbit-6724</a>
