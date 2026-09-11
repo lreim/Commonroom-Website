@@ -3370,7 +3370,7 @@ html.dark-mode .landing-summary-disclaimer {
 
 /* Chat detail: calm two-column layout matching the rounded post and tag pages. */
 .chat-detail-page-shell {
-  width: min(1120px, 100%);
+  width: min(860px, 100%);
   margin: 0 auto;
 }
 
@@ -3384,10 +3384,33 @@ html.dark-mode .landing-summary-disclaimer {
 }
 
 .chat-detail-layout {
-  display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
-  gap: 22px;
-  align-items: start;
+  display: block;
+}
+
+.chat-detail-back-row {
+  margin-bottom: 14px;
+}
+
+.chat-detail-back-row a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 7px 14px;
+  border: 1px solid #d8c6ad;
+  border-radius: 18px;
+  background: #fffdf8;
+  color: #60342c;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.chat-detail-back-row a:hover,
+.chat-detail-back-row a:focus {
+  border-color: #bda78a;
+  background: #f7eee2;
+  color: #4f2923;
+  text-decoration: none;
 }
 
 .chat-detail-sidebar,
@@ -3617,6 +3640,19 @@ html.dark-mode .chat-detail-conversation-panel {
   border-color: #514336;
   background: #29221c;
   box-shadow: none;
+}
+
+html.dark-mode .chat-detail-back-row a {
+  border-color: #514336;
+  background: #29221c;
+  color: #e8ccc5;
+}
+
+html.dark-mode .chat-detail-back-row a:hover,
+html.dark-mode .chat-detail-back-row a:focus {
+  border-color: #766051;
+  background: #352c25;
+  color: #f1dfd9;
 }
 
 html.dark-mode .chat-detail-sidebar-header a {

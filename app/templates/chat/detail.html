@@ -8,38 +8,11 @@
     <h1>Private Chats</h1>
   </div>
 
-  <div class="chat-detail-layout">
-    <aside class="chat-detail-sidebar" aria-labelledby="chat-detail-sidebar-title">
-      <div class="chat-detail-sidebar-header">
-        <h3 id="chat-detail-sidebar-title">Your Chats</h3>
-        <a href="{{ url_for('chat.index') }}#start-chat">New chat</a>
-      </div>
-      <ul class="chat-detail-conversation-list">
-        {% for item in conversation_items %}
-        <li{% if item.conversation.id == conversation.id %} class="is-active"{% endif %}>
-          <a
-            class="chat-detail-conversation-item{% if item.conversation.id == conversation.id %} is-active{% endif %}"
-            href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}"
-            {% if item.conversation.id == conversation.id %}aria-current="page"{% endif %}
-          >
-            <img src="{{ item.other.gravatar(size=48) }}" alt="{{ item.other.username }}">
-            <span class="chat-detail-conversation-copy">
-              <strong>{{ item.other.username }}</strong>
-              <span>
-                {% if item.last_msg %}
-                  {{ item.last_msg.body[:48] }}{% if item.last_msg.body|length > 48 %}...{% endif %}
-                {% else %}
-                  No messages yet.
-                {% endif %}
-              </span>
-            </span>
-            <time>{{ moment(item.last_activity).fromNow() }}</time>
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-    </aside>
+  <div class="chat-detail-back-row">
+    <a href="{{ url_for('chat.index') }}">&larr; Back to chats</a>
+  </div>
 
+  <div class="chat-detail-layout">
     <section class="chat-page chat-detail-conversation-panel">
       <div class="chat-header">
         <div class="chat-current-person">

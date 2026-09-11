@@ -107,26 +107,6 @@ def _serialize_chat_candidate(user):
     }
 
 
-def _conversation_sidebar_items(user):
-    conversations = Conversation.query.filter(
-        (Conversation.user_a_id == user.id) | (Conversation.user_b_id == user.id)
-    ).all()
-    items = []
-    for conversation in conversations:
-        other = conversation.other_user(user.id)
-        last_message = conversation.messages.order_by(Message.created_at.desc()).first()
-        items.append(
-            {
-                "conversation": conversation,
-                "other": other,
-                "last_msg": last_message,
-                "last_activity": last_message.created_at if last_message else conversation.created_at,
-            }
-        )
-    items.sort(key=lambda item: item["last_activity"], reverse=True)
-    return items
-
-
 @chat.route("/")
 @login_required
 def index():     #Zeigt Übersicht aller Chats, in denen current_user involviert ist 
@@ -366,7 +346,6 @@ def detail(conversation_id):    #lädt Konversation
     return render_template(
         "chat/detail.html",
         conversation=conversation,
-        conversation_items=_conversation_sidebar_items(current_user),
         other=other,
         messages=messages,
         pagination=pagination,
