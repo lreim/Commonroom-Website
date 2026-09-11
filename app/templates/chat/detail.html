@@ -3,51 +3,93 @@
 {% block title %}Chat{% endblock %}
 
 {% block page_content %}
-<div class="chat-page">
-  <div class="chat-header">
-    <div>
-      <p><a class="btn btn-default" href="{{ url_for('chat.index') }}">Back to chats</a></p>
-      <h3>Chat mit {{ user_link(other) }}</h3>
-      {% if is_blocked %}
-        <p class="chat-block-state">{{ blocked_message }}</p>
-      {% endif %}
-    </div>
-    <div class="chat-header-actions">
-      {% if pagination.has_next %}
-        <a class="chat-load-older" href="{{ url_for('chat.detail', conversation_id=conversation.id, page=pagination.next_num) }}#message-{{ messages[0].id }}">Aeltere laden</a>
-      {% endif %}
-      {% if current_user.has_blocked(other) %}
-      <form method="post" action="{{ url_for('chat.unblock_user', user_id=other.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-default">Unblock</button>
-      </form>
-      {% else %}
-      <form method="post" action="{{ url_for('chat.block_user', user_id=other.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-default">Block user</button>
-      </form>
-      {% endif %}
-    </div>
+<div class="chat-detail-page-shell">
+  <div class="page-header chat-detail-page-heading">
+    <h1>Private Chats</h1>
   </div>
 
-  <ul id="messages" class="chat-messages">
-    {% for m in messages %}
-      <li id="message-{{ m.id }}" class="chat-message{% if m.author_id == current_user.id %} chat-message-own{% endif %}">
-        <div class="chat-bubble">
-          <div class="chat-meta">
-            <a class="chat-author chat-author-link" href="{{ url_for('main.user', username=m.author.username) }}">{{ m.author.username }}</a>
-            <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
-          </div>
-          <div class="chat-body">{{ m.body }}</div>
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
+  <div class="chat-detail-layout">
+    <aside class="chat-detail-sidebar" aria-labelledby="chat-detail-sidebar-title">
+      <div class="chat-detail-sidebar-header">
+        <h3 id="chat-detail-sidebar-title">Your Chats</h3>
+        <a href="{{ url_for('chat.index') }}#start-chat">New chat</a>
+      </div>
+      <ul class="chat-detail-conversation-list">
+        {% for item in conversation_items %}
+        <li{% if item.conversation.id == conversation.id %} class="is-active"{% endif %}>
+          <a
+            class="chat-detail-conversation-item{% if item.conversation.id == conversation.id %} is-active{% endif %}"
+            href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}"
+            {% if item.conversation.id == conversation.id %}aria-current="page"{% endif %}
+          >
+            <img src="{{ item.other.gravatar(size=48) }}" alt="{{ item.other.username }}">
+            <span class="chat-detail-conversation-copy">
+              <strong>{{ item.other.username }}</strong>
+              <span>
+                {% if item.last_msg %}
+                  {{ item.last_msg.body[:48] }}{% if item.last_msg.body|length > 48 %}...{% endif %}
+                {% else %}
+                  No messages yet.
+                {% endif %}
+              </span>
+            </span>
+            <time>{{ moment(item.last_activity).fromNow() }}</time>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </aside>
 
-  <form id="chat-form" class="chat-form"{% if is_blocked %} style="display:none;"{% endif %}>
-    <input id="chat-input" type="text" autocomplete="off" maxlength="2000" placeholder="Nachricht..." />
-    <button type="submit">Senden</button>
-  </form>
+    <section class="chat-page chat-detail-conversation-panel">
+      <div class="chat-header">
+        <div class="chat-current-person">
+          <img src="{{ other.gravatar(size=52) }}" alt="{{ other.username }}">
+          <div>
+            <h3>Chat with {{ user_link(other) }}</h3>
+            {% if is_blocked %}
+              <p class="chat-block-state">{{ blocked_message }}</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          {% if pagination.has_next %}
+            <a class="chat-load-older" href="{{ url_for('chat.detail', conversation_id=conversation.id, page=pagination.next_num) }}#message-{{ messages[0].id }}">Older messages</a>
+          {% endif %}
+          <a class="chat-view-profile" href="{{ url_for('main.user', username=other.username) }}">View profile</a>
+          {% if current_user.has_blocked(other) %}
+          <form method="post" action="{{ url_for('chat.unblock_user', user_id=other.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-default">Unblock</button>
+          </form>
+          {% else %}
+          <form method="post" action="{{ url_for('chat.block_user', user_id=other.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-default">Block user</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <ul id="messages" class="chat-messages">
+        {% for m in messages %}
+          <li id="message-{{ m.id }}" class="chat-message{% if m.author_id == current_user.id %} chat-message-own{% endif %}">
+            <div class="chat-bubble">
+              <div class="chat-meta">
+                <a class="chat-author chat-author-link" href="{{ url_for('main.user', username=m.author.username) }}">{{ m.author.username }}</a>
+                <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
+              </div>
+              <div class="chat-body">{{ m.body }}</div>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+
+      <form id="chat-form" class="chat-form"{% if is_blocked %} style="display:none;"{% endif %}>
+        <input id="chat-input" type="text" autocomplete="off" maxlength="2000" placeholder="Write a message..." />
+        <button type="submit">Send</button>
+      </form>
+    </section>
+  </div>
 </div>
 
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>

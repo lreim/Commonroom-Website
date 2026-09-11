@@ -1,6 +1,22 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 
+{% macro example_profile(username, avatar_url, about_me, tags, profile_labels) -%}
+<span
+  class="homepage-profile-preview-trigger"
+  data-profile-preview='{{ {
+    "username": username,
+    "name": "",
+    "location": "ETH Zurich",
+    "about_me": about_me,
+    "matching_tags": tags,
+    "tags": tags,
+    "profile_labels": profile_labels,
+    "avatar_url": avatar_url
+  }|tojson }}'
+>{{ username }}</span>
+{%- endmacro %}
+
 {% block page_content %}
 <div class="welcome-hero">
   <div class="page-header text-center welcome-hero-header">
@@ -78,7 +94,13 @@
       </div>
       <div class="post-content">
         <div class="post-date">2 hours ago</div>
-        <div class="post-author"><span>gentle-nebula-4318</span></div>
+        <div class="post-author">{{ example_profile(
+          "gentle-nebula-4318",
+          "https://api.dicebear.com/9.x/thumbs/svg?seed=gentle-nebula-4318&size=80",
+          "Trying to find a kinder balance between studying, resting and everything else.",
+          ["exam stress", "feeling behind", "work-life balance"],
+          ["Currently dealing with this", "Happy to listen"]
+        ) }}</div>
         <div class="post-body">I passed the exam, but I still feel like I’m falling behind everyone else. Does anyone know this feeling?</div>
         <div class="homepage-post-meta-actions">
           <span class="homepage-post-relate">Relate · 8</span>
@@ -94,7 +116,13 @@
       </div>
       <div class="post-content">
         <div class="post-date">yesterday</div>
-        <div class="post-author"><span>cosmic-tensor-7642</span></div>
+        <div class="post-author">{{ example_profile(
+          "cosmic-tensor-7642",
+          "https://api.dicebear.com/9.x/thumbs/svg?seed=cosmic-tensor-7642&size=80",
+          "Still figuring out how to feel at home at ETH and meet people along the way.",
+          ["making friends", "feeling left out", "starting at ETH"],
+          ["Currently dealing with this"]
+        ) }}</div>
         <div class="post-body">Making friends after the first semester feels much harder than people admit.</div>
         <div class="homepage-post-meta-actions">
           <span class="homepage-post-relate">Relate · 14</span>
@@ -110,7 +138,13 @@
       </div>
       <div class="post-content">
         <div class="post-date">3 days ago</div>
-        <div class="post-author"><span>patient-photon-2856</span></div>
+        <div class="post-author">{{ example_profile(
+          "patient-photon-2856",
+          "https://api.dicebear.com/9.x/thumbs/svg?seed=patient-photon-2856&size=80",
+          "Taking small social steps and happy to share what has made them easier.",
+          ["social anxiety", "meeting new people", "small wins"],
+          ["Been through this", "Happy to share my experience"]
+        ) }}</div>
         <div class="post-body">Today I finally asked someone from my lecture to have coffee. It was less scary than I expected.</div>
         <div class="homepage-post-meta-actions">
           <span class="homepage-post-relate">Relate · 11</span>
@@ -126,7 +160,13 @@
       </div>
       <div class="post-content">
         <div class="post-date">4 days ago</div>
-        <div class="post-author"><span>amber-lattice-9137</span></div>
+        <div class="post-author">{{ example_profile(
+          "amber-lattice-9137",
+          "https://api.dicebear.com/9.x/thumbs/svg?seed=amber-lattice-9137&size=80",
+          "Learning that rest is part of student life too.",
+          ["rest and recovery", "study pressure", "perfectionism"],
+          ["Happy to listen"]
+        ) }}</div>
         <div class="post-body">How do you let yourself rest without feeling guilty about not studying?</div>
         <div class="homepage-post-meta-actions">
           <span class="homepage-post-relate">Relate · 19</span>
@@ -142,7 +182,13 @@
       </div>
       <div class="post-content">
         <div class="post-date">last week</div>
-        <div class="post-author"><span>curious-quasar-5463</span></div>
+        <div class="post-author">{{ example_profile(
+          "curious-quasar-5463",
+          "https://api.dicebear.com/9.x/thumbs/svg?seed=curious-quasar-5463&size=80",
+          "Thinking through study doubts, future plans and what a good direction might look like.",
+          ["study doubts", "changing degree", "finding direction"],
+          ["Currently dealing with this", "Happy to listen"]
+        ) }}</div>
         <div class="post-body">I don’t know whether I chose the wrong degree or whether I’m simply exhausted.</div>
         <div class="homepage-post-meta-actions">
           <span class="homepage-post-relate">Relate · 16</span>
@@ -158,7 +204,13 @@
       </div>
       <div class="post-content">
         <div class="post-date">last week</div>
-        <div class="post-author"><span>steady-orbit-6724</span></div>
+        <div class="post-author">{{ example_profile(
+          "steady-orbit-6724",
+          "https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&size=80",
+          "Trying to make everyday student life a little more manageable.",
+          ["sleep", "study routine", "work-life balance"],
+          ["Happy to share my experience"]
+        ) }}</div>
         <div class="post-body">How do people actually manage lectures, exercise, cooking, friends and enough sleep?</div>
         <div class="homepage-post-meta-actions">
           <span class="homepage-post-relate">Relate · 23</span>
@@ -199,4 +251,9 @@
     CommonRoom is a peer community, not professional counselling or a crisis service.
   </p>
 </section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
 {% endblock %}
