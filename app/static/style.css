@@ -3296,8 +3296,19 @@ html.dark-mode .landing-summary-disclaimer {
   justify-content: flex-end;
 }
 
-.chat-bubble {
+.chat-message-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   max-width: 78%;
+}
+
+.chat-message-own .chat-message-stack {
+  align-items: flex-end;
+}
+
+.chat-bubble {
+  max-width: 100%;
   background: #b97b7b;
   border: 1px solid #c4a45a;
   border-radius: 12px;
@@ -3335,7 +3346,7 @@ html.dark-mode .landing-summary-disclaimer {
 }
 
 .chat-time {
-  margin-left: auto;
+  margin-top: 5px;
   font-size: 10px;
   color: #20008a;
   white-space: nowrap;
@@ -3559,8 +3570,7 @@ html.dark-mode .landing-summary-disclaimer {
   justify-content: flex-end;
 }
 
-.chat-detail-conversation-panel .chat-load-older,
-.chat-view-profile {
+.chat-detail-conversation-panel .chat-load-older {
   color: #705f48;
   font-size: 12px;
   font-weight: 600;
@@ -3682,8 +3692,7 @@ html.dark-mode .chat-current-person h3 a {
 
 html.dark-mode .chat-detail-conversation-copy > span,
 html.dark-mode .chat-detail-conversation-item time,
-html.dark-mode .chat-detail-conversation-panel .chat-load-older,
-html.dark-mode .chat-view-profile {
+html.dark-mode .chat-detail-conversation-panel .chat-load-older {
   color: #b9ab98;
 }
 
@@ -3762,7 +3771,7 @@ html.dark-mode .chat-detail-conversation-panel .chat-form button {
     padding: 20px 14px 14px;
   }
 
-  .chat-detail-conversation-panel .chat-bubble {
+  .chat-detail-conversation-panel .chat-message-stack {
     max-width: 88%;
   }
 

@@ -28,7 +28,6 @@
           {% if pagination.has_next %}
             <a class="chat-load-older" href="{{ url_for('chat.detail', conversation_id=conversation.id, page=pagination.next_num) }}#message-{{ messages[0].id }}">Older messages</a>
           {% endif %}
-          <a class="chat-view-profile" href="{{ url_for('main.user', username=other.username) }}">View profile</a>
           {% if current_user.has_blocked(other) %}
           <form method="post" action="{{ url_for('chat.unblock_user', user_id=other.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -46,12 +45,14 @@
       <ul id="messages" class="chat-messages">
         {% for m in messages %}
           <li id="message-{{ m.id }}" class="chat-message{% if m.author_id == current_user.id %} chat-message-own{% endif %}">
-            <div class="chat-bubble">
-              <div class="chat-meta">
-                <a class="chat-author chat-author-link" href="{{ url_for('main.user', username=m.author.username) }}">{{ m.author.username }}</a>
-                <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
+            <div class="chat-message-stack">
+              <div class="chat-bubble">
+                <div class="chat-meta">
+                  <a class="chat-author chat-author-link" href="{{ url_for('main.user', username=m.author.username) }}">{{ m.author.username }}</a>
+                </div>
+                <div class="chat-body">{{ m.body }}</div>
               </div>
-              <div class="chat-body">{{ m.body }}</div>
+              <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
             </div>
           </li>
         {% endfor %}
@@ -92,6 +93,9 @@
     const bubble = document.createElement("div");
     bubble.className = "chat-bubble";
 
+    const stack = document.createElement("div");
+    stack.className = "chat-message-stack";
+
     const meta = document.createElement("div");
     meta.className = "chat-meta";
 
@@ -109,10 +113,11 @@
     body.textContent = msg.body;
 
     meta.appendChild(authorLink);
-    meta.appendChild(time);
     bubble.appendChild(meta);
     bubble.appendChild(body);
-    li.appendChild(bubble);
+    stack.appendChild(bubble);
+    stack.appendChild(time);
+    li.appendChild(stack);
     return li;
   }
 
