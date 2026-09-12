@@ -3300,6 +3300,23 @@ html.dark-mode .welcome-scroll-cue:focus {
   box-shadow: 0 14px 34px rgba(72, 47, 20, 0.2);
 }
 
+.landing-scroll-profile-preview .profile-preview-header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 8px;
+}
+
+.landing-scroll-profile-preview .profile-preview-name {
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.landing-scroll-profile-preview .profile-preview-header-labels {
+  grid-column: 1 / -1;
+  max-width: none;
+  text-align: left;
+}
+
 @media (max-width: 359px) {
   .welcome-bubble-link-preview {
     width: 32px;

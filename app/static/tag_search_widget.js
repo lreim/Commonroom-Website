@@ -57,7 +57,6 @@
   function showGlobalPreviewCard(user, evt) {
     const previewCard = ensureGlobalPreviewCard();
     const safeName = user.name || user.username;
-    const safeLocation = user.location || "";
     const safeAbout = user.about_me || "";
     const safeLabels = user.profile_labels || [];
     const safeTags = (user.matching_tags && user.matching_tags.length > 0)
@@ -98,7 +97,6 @@
       safeTags.join(", "),
       "profile-preview-reason"
     );
-    appendPreviewSection(previewCard, "Location", safeLocation, "profile-preview-location");
     appendPreviewSection(previewCard, "About me", safeAbout, "profile-preview-about");
     appendPreviewSection(previewCard, "Tags", safeTags.join(", "), "profile-preview-tags");
 
@@ -124,7 +122,7 @@
         globalPreviewCard.classList.add("landing-scroll-profile-preview");
         globalPreviewCard.style.top = "auto";
         globalPreviewCard.style.right = "12px";
-        globalPreviewCard.style.bottom = "18px";
+        globalPreviewCard.style.bottom = "148px";
         globalPreviewCard.style.left = "auto";
         globalPreviewCard.style.width = "min(52vw, 230px)";
       });
