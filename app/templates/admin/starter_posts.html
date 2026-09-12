@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}CommonRoom - Starter posts{% endblock %}
+
+{% block page_content %}
+<main class="starter-post-admin">
+  <header class="starter-post-admin-header">
+    <div class="starter-post-admin-kicker">ADMIN ONLY</div>
+    <h1>{% if editing_post %}Edit starter post{% else %}Starter posts{% endif %}</h1>
+    <p>
+      Write community prompts in your own words. They are published as regular posts under your administrator profile.
+    </p>
+  </header>
+
+  <section class="starter-post-editor" aria-labelledby="starter-post-editor-title">
+    <h2 id="starter-post-editor-title">
+      {% if editing_post %}Edit post #{{ editing_post.id }}{% else %}Write a starter post{% endif %}
+    </h2>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="form-group{% if form.body.errors %} has-error{% endif %}">
+        {{ form.body.label(class="control-label") }}
+        {{ form.body(
+          class="form-control",
+          rows="6",
+          placeholder="Write an open question or conversation starter in your own words."
+        ) }}
+        {% for error in form.body.errors %}<span class="help-block">{{ error }}</span>{% endfor %}
+      </div>
+
+      <fieldset class="post-type-fieldset">
+        <legend>{{ form.post_type.label.text }}</legend>
+        {% for option in form.post_type %}
+        <label class="post-type-option">
+          {{ option(required=true) }}
+          <span>{{ option.label.text }}</span>
+        </label>
+        {% endfor %}
+      </fieldset>
+      {% for error in form.post_type.errors %}<div class="post-type-error" role="alert">{{ error }}</div>{% endfor %}
+
+      <div class="starter-post-editor-actions">
+        {{ form.submit(class="btn btn-primary") }}
+        {% if editing_post %}
+        <a class="btn btn-default" href="{{ url_for('main.starter_posts_admin') }}">Cancel</a>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+
+  <section class="starter-post-list" aria-labelledby="starter-post-list-title">
+    <h2 id="starter-post-list-title">Published starter posts</h2>
+    {% for post in starter_posts %}
+    <article class="starter-post-admin-card">
+      <div class="starter-post-admin-card-meta">
+        <span>{{ post.post_type|capitalize }}</span>
+        <span>{{ moment(post.timestamp).fromNow() }}</span>
+      </div>
+      <p>{{ post.body }}</p>
+      <a class="btn btn-default" href="{{ url_for('main.edit_starter_post_admin', post_id=post.id) }}">Edit</a>
+    </article>
+    {% else %}
+    <p class="starter-post-empty">No starter posts have been published yet.</p>
+    {% endfor %}
+  </section>
+</main>
+{% endblock %}

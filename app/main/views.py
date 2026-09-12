@@ -5,7 +5,7 @@ from uuid import uuid4
 from sqlalchemy import func
 from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
-from .forms import PostForm, ReplyForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
+from .forms import PostForm, ReplyForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db, csrf
 from ..models import User, Post, Role, Tag, Conversation, PageVisit, post_likes
 from ..tag_matching import match_tags, get_model
@@ -619,6 +619,71 @@ def tag_search_api():
 @admin_required
 def for_admins_only():
     return "For administrators!"
+
+
+@main.route('/admin/starter-posts', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def starter_posts_admin():
+    form = StarterPostForm()
+    if form.validate_on_submit():
+        starter_post = Post(
+            body=form.body.data,
+            author=current_user._get_current_object(),
+            post_type=form.post_type.data,
+            is_starter=True,
+        )
+        db.session.add(starter_post)
+        db.session.commit()
+        flash('Starter post published.')
+        return redirect(url_for('main.starter_posts_admin'))
+
+    starter_posts = (
+        Post.query
+        .filter_by(is_starter=True, parent_id=None)
+        .order_by(Post.id.desc())
+        .all()
+    )
+    return render_template(
+        'admin/starter_posts.html',
+        form=form,
+        starter_posts=starter_posts,
+        editing_post=None,
+        active_page=None,
+    )
+
+
+@main.route('/admin/starter-posts/<int:post_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_starter_post_admin(post_id):
+    starter_post = Post.query.filter_by(
+        id=post_id,
+        is_starter=True,
+        parent_id=None,
+    ).first_or_404()
+    form = StarterPostForm(obj=starter_post)
+    if form.validate_on_submit():
+        starter_post.body = form.body.data
+        starter_post.post_type = form.post_type.data
+        db.session.add(starter_post)
+        db.session.commit()
+        flash('Starter post updated.')
+        return redirect(url_for('main.starter_posts_admin'))
+
+    starter_posts = (
+        Post.query
+        .filter_by(is_starter=True, parent_id=None)
+        .order_by(Post.id.desc())
+        .all()
+    )
+    return render_template(
+        'admin/starter_posts.html',
+        form=form,
+        starter_posts=starter_posts,
+        editing_post=starter_post,
+        active_page=None,
+    )
 
 
 @main.route('/analytics')

@@ -1020,6 +1020,152 @@ html.dark-mode .oidc-link-account-form .form-control {
   }
 }
 
+.starter-post-admin {
+  width: min(920px, 100%);
+  margin: 46px auto 80px;
+}
+
+.starter-post-admin-header {
+  margin-bottom: 28px;
+}
+
+.starter-post-admin-kicker {
+  margin-bottom: 8px;
+  color: #7d463d;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.starter-post-admin-header h1 {
+  margin: 0 0 12px;
+  color: #33210a;
+  font-size: clamp(38px, 5vw, 56px);
+  font-weight: 500;
+}
+
+.starter-post-admin-header p {
+  max-width: 720px;
+  color: #675544;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.starter-post-editor,
+.starter-post-list {
+  padding: 28px 30px;
+  border: 1px solid #dfcfb7;
+  border-radius: 22px;
+  background: #fffaf0;
+  box-shadow: 0 10px 26px rgba(72, 47, 20, 0.06);
+}
+
+.starter-post-editor h2,
+.starter-post-list h2 {
+  margin: 0 0 20px;
+  color: #3c2a15;
+}
+
+.starter-post-editor textarea {
+  border-color: #cdbba4;
+  border-radius: 14px;
+  resize: vertical;
+}
+
+.starter-post-editor-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.starter-post-editor-actions .btn,
+.starter-post-admin-card .btn {
+  border-radius: 20px;
+}
+
+.starter-post-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.starter-post-admin-card {
+  padding: 20px;
+  border: 1px solid #e2d4c0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.starter-post-admin-card-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #806d5a;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.starter-post-admin-card p {
+  margin: 13px 0 17px;
+  color: #473725;
+  font-size: 17px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.starter-post-empty {
+  color: #756457;
+}
+
+html.dark-mode .starter-post-admin-header h1,
+html.dark-mode .starter-post-editor h2,
+html.dark-mode .starter-post-list h2,
+html.dark-mode .starter-post-admin-card p {
+  color: #f1ebdd;
+}
+
+html.dark-mode .starter-post-admin-header p,
+html.dark-mode .starter-post-empty {
+  color: #c7b9a6;
+}
+
+html.dark-mode .starter-post-editor,
+html.dark-mode .starter-post-list {
+  border-color: #514336;
+  background: #29221c;
+  box-shadow: none;
+}
+
+html.dark-mode .starter-post-admin-card {
+  border-color: #514336;
+  background: #332a22;
+}
+
+html.dark-mode .starter-post-editor textarea {
+  border-color: #665545;
+  background: #211b16;
+  color: #f1ebdd;
+}
+
+@media (max-width: 767px) {
+  .starter-post-admin {
+    margin-top: 34px;
+  }
+
+  .starter-post-editor,
+  .starter-post-list {
+    padding: 22px 18px;
+  }
+
+  .starter-post-editor-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
 /* Tag search: same calm beige-and-white visual language as posts and chats. */
 .tag-search-header {
   margin-top: 58px;

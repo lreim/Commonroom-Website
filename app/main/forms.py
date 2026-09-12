@@ -28,6 +28,10 @@ class PostForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class StarterPostForm(PostForm):
+    submit = SubmitField('Publish starter post')
+
+
 class ReplyForm(FlaskForm):
     body = TextAreaField(
         "Your reply",
