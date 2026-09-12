@@ -125,8 +125,8 @@
         globalPreviewCard.style.top = "auto";
         globalPreviewCard.style.right = "12px";
         globalPreviewCard.style.bottom = "18px";
-        globalPreviewCard.style.left = "12px";
-        globalPreviewCard.style.width = "auto";
+        globalPreviewCard.style.left = "auto";
+        globalPreviewCard.style.width = "min(52vw, 230px)";
       });
       link.addEventListener("commonroom:landing-preview-hide", hideGlobalPreviewCard);
       link.addEventListener("click", function (evt) {

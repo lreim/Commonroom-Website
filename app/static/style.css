@@ -3292,8 +3292,10 @@ html.dark-mode .welcome-scroll-cue:focus {
 }
 
 .profile-preview-card.landing-scroll-profile-preview {
-  width: auto;
-  max-height: min(52vh, 330px);
+  box-sizing: border-box;
+  width: min(52vw, 230px);
+  max-height: min(34vh, 240px);
+  padding: 10px 11px;
   overflow-y: auto;
   box-shadow: 0 14px 34px rgba(72, 47, 20, 0.2);
 }
