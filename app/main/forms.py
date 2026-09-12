@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField, SelectMultipleField, RadioField
 from wtforms.widgets import ListWidget, CheckboxInput
-from wtforms.validators import DataRequired, Length, Email, Regexp
+from wtforms.validators import DataRequired, Length, Email, Optional, Regexp
 from wtforms import ValidationError
 from ..models import User, Role
 
@@ -82,6 +82,16 @@ class FeedbackForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
+    contact_email = StringField(
+        'Private contact email (optional)',
+        filters=[lambda value: value.strip().lower() if value else value],
+        validators=[Optional(), Length(max=254), Email()],
+        render_kw={
+            "placeholder": "Any email address — your CommonRoom profile stays anonymous",
+            "autocomplete": "email",
+            "maxlength": 254,
+        },
+    )
     about_me = TextAreaField(
         'About me',
         validators=[Length(0, MAX_PROFILE_ABOUT_ME_LENGTH)],
@@ -108,6 +118,16 @@ class EditProfileForm(FlaskForm):
 
 class EditProfileAdminForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(1, 64), Email()])
+    contact_email = StringField(
+        'Private contact email (optional)',
+        filters=[lambda value: value.strip().lower() if value else value],
+        validators=[Optional(), Length(max=254), Email()],
+        render_kw={
+            "placeholder": "Any email address — the public profile stays anonymous",
+            "autocomplete": "email",
+            "maxlength": 254,
+        },
+    )
     username = StringField(
         'Username',
         validators=[

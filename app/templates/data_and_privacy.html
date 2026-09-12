@@ -17,7 +17,8 @@
 
   <h3>What data is used</h3>
   <p>
-    At the moment, the platform uses your email address, a generated username, a password hash, optional profile text,
+    At the moment, the platform uses your login email address where legacy login requires one, an optional private contact email,
+    a generated username, a password hash where legacy login requires one, optional profile text,
     optional funny fact / icebreaker text, optional profile labels, selected tags, chat requests, chat messages,
     and basic activity timestamps such as when an account was created or last seen.
   </p>
@@ -27,11 +28,11 @@
     because you decide to add it to your profile.
   </p>
 
-  <h3>Email and account identity</h3>
+  <h3>Email, contact, and account identity</h3>
   <p>
-    Your email address is used for account registration, login, email confirmation, password reset, email change confirmation,
-    and chat-request emails. It is also the main way to verify that the account belongs to an ETH context.
-    The app currently stores your email internally in the database and does not show it publicly to normal users.
+    With legacy authentication, your login email address is used for registration, login, confirmation, password reset,
+    and email changes. A separate, optional contact email can be any valid email address and is used for chat-request emails.
+    It is stored internally and is never shown on your public profile. SWITCH edu-ID does not provide or populate this field.
   </p>
 
   <p>

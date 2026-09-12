@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block title %}User{% endblock %}
 {% block page_content %}
-<div data-inline-chat-request-root>
+<div
+  data-inline-chat-request-root
+  data-has-contact-email="{{ 'true' if current_user.is_authenticated and current_user.contact_email else 'false' }}"
+  data-contact-email-url="{{ url_for('main.edit_profile', chat_required=1, _anchor='contact-email') }}"
+>
 <div class="page-header profile-page-header">
   {% if return_to %}
   <p class="profile-page-back">
@@ -144,6 +148,7 @@
   <h4 data-chat-request-title>Send chat request</h4>
   <p class="chat-request-compose-help">This message will be sent by email together with Accept and Reject links.</p>
   <form method="post" action="{{ url_for('chat.request_chat') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="requested_user_id" data-chat-request-user-id>
     <input type="hidden" name="next" data-chat-request-next value="{{ request.full_path if request.query_string else request.path }}">
     <textarea data-chat-request-message name="message" class="form-control" rows="7" placeholder="Write your request message here."></textarea>

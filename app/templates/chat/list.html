@@ -4,7 +4,12 @@
 {% block title %}Chats{% endblock %}
 
 {% block page_content %}
-<div class="page-header chat-index-header">
+<div
+  class="page-header chat-index-header"
+  id="chat-contact-email-gate"
+  data-has-contact-email="{{ 'true' if current_user.contact_email else 'false' }}"
+  data-contact-email-url="{{ url_for('main.edit_profile', chat_required=1, _anchor='contact-email') }}"
+>
   <h1>Private Chats</h1>
   <h4>Browse existing conversations or start a new one.</h4>
 </div>
@@ -231,6 +236,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const composeMessage = document.getElementById("chat-request-message");
   const requestedUserId = document.getElementById("chat-requested-user-id");
   const cancelButton = document.getElementById("chat-request-cancel");
+  const contactEmailGate = document.getElementById("chat-contact-email-gate");
   if (!input || !results || !empty || !form || !composePanel || !composeTitle || !composeMessage || !requestedUserId || !cancelButton) {
     return;
   }
@@ -254,6 +260,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function openCompose(userId, username) {
+    if (
+      contactEmailGate &&
+      contactEmailGate.dataset.hasContactEmail !== "true" &&
+      contactEmailGate.dataset.contactEmailUrl
+    ) {
+      window.location.assign(contactEmailGate.dataset.contactEmailUrl);
+      return;
+    }
     requestedUserId.value = userId;
     composeTitle.textContent = `Send chat request to ${username}`;
     composeMessage.value = requestTemplate(username);

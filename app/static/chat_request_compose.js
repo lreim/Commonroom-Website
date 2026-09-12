@@ -16,6 +16,8 @@
   }
 
   function initInlineChatRequest(root) {
+    const hasContactEmail = root.dataset.hasContactEmail === "true";
+    const contactEmailUrl = root.dataset.contactEmailUrl;
     const composePanel = root.querySelector("[data-chat-request-compose]");
     const composeTitle = root.querySelector("[data-chat-request-title]");
     const composeMessage = root.querySelector("[data-chat-request-message]");
@@ -48,6 +50,10 @@
         return;
       }
       event.preventDefault();
+      if (!hasContactEmail && contactEmailUrl) {
+        window.location.assign(contactEmailUrl);
+        return;
+      }
       openCompose(button.dataset.requestUserId, button.dataset.requestUsername);
     });
 

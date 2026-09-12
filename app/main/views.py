@@ -488,6 +488,7 @@ def edit_profile():
     form = EditProfileForm()
     all_tags = Tag.library_names()
     if form.validate_on_submit():
+        current_user.contact_email = User.normalize_email(form.contact_email.data) or None
         current_user.about_me = form.about_me.data
         current_user.funny_fact = form.funny_fact.data
         missing_tags = current_user.set_tags_from_string(form.tags.data, allow_create=False)
@@ -501,10 +502,12 @@ def edit_profile():
         db.session.commit()
         flash('Your profile has been updated.')
         return redirect(url_for('main.settings', username=current_user.username))
-    form.about_me.data = current_user.about_me
-    form.funny_fact.data = current_user.funny_fact
-    form.label.data = current_user.profile_label_values
-    form.tags.data = current_user.tag_string
+    if request.method == 'GET':
+        form.contact_email.data = current_user.contact_email
+        form.about_me.data = current_user.about_me
+        form.funny_fact.data = current_user.funny_fact
+        form.label.data = current_user.profile_label_values
+        form.tags.data = current_user.tag_string
     return render_template('edit_profile.html', form=form, all_tags=all_tags, is_admin_edit=False)
 
 
@@ -517,6 +520,7 @@ def edit_profile_admin(id):
     all_tags = Tag.library_names()
     if form.validate_on_submit():
         user.email = form.email.data
+        user.contact_email = User.normalize_email(form.contact_email.data) or None
         user.username = form.username.data
         user.confirmed = form.confirmed.data
         user.role = Role.query.get(form.role.data)
@@ -530,6 +534,7 @@ def edit_profile_admin(id):
 
     if request.method == 'GET':
         form.email.data = user.email
+        form.contact_email.data = user.contact_email
         form.username.data = user.username
         form.confirmed.data = user.confirmed
         form.role.data = user.role_id

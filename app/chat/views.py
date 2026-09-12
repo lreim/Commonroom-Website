@@ -58,12 +58,12 @@ def _create_or_get_conversation(user_a_id, user_b_id):
 
 
 def _send_chat_request_email(chat_request, message_stream=None):
-    if not chat_request.requested.email:
+    if not chat_request.requested.contact_email:
         return
     accept_token = chat_request.generate_response_token("accept")
     reject_token = chat_request.generate_response_token("reject")
     send_email(
-        chat_request.requested.email,
+        chat_request.requested.contact_email,
         "New chat request",
         "chat/email/request_chat",
         message_stream=message_stream or current_app.config.get('POSTMARK_MESSAGE_STREAM_CHAT_REQUEST'),
@@ -239,6 +239,10 @@ def request_chat():
     body = (request.form.get("message") or "").strip()
     next_url = _safe_next_url()
 
+    if not current_user.contact_email:
+        flash("Add a private contact email before requesting a chat. It will not be shown on your public profile.")
+        return redirect(url_for("main.edit_profile", chat_required=1, _anchor="contact-email"))
+
     if not requested_id:
         abort(400)
     if requested_id == current_user.id:
@@ -253,6 +257,9 @@ def request_chat():
     other = User.query.get_or_404(requested_id)
     if current_user.has_block_relationship(other):
         abort(403)
+    if not other.contact_email:
+        flash("This user cannot receive chat requests by email yet.")
+        return redirect(next_url)
 
     existing_conversation = Conversation.query.filter(
         ((Conversation.user_a_id == current_user.id) & (Conversation.user_b_id == other.id)) |
@@ -309,6 +316,12 @@ def resend_request(request_id):
         return redirect(url_for("chat.index"))
     if current_user.has_block_relationship(chat_request.requested):
         abort(403)
+    if not current_user.contact_email:
+        flash("Add a private contact email before sending a chat request again.")
+        return redirect(url_for("main.edit_profile", chat_required=1, _anchor="contact-email"))
+    if not chat_request.requested.contact_email:
+        flash("This user cannot receive chat requests by email yet.")
+        return redirect(url_for("chat.index") + "#requested-chats")
 
     chat_request.created_at = datetime.now(timezone.utc)
     db.session.add(chat_request)

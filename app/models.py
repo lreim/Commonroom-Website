@@ -84,6 +84,7 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
+    contact_email = db.Column(db.String(254), nullable=True)
     oidc_sub = db.Column(db.String(255), unique=True, nullable=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
@@ -166,6 +167,10 @@ class User(UserMixin, db.Model):
     @validates('email')
     def _normalize_email(self, key, email):
         return self.normalize_email(email)
+
+    @validates('contact_email')
+    def _normalize_contact_email(self, key, email):
+        return self.normalize_email(email) or None
 
     def generate_confirmation_token(self):
         s = Serializer(current_app.config['SECRET_KEY'])

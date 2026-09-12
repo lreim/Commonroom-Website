@@ -146,6 +146,7 @@ class OIDCAuthTestCase(unittest.TestCase):
         self.assertTrue(response.location.endswith('/auth/eduid/welcome'))
         user = User.query.filter_by(oidc_sub='pairwise-subject').one()
         self.assertIsNone(user.email)
+        self.assertIsNone(user.contact_email)
         self.assertIsNone(user.password_hash)
         self.assertTrue(user.confirmed)
         with self.client.session_transaction() as client_session:

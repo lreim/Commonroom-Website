@@ -532,8 +532,10 @@ def reset_password(token):
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
+        email = canonicalize_eth_email(form.email.data)
         user = User(
-                email=canonicalize_eth_email(form.email.data),
+                email=email,
+                contact_email=email,
                 username=User.generate_username(),
                 password=form.password.data
                 )
