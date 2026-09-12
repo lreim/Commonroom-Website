@@ -2713,6 +2713,47 @@ html.dark-mode .welcome-scroll-cue:focus {
   .welcome-bubble:nth-child(4) {
     transform: translateY(-10px);
   }
+
+  .welcome-bubble-link {
+    position: relative;
+  }
+
+  .welcome-bubble-link:hover,
+  .welcome-bubble-link:focus,
+  .welcome-bubble-link:focus-visible {
+    transform: none;
+  }
+
+  .welcome-bubble-link-preview {
+    top: 50%;
+    bottom: auto;
+    right: calc(100% + 6px);
+    left: auto;
+    width: clamp(48px, 12vw, 88px);
+    max-width: none;
+    padding: 6px 5px;
+    font-size: 10px;
+    transform: translate(4px, -50%);
+  }
+
+  .welcome-bubble-link:hover .welcome-bubble-link-preview,
+  .welcome-bubble-link:focus .welcome-bubble-link-preview,
+  .welcome-bubble-link:focus-visible .welcome-bubble-link-preview {
+    transform: translate(0, -50%);
+  }
+
+  .welcome-bubble:nth-child(5) .welcome-bubble-link-preview {
+    width: clamp(82px, 24vw, 110px);
+  }
+}
+
+@media (max-width: 359px) {
+  .welcome-bubble-link-preview {
+    width: 32px;
+    padding-right: 3px;
+    padding-left: 3px;
+    font-size: 9px;
+  }
 }
 
 .welcome-logo-tagline {
