@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}CommonRoom - Connect existing profile{% endblock %}
+
+{% block page_content %}
+<main class="oidc-profile-setup">
+  <section class="oidc-profile-setup-panel" aria-labelledby="oidc-link-account-title">
+    <div class="oidc-profile-kicker">SWITCH edu-ID verified</div>
+    <h1 id="oidc-link-account-title">Keep your existing profile</h1>
+    <p class="oidc-profile-intro">
+      Confirm your existing CommonRoom login once. Your anonymous profile, posts, chats, and settings will stay unchanged.
+    </p>
+
+    <div class="oidc-privacy-summary">
+      <div>
+        <strong>What will happen</strong>
+        <span>Your verified pseudonymous edu-ID identifier will be connected to your existing CommonRoom profile.</span>
+      </div>
+      <div>
+        <strong>What will not happen</strong>
+        <span>CommonRoom will not import or store your name, institutional email address, or public university identifier from SWITCH.</span>
+      </div>
+    </div>
+
+    <form method="post" class="oidc-link-account-form">
+      {{ form.hidden_tag() }}
+
+      <div class="form-group{% if form.email.errors %} has-error{% endif %}">
+        {{ form.email.label(class="control-label") }}
+        {{ form.email(class="form-control", autocomplete="email") }}
+        {% for error in form.email.errors %}<span class="help-block">{{ error }}</span>{% endfor %}
+      </div>
+
+      <div class="form-group{% if form.password.errors %} has-error{% endif %}">
+        {{ form.password.label(class="control-label") }}
+        {{ form.password(class="form-control", autocomplete="current-password") }}
+        {% for error in form.password.errors %}<span class="help-block">{{ error }}</span>{% endfor %}
+      </div>
+
+      {{ form.submit(class="btn btn-primary oidc-profile-create-button") }}
+    </form>
+
+    <a class="oidc-link-back" href="{{ url_for('auth.eduid_create_profile') }}">Create a new profile instead</a>
+  </section>
+</main>
+{% endblock %}

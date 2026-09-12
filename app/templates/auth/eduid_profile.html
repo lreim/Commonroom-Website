@@ -26,6 +26,14 @@
       {{ form.submit(class="btn btn-primary oidc-profile-create-button") }}
     </form>
     <p class="oidc-profile-note">Nothing is created until you press this button.</p>
+
+    <div class="oidc-existing-account">
+      <strong>Already have a CommonRoom profile?</strong>
+      <p>Keep your existing anonymous profile, posts, chats, and settings by confirming your current CommonRoom login once.</p>
+      <a class="btn btn-default oidc-profile-link-button" href="{{ url_for('auth.eduid_link_account') }}">
+        Connect my existing profile
+      </a>
+    </div>
   </section>
 </main>
 {% endblock %}

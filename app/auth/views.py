@@ -8,7 +8,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from sqlalchemy.exc import IntegrityError
 from . import auth     #importiert auth object aus __init__.py
 from ..models import User
-from .forms import LoginForm, OIDCProfileForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
+from .forms import LoginForm, OIDCLinkAccountForm, OIDCProfileForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
 from .. import db, oauth
 from ..email import send_email
 from ..security import is_safe_local_redirect_target
@@ -378,6 +378,93 @@ def eduid_create_profile():
         return redirect(url_for('auth.eduid_welcome'))
 
     return render_template('auth/eduid_profile.html', form=form)
+
+
+@auth.route('/eduid/link-account', methods=['GET', 'POST'])
+def eduid_link_account():
+    if not _oidc_is_active():
+        abort(404)
+
+    subject = _pending_oidc_subject()
+    if subject is None:
+        return _render_oidc_error(
+            'Your account-linking session has expired. Please start the SWITCH edu-ID sign-in again.',
+            400,
+        )
+
+    existing_subject_user = User.query.filter_by(oidc_sub=subject).first()
+    if existing_subject_user is not None:
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        login_user(existing_subject_user)
+        session.permanent = True
+        return redirect(url_for('main.index'))
+
+    form = OIDCLinkAccountForm()
+    if form.validate_on_submit():
+        now = datetime.now(timezone.utc)
+        email = canonicalize_eth_email(form.email.data)
+        user = User.query.filter_by(email=email).first()
+
+        if user is not None:
+            if user.account_locked_until is not None and user.account_locked_until <= now:
+                user.account_locked_until = None
+                user.login_lockout_count = 0
+                user.login_lockout_window_started_at = None
+                db.session.add(user)
+                db.session.commit()
+
+            if user.account_locked_until is not None and user.account_locked_until > now:
+                flash('This account has been temporarily locked. Please check your email for details.')
+                return render_template('auth/eduid_link_account.html', form=form)
+
+            if user.login_locked_until is not None and user.login_locked_until <= now:
+                user.login_locked_until = None
+                user.failed_login_attempts = 0
+                db.session.add(user)
+                db.session.commit()
+
+            if user.login_locked_until is not None and user.login_locked_until > now:
+                flash('Too many failed login attempts. Please try again later.')
+                return render_template('auth/eduid_link_account.html', form=form)
+
+            if user.verify_password(form.password.data):
+                if user.oidc_sub is not None and user.oidc_sub != subject:
+                    flash('This CommonRoom profile is already connected to another SWITCH edu-ID.')
+                    return render_template('auth/eduid_link_account.html', form=form)
+
+                user.oidc_sub = subject
+                user.failed_login_attempts = 0
+                user.login_locked_until = None
+                db.session.add(user)
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
+                    current_app.logger.warning('Could not link OIDC profile (IntegrityError).')
+                    return _render_oidc_error(
+                        'This SWITCH edu-ID or CommonRoom profile has already been connected.',
+                        409,
+                    )
+
+                session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+                login_user(user)
+                session.permanent = True
+                next_url = session.pop(OIDC_NEXT_SESSION_KEY, None)
+                flash(f'{user.username} is now connected to SWITCH edu-ID and logged in!')
+                return redirect(
+                    next_url if is_safe_local_redirect_target(next_url) else url_for('main.index')
+                )
+
+            user.failed_login_attempts += 1
+            if user.failed_login_attempts >= LOGIN_ACCOUNT_MAX_FAILURES:
+                _register_account_lockout(user, now)
+            else:
+                db.session.add(user)
+                db.session.commit()
+
+        flash('The existing CommonRoom email or password is incorrect.')
+
+    return render_template('auth/eduid_link_account.html', form=form)
 
 
 @auth.route('/eduid/welcome')

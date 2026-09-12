@@ -73,6 +73,7 @@ class OIDCAuthTestCase(unittest.TestCase):
         self.assertEqual(self.client.get('/auth/eduid/login').status_code, 404)
         self.assertEqual(self.client.get('/auth/eduid/callback').status_code, 404)
         self.assertEqual(self.client.get('/auth/eduid/create-profile').status_code, 404)
+        self.assertEqual(self.client.get('/auth/eduid/link-account').status_code, 404)
 
     def test_legacy_password_login_works_in_legacy_mode(self):
         user = User(
@@ -155,6 +156,109 @@ class OIDCAuthTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'Welcome to CommonRoom', response.data)
         self.assertIn(user.username.encode(), response.data)
+
+    def test_unknown_oidc_user_can_link_existing_legacy_profile(self):
+        self._enable_oidc()
+        existing_user = User(
+            email='existing@ethz.ch',
+            username='existing-profile',
+            password='ExistingPassword1',
+            confirmed=True,
+            about_me='Keep this profile data.',
+        )
+        db.session.add(existing_user)
+        db.session.commit()
+
+        with patch(
+            'app.auth.views._get_eduid_client',
+            return_value=FakeEduIDClient(token=self._student_token('new-linked-subject')),
+        ):
+            callback_response = self.client.get('/auth/eduid/callback')
+
+        self.assertTrue(callback_response.location.endswith('/auth/eduid/create-profile'))
+        profile_response = self.client.get('/auth/eduid/create-profile')
+        self.assertIn(b'Connect my existing profile', profile_response.data)
+
+        link_response = self.client.post(
+            '/auth/eduid/link-account',
+            data={
+                'email': 'existing@student.ethz.ch',
+                'password': 'ExistingPassword1',
+            },
+        )
+
+        self.assertEqual(link_response.status_code, 302)
+        self.assertEqual(User.query.count(), 1)
+        linked_user = db.session.get(User, existing_user.id)
+        self.assertEqual(linked_user.oidc_sub, 'new-linked-subject')
+        self.assertEqual(linked_user.about_me, 'Keep this profile data.')
+        with self.client.session_transaction() as client_session:
+            self.assertEqual(client_session.get('_user_id'), str(existing_user.id))
+            self.assertNotIn(OIDC_PENDING_PROFILE_SESSION_KEY, client_session)
+
+    def test_oidc_link_rejects_wrong_legacy_password(self):
+        self._enable_oidc()
+        existing_user = User(
+            email='existing@ethz.ch',
+            username='existing-profile',
+            password='ExistingPassword1',
+            confirmed=True,
+        )
+        db.session.add(existing_user)
+        db.session.commit()
+        with self.client.session_transaction() as client_session:
+            client_session[OIDC_PENDING_PROFILE_SESSION_KEY] = {
+                'sub': 'pending-subject',
+                'issued_at': int(time.time()),
+            }
+
+        response = self.client.post(
+            '/auth/eduid/link-account',
+            data={
+                'email': 'existing@ethz.ch',
+                'password': 'WrongPassword1',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(db.session.get(User, existing_user.id).oidc_sub)
+        self.assertEqual(db.session.get(User, existing_user.id).failed_login_attempts, 1)
+        with self.client.session_transaction() as client_session:
+            self.assertNotIn('_user_id', client_session)
+            self.assertEqual(
+                client_session[OIDC_PENDING_PROFILE_SESSION_KEY]['sub'],
+                'pending-subject',
+            )
+
+    def test_oidc_link_does_not_replace_another_subject(self):
+        self._enable_oidc()
+        existing_user = User(
+            email='linked@ethz.ch',
+            username='linked-profile',
+            password='ExistingPassword1',
+            oidc_sub='original-subject',
+            confirmed=True,
+        )
+        db.session.add(existing_user)
+        db.session.commit()
+        with self.client.session_transaction() as client_session:
+            client_session[OIDC_PENDING_PROFILE_SESSION_KEY] = {
+                'sub': 'different-subject',
+                'issued_at': int(time.time()),
+            }
+
+        response = self.client.post(
+            '/auth/eduid/link-account',
+            data={
+                'email': 'linked@ethz.ch',
+                'password': 'ExistingPassword1',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(db.session.get(User, existing_user.id).oidc_sub, 'original-subject')
+        with self.client.session_transaction() as client_session:
+            self.assertNotIn('_user_id', client_session)
 
     def test_non_student_is_rejected_without_persisting_claims(self):
         self._enable_oidc()

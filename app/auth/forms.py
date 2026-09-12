@@ -31,6 +31,21 @@ class LoginForm(FlaskForm):
 class OIDCProfileForm(FlaskForm):
     submit = SubmitField('Create my anonymous CommonRoom profile')
 
+
+class OIDCLinkAccountForm(FlaskForm):
+    email = StringField(
+        'Existing CommonRoom email',
+        validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()],
+    )
+    password = PasswordField(
+        'Existing CommonRoom password',
+        validators=[DataRequired(), Length(1, MAX_PASSWORD_LENGTH)],
+    )
+    submit = SubmitField('Connect my existing profile')
+
+    def validate_email(self, field):
+        canonicalize_eth_email(field.data)
+
 class EmailForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Length(8, MAX_EMAIL_LENGTH), Email()], render_kw={"placeholder": "hello@blah.com"})
     submit = SubmitField("Send verification token to reset password")

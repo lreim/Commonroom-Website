@@ -830,6 +830,41 @@ body {
   font-size: 13px;
 }
 
+.oidc-existing-account {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #e2d4c0;
+  color: #514436;
+}
+
+.oidc-existing-account p {
+  margin: 7px 0 15px;
+  line-height: 1.5;
+}
+
+.oidc-profile-link-button {
+  border-color: #a98f7d;
+  border-radius: 22px;
+  background: transparent;
+  color: #60342c;
+  font-family: Georgia, serif;
+}
+
+.oidc-link-account-form {
+  margin-top: 26px;
+}
+
+.oidc-link-account-form .form-control {
+  min-height: 44px;
+  border-color: #cdbba4;
+  border-radius: 12px;
+}
+
+.oidc-link-back {
+  display: inline-block;
+  margin-top: 20px;
+}
+
 .oidc-welcome-success {
   margin-bottom: 28px;
   padding: 14px 18px;
@@ -932,6 +967,22 @@ html.dark-mode .oidc-profile-preview small {
   color: #c7b9a6;
 }
 
+html.dark-mode .oidc-existing-account {
+  border-color: #514336;
+  color: #f1ebdd;
+}
+
+html.dark-mode .oidc-profile-link-button {
+  border-color: #8f7763;
+  color: #e8d8c2;
+}
+
+html.dark-mode .oidc-link-account-form .form-control {
+  border-color: #665545;
+  background: #211b16;
+  color: #f1ebdd;
+}
+
 @media (max-width: 767px) {
   .oidc-profile-setup,
   .oidc-welcome-page {
@@ -963,7 +1014,8 @@ html.dark-mode .oidc-profile-preview small {
   }
 
   .oidc-welcome-actions .btn,
-  .oidc-profile-create-button {
+  .oidc-profile-create-button,
+  .oidc-profile-link-button {
     width: 100%;
   }
 }
