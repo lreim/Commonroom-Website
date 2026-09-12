@@ -34,3 +34,29 @@ class BasicsTestCase(unittest.TestCase):
 
     def test_socketio_is_not_wildcard_open(self):
         self.assertIsNone(current_app.config['TALKTO_SITE_ORIGIN'])
+
+    def test_privacy_summaries_explain_oidc_and_e2ee_limit(self):
+        client = self.app.test_client()
+
+        onboarding = client.get('/onboarding')
+        self.assertEqual(onboarding.status_code, 200)
+        self.assertIn(b'Verified for access. Anonymous in the room.', onboarding.data)
+        self.assertIn(b'No name, institutional email address, or public university identifier.', onboarding.data)
+        self.assertIn(b'not end-to-end encrypted', onboarding.data)
+
+        privacy = client.get('/data-and-privacy')
+        self.assertEqual(privacy.status_code, 200)
+        self.assertIn(b'Your anonymity, quickly explained', privacy.data)
+        self.assertIn(b'pairwise', privacy.data)
+        self.assertIn(b'not currently end-to-end encrypted', privacy.data)
+
+    def test_mobile_scroll_preview_script_is_landing_page_only(self):
+        client = self.app.test_client()
+
+        landing = client.get('/')
+        self.assertIn(b'landing_scroll_previews.js', landing.data)
+
+        onboarding = client.get('/onboarding')
+        privacy = client.get('/data-and-privacy')
+        self.assertNotIn(b'landing_scroll_previews.js', onboarding.data)
+        self.assertNotIn(b'landing_scroll_previews.js', privacy.data)

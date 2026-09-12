@@ -14,6 +14,35 @@
     </p>
   </header>
 
+  <section class="privacy-quick-summary" aria-labelledby="onboarding-privacy-title">
+    <div class="privacy-quick-heading">
+      <h2 id="onboarding-privacy-title">Verified for access. Anonymous in the room.</h2>
+      <p>SWITCH edu-ID confirms student access without becoming your public identity on CommonRoom.</p>
+    </div>
+    <div class="privacy-quick-grid">
+      <article class="privacy-quick-card">
+        <strong>What CommonRoom receives</strong>
+        <p>A pseudonymous pairwise identifier and the student affiliation needed for access.</p>
+      </article>
+      <article class="privacy-quick-card">
+        <strong>What CommonRoom does not take from SWITCH</strong>
+        <p>No name, institutional email address, or public university identifier.</p>
+      </article>
+      <article class="privacy-quick-card">
+        <strong>What other students see</strong>
+        <p>Your generated username and only content you choose to share publicly or with a 1:1 chat partner.</p>
+      </article>
+      <article class="privacy-quick-card">
+        <strong>Your optional contact email</strong>
+        <p>Any valid address works. It stays private and is used for chat-request notifications, never as a public profile field.</p>
+      </article>
+    </div>
+    <p class="privacy-quick-limit">
+      <strong>Clear limit:</strong> Private chats are access-controlled, but they are currently stored on the CommonRoom server and are not end-to-end encrypted.
+      <a href="{{ url_for('main.data_and_privacy') }}">See exactly what is and is not stored &rarr;</a>
+    </p>
+  </section>
+
   <section class="onboarding-step" aria-labelledby="onboarding-look-around">
     <div class="onboarding-step-copy">
       <span class="onboarding-step-number" aria-hidden="true">1</span>
@@ -85,6 +114,7 @@
       <span class="onboarding-step-number" aria-hidden="true">3</span>
       <h2 id="onboarding-profile">Your anonymous little corner</h2>
       <p>Your username is generated automatically. Your profile gives others a little context about the person behind the anonymous name — without revealing who you actually are.</p>
+      <p>If you signed in with edu-ID, CommonRoom stores the pairwise identifier for your account, not your SWITCH name or institutional email address. Your optional contact email is entered by you separately and is never shown publicly.</p>
       <p>You don't have to complete it before doing anything else. Look around first and come back to it whenever you want. Once you are signed in, you can find your profile and settings through the avatar menu in the top right.</p>
       <p>Add something in “About me”, share a funny fact, or answer an icebreaker so your profile feels less like a soulless bot profile. You can change everything later — just remember to save your changes.</p>
       <h3>Tags are things you can relate to</h3>
@@ -175,6 +205,7 @@
       <span class="onboarding-step-number" aria-hidden="true">5</span>
       <h2 id="onboarding-say-hi">Found someone? Say hi.</h2>
       <p>Send them a short chat request and tell them what you'd like to talk about. They can accept or decline it — no awkward commitment on either side.</p>
+      <p>You need a private contact email to send and receive chat requests. It can be any valid email address and lets CommonRoom notify you without requiring you to keep checking the website.</p>
       <p>Your fun fact or icebreaker is included with the request to make the first contact a little less anonymous and awkward. Once they accept: yayyyyy! You can start talking anonymously 1:1.</p>
       <p class="onboarding-side-note">Your requests and active conversations live in the Chat Index. New messages and request updates show up under the activity bell, where a green dot lets you know that something new happened.</p>
     </div>

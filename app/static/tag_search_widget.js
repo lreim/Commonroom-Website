@@ -26,6 +26,10 @@
   function hideGlobalPreviewCard() {
     if (!globalPreviewCard) return;
     globalPreviewCard.style.display = "none";
+    globalPreviewCard.classList.remove("landing-scroll-profile-preview");
+    globalPreviewCard.style.right = "";
+    globalPreviewCard.style.bottom = "";
+    globalPreviewCard.style.width = "";
     globalPreviewCard.replaceChildren();
     if (activeMobilePreviewLink) {
       activeMobilePreviewLink.removeAttribute("data-preview-open");
@@ -114,6 +118,17 @@
       link.addEventListener("mouseenter", (evt) => showGlobalPreviewCard(user, evt));
       link.addEventListener("mousemove", positionGlobalPreviewCard);
       link.addEventListener("mouseleave", hideGlobalPreviewCard);
+      link.addEventListener("commonroom:landing-preview-show", function () {
+        if (!window.matchMedia("(max-width: 767px)").matches) return;
+        showGlobalPreviewCard(user, { clientX: 0, clientY: 0 });
+        globalPreviewCard.classList.add("landing-scroll-profile-preview");
+        globalPreviewCard.style.top = "auto";
+        globalPreviewCard.style.right = "12px";
+        globalPreviewCard.style.bottom = "18px";
+        globalPreviewCard.style.left = "12px";
+        globalPreviewCard.style.width = "auto";
+      });
+      link.addEventListener("commonroom:landing-preview-hide", hideGlobalPreviewCard);
       link.addEventListener("click", function (evt) {
         if (!isMobilePreviewMode()) {
           return;

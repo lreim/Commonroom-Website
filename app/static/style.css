@@ -42,6 +42,121 @@ html {
 
 .onboarding-in-short strong { color: #2d1d00; }
 
+.privacy-quick-summary {
+  margin: 28px 0 50px;
+  padding: clamp(22px, 4vw, 38px);
+  border: 1px solid #d9cfbb;
+  border-radius: 28px;
+  background: linear-gradient(145deg, #fffaf0 0%, #f3f6ed 100%);
+  box-shadow: 0 14px 34px rgba(72, 47, 20, 0.08);
+}
+
+.privacy-quick-heading {
+  max-width: 760px;
+  margin: 0 auto 24px;
+  text-align: center;
+}
+
+.privacy-quick-heading > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #56734c;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.privacy-quick-heading h2 {
+  margin: 0 0 10px;
+  color: #2d1d00;
+  font-size: clamp(25px, 3.2vw, 36px);
+}
+
+.privacy-quick-heading p {
+  margin: 0;
+  color: #625544;
+  line-height: 1.55;
+}
+
+.privacy-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.privacy-quick-card {
+  padding: 18px;
+  border: 1px solid rgba(117, 137, 101, 0.27);
+  border-radius: 17px;
+  background: rgba(255, 253, 247, 0.82);
+}
+
+.privacy-quick-card strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #35502d;
+  font-size: 15px;
+}
+
+.privacy-quick-card p {
+  margin: 0;
+  color: #554938;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.privacy-quick-limit {
+  margin: 18px 0 0;
+  padding: 13px 15px;
+  border-left: 4px solid #a86363;
+  border-radius: 8px;
+  background: rgba(255, 248, 240, 0.78);
+  color: #5f3e35;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.privacy-quick-limit a {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+.privacy-quick-summary-page {
+  margin-top: 22px;
+}
+
+html.dark-mode .privacy-quick-summary {
+  border-color: #4f483d;
+  background: linear-gradient(145deg, #29231d 0%, #283025 100%);
+  box-shadow: none;
+}
+
+html.dark-mode .privacy-quick-heading > span,
+html.dark-mode .privacy-quick-card strong {
+  color: #b9d6ae;
+}
+
+html.dark-mode .privacy-quick-heading h2,
+html.dark-mode .privacy-quick-card p {
+  color: #f1ebdd;
+}
+
+html.dark-mode .privacy-quick-heading p {
+  color: #cbbfa8;
+}
+
+html.dark-mode .privacy-quick-card {
+  border-color: #4c5846;
+  background: rgba(43, 38, 31, 0.82);
+}
+
+html.dark-mode .privacy-quick-limit {
+  border-left-color: #c58282;
+  background: rgba(94, 56, 53, 0.24);
+  color: #e1c5bc;
+}
+
 .onboarding-route {
   display: flex;
   align-items: center;
@@ -2738,13 +2853,38 @@ html.dark-mode .welcome-scroll-cue:focus {
 
   .welcome-bubble-link:hover .welcome-bubble-link-preview,
   .welcome-bubble-link:focus .welcome-bubble-link-preview,
-  .welcome-bubble-link:focus-visible .welcome-bubble-link-preview {
+  .welcome-bubble-link:focus-visible .welcome-bubble-link-preview,
+  .welcome-bubble-link.is-scroll-preview .welcome-bubble-link-preview {
+    opacity: 1;
     transform: translate(0, -50%);
+    visibility: visible;
   }
 
   .welcome-bubble:nth-child(5) .welcome-bubble-link-preview {
     width: clamp(82px, 24vw, 110px);
   }
+
+  .privacy-quick-summary {
+    margin: 20px 0 38px;
+    padding: 20px 15px;
+    border-radius: 22px;
+  }
+
+  .privacy-quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .privacy-quick-limit a {
+    display: block;
+    margin: 7px 0 0;
+  }
+}
+
+.profile-preview-card.landing-scroll-profile-preview {
+  width: auto;
+  max-height: min(52vh, 330px);
+  overflow-y: auto;
+  box-shadow: 0 14px 34px rgba(72, 47, 20, 0.2);
 }
 
 @media (max-width: 359px) {

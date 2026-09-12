@@ -46,7 +46,7 @@
       aria-label="Read about data and privacy"
     >
       <strong>ANONYMOUS</strong>
-      <em>Switch Edu LogIn, anonymous username, pseudonymous pairwise identifier</em>
+      <em>Anonymous profile and pseudonymous pairwise identifier</em>
       <span class="welcome-bubble-link-preview" aria-hidden="true">read about data &amp; privacy</span>
     </a>
     <div class="welcome-bubble"><strong>ETH ONLY</strong><em>By ETH students, for ETH students</em></div>
@@ -256,4 +256,5 @@
 {% block scripts %}
 {{ super() }}
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
+<script src="{{ url_for('static', filename='landing_scroll_previews.js') }}"></script>
 {% endblock %}

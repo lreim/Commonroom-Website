@@ -9,10 +9,47 @@
 
 <div class="reading-page">
   <p class="about-editorial-summary"><strong>In short:</strong><br>
-    This page is here to explain, in a simple and honest way, which data this website uses, why it uses it,
-    and which privacy and safety decisions were made while building CommonRoom.
-    My goal is to keep data collection as small as possible, but not smaller than what is needed for functionality,
-    moderation, safety, and basic abuse prevention.
+    CommonRoom verifies access while keeping your public identity pseudonymous. It does not import your name,
+    institutional email address, or public university identifier from SWITCH edu-ID. You decide what appears on your profile.
+  </p>
+
+  <section class="privacy-quick-summary privacy-quick-summary-page" aria-labelledby="privacy-at-a-glance-title">
+    <div class="privacy-quick-heading">
+      <h2 id="privacy-at-a-glance-title">Your anonymity, quickly explained</h2>
+    </div>
+    <div class="privacy-quick-grid">
+      <article class="privacy-quick-card privacy-quick-card-stored">
+        <strong>Stored for your account</strong>
+        <p>A generated username, the pairwise edu-ID identifier when used, optional private contact email, chosen profile content, posts, chat requests, messages, and necessary activity metadata.</p>
+      </article>
+      <article class="privacy-quick-card privacy-quick-card-not-stored">
+        <strong>Not imported from SWITCH</strong>
+        <p>No name, institutional email address, or public university identifier. Tokens and authorization codes are not saved in your CommonRoom account.</p>
+      </article>
+      <article class="privacy-quick-card">
+        <strong>Never public profile data</strong>
+        <p>Your login email, optional contact email, password hash, pairwise identifier, and internal account ID are not shown to other students.</p>
+      </article>
+      <article class="privacy-quick-card">
+        <strong>Security controls</strong>
+        <p>OIDC state and nonce checks, CSRF protection, secure production cookies, session limits, hashed legacy passwords, login throttling, signed email links, chat consent, and blocking.</p>
+      </article>
+    </div>
+    <p class="privacy-quick-limit">
+      <strong>Important:</strong> Chats are private between their participants through access controls, but they are stored on the server and are not currently end-to-end encrypted.
+    </p>
+  </section>
+
+  <h3>SWITCH edu-ID and the pairwise identifier</h3>
+  <p>
+    With edu-ID login, CommonRoom requests only OpenID access plus the affiliation needed to confirm that <code>student</code> is present.
+    The verified pairwise <code>sub</code> value connects future sign-ins to the same anonymous CommonRoom account.
+    Because it is pairwise, it is specific to this client rather than a public university-wide identifier.
+  </p>
+  <p>
+    CommonRoom does not request or store your SWITCH name, institutional email address, or public unique identifier.
+    The login response is checked through OIDC discovery, issuer validation, state, nonce, and token validation.
+    Access tokens, ID tokens, authorization codes, and complete OIDC responses are not stored in the user profile and are not deliberately logged.
   </p>
 
   <h3>What data is used</h3>
@@ -36,8 +73,8 @@
   </p>
 
   <p>
-    In addition, keeping access to the email address internally is important in case abuse prevention or abuse investigation becomes necessary.
-    If a serious problem is reported, the email address is the internal account anchor that allows the host to react, follow up, and prevent misuse of the platform.
+    A contact email is required before a user can send or receive a chat request by email. It can be removed again, but chat-request email functionality
+    then remains unavailable until another address is provided. It is used for contact and notifications, not as part of the public anonymous identity.
   </p>
 
   <h3>Passwords</h3>
@@ -140,9 +177,8 @@
   </p>
 
   <p>
-    Also important: the current repository is still a development-oriented setup.
-    Some cookie settings that should be stricter in production are not yet hardened in the current config.
-    In particular, secure cookie and HTTPS-only deployment settings still need to be enforced properly when the project is deployed for real.
+    In production, session and remember-me cookies are marked Secure and HttpOnly and use SameSite=Lax.
+    Forms and state-changing requests are protected against cross-site request forgery. Repeated failed legacy logins are throttled and can temporarily lock an account.
   </p>
 
   <h3>Server provider logs and statistics</h3>
@@ -227,7 +263,7 @@
 
   <h3>What is not publicly shown</h3>
   <p>
-    Normal users do not get to see other users' email addresses.
+    Normal users do not get to see other users' login or contact email addresses, pairwise edu-ID identifiers, password hashes, or internal user IDs.
     Public profile matching is based on usernames, profile text, tags, labels, and other voluntarily shared profile information.
     Internal metadata such as confirmation tokens, password-reset tokens, and admin-related mail flows are not publicly exposed.
   </p>
