@@ -735,6 +735,239 @@ body {
   }
 }
 
+/* SWITCH edu-ID first-time profile flow */
+.oidc-profile-setup,
+.oidc-welcome-page {
+  width: min(980px, 100%);
+  margin: 46px auto 70px;
+}
+
+.oidc-profile-setup {
+  display: grid;
+  place-items: center;
+}
+
+.oidc-profile-setup-panel {
+  width: min(700px, 100%);
+  padding: 38px 40px;
+  border: 1px solid #dfcfb7;
+  border-radius: 26px;
+  background: #fffaf0;
+  box-shadow: 0 12px 30px rgba(72, 47, 20, 0.07);
+}
+
+.oidc-profile-kicker {
+  margin-bottom: 9px;
+  color: #7d463d;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.oidc-profile-setup h1,
+.oidc-welcome-copy h1 {
+  margin: 0 0 18px;
+  color: #33210a;
+  font-size: clamp(36px, 5vw, 54px);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.oidc-profile-intro,
+.oidc-welcome-copy > p {
+  color: #514436;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.oidc-privacy-summary {
+  display: grid;
+  gap: 18px;
+  margin: 28px 0;
+  padding: 22px 24px;
+  border: 1px solid #e2d4c0;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.oidc-privacy-summary > div {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.oidc-privacy-summary strong,
+.oidc-privacy-summary span {
+  color: #514436;
+  line-height: 1.5;
+}
+
+.oidc-profile-create-form {
+  margin-top: 5px;
+}
+
+.oidc-profile-create-button,
+.oidc-welcome-actions .btn {
+  margin: 0 !important;
+  padding: 11px 19px;
+  border-radius: 22px;
+  font-family: Georgia, serif;
+}
+
+.oidc-profile-create-button,
+.oidc-welcome-actions .btn-primary {
+  border-color: #60342c;
+  background: #60342c;
+  color: #fff9ed;
+}
+
+.oidc-profile-note {
+  margin: 11px 0 0;
+  color: #756457;
+  font-size: 13px;
+}
+
+.oidc-welcome-success {
+  margin-bottom: 28px;
+  padding: 14px 18px;
+  border: 1px solid #bfd2b7;
+  border-left: 5px solid #4f7652;
+  border-radius: 10px;
+  background: #e5efdf;
+  color: #29452e;
+  font-weight: 700;
+}
+
+.oidc-welcome-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(220px, 0.8fr);
+  gap: 44px;
+  align-items: center;
+  padding: 38px 40px;
+  border: 1px solid #dfcfb7;
+  border-radius: 26px;
+  background: #fffaf0;
+  box-shadow: 0 12px 30px rgba(72, 47, 20, 0.07);
+}
+
+.oidc-welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.oidc-welcome-actions .btn-default {
+  border-color: #a98f7d;
+  background: transparent;
+  color: #60342c;
+}
+
+.oidc-profile-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 26px 18px;
+  border: 1px solid #e2d4c0;
+  border-radius: 20px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.oidc-profile-preview-avatar {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+}
+
+.oidc-profile-preview strong {
+  color: #3c2a15;
+  font-size: 18px;
+}
+
+.oidc-profile-preview span,
+.oidc-profile-preview small {
+  color: #756457;
+}
+
+.oidc-profile-preview small {
+  margin-top: 8px;
+}
+
+html.dark-mode .oidc-profile-setup-panel,
+html.dark-mode .oidc-welcome-layout {
+  border-color: #514336;
+  background: #29221c;
+  box-shadow: none;
+}
+
+html.dark-mode .oidc-privacy-summary,
+html.dark-mode .oidc-profile-preview {
+  border-color: #514336;
+  background: #332a22;
+}
+
+html.dark-mode .oidc-profile-setup h1,
+html.dark-mode .oidc-welcome-copy h1,
+html.dark-mode .oidc-profile-intro,
+html.dark-mode .oidc-welcome-copy > p,
+html.dark-mode .oidc-privacy-summary strong,
+html.dark-mode .oidc-privacy-summary span,
+html.dark-mode .oidc-profile-preview strong {
+  color: #f1ebdd;
+}
+
+html.dark-mode .oidc-profile-kicker {
+  color: #d1b894;
+}
+
+html.dark-mode .oidc-profile-note,
+html.dark-mode .oidc-profile-preview span,
+html.dark-mode .oidc-profile-preview small {
+  color: #c7b9a6;
+}
+
+@media (max-width: 767px) {
+  .oidc-profile-setup,
+  .oidc-welcome-page {
+    margin-top: 34px;
+  }
+
+  .oidc-profile-setup-panel,
+  .oidc-welcome-layout {
+    padding: 25px 20px;
+    border-radius: 22px;
+  }
+
+  .oidc-privacy-summary > div,
+  .oidc-welcome-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .oidc-privacy-summary > div {
+    gap: 6px;
+  }
+
+  .oidc-welcome-layout {
+    gap: 30px;
+  }
+
+  .oidc-welcome-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .oidc-welcome-actions .btn,
+  .oidc-profile-create-button {
+    width: 100%;
+  }
+}
+
 /* Tag search: same calm beige-and-white visual language as posts and chats. */
 .tag-search-header {
   margin-top: 58px;

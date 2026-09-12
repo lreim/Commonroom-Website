@@ -10,6 +10,7 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_login import current_user
 from flask_wtf.csrf import CSRFProtect
+from authlib.integrations.flask_client import OAuth
 
 #erst nur definieren, damit nicht direkt die App importiert werden muss (gut für Tests)
 bootstrap = Bootstrap()
@@ -19,6 +20,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 socketio = SocketIO()
 csrf = CSRFProtect()
+oauth = OAuth()
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'      #endpoint for the login page 
@@ -44,6 +46,17 @@ def create_app(config_name):
         cors_allowed_origins=app.config.get('TALKTO_SITE_ORIGIN'),
     )
     csrf.init_app(app)
+    oauth.init_app(app)
+    oauth.register(
+        name='eduid',
+        client_id=app.config.get('OIDC_CLIENT_ID'),
+        client_secret=app.config.get('OIDC_CLIENT_SECRET'),
+        server_metadata_url=app.config.get('OIDC_DISCOVERY_URL'),
+        client_kwargs={
+            'scope': 'openid https://eduid.ch/scope/userinfo.read',
+            'token_endpoint_auth_method': 'client_secret_basic',
+        },
+    )
     
 
     from .main import main as main_blueprint

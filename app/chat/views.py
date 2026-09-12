@@ -58,6 +58,8 @@ def _create_or_get_conversation(user_a_id, user_b_id):
 
 
 def _send_chat_request_email(chat_request, message_stream=None):
+    if not chat_request.requested.email:
+        return
     accept_token = chat_request.generate_response_token("accept")
     reject_token = chat_request.generate_response_token("reject")
     send_email(

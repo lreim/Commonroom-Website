@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}CommonRoom - Create profile{% endblock %}
+
+{% block page_content %}
+<main class="oidc-profile-setup">
+  <section class="oidc-profile-setup-panel" aria-labelledby="oidc-profile-setup-title">
+    <div class="oidc-profile-kicker">SWITCH edu-ID verified</div>
+    <h1 id="oidc-profile-setup-title">Create your anonymous profile</h1>
+    <p class="oidc-profile-intro">
+      SWITCH edu-ID has confirmed that you are a student. CommonRoom can now create an anonymous username for you.
+    </p>
+
+    <div class="oidc-privacy-summary">
+      <div>
+        <strong>What CommonRoom stores</strong>
+        <span>Your anonymous CommonRoom profile and the pseudonymous pairwise identifier.</span>
+      </div>
+      <div>
+        <strong>What CommonRoom does not store</strong>
+        <span>Your name, institutional email address, or public university identifier.</span>
+      </div>
+    </div>
+
+    <form method="post" class="oidc-profile-create-form">
+      {{ form.hidden_tag() }}
+      {{ form.submit(class="btn btn-primary oidc-profile-create-button") }}
+    </form>
+    <p class="oidc-profile-note">Nothing is created until you press this button.</p>
+  </section>
+</main>
+{% endblock %}

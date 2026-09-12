@@ -1,10 +1,15 @@
-from flask import render_template, redirect, request, url_for, flash, session 
+import secrets
+import time
+
+from authlib.integrations.base_client.errors import OAuthError
+from flask import abort, render_template, redirect, request, url_for, flash, session
 from flask import current_app
 from flask_login import login_user, login_required, logout_user, current_user
+from sqlalchemy.exc import IntegrityError
 from . import auth     #importiert auth object aus __init__.py
 from ..models import User
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
-from .. import db 
+from .forms import LoginForm, OIDCProfileForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
+from .. import db, oauth
 from ..email import send_email
 from ..security import is_safe_local_redirect_target
 from datetime import datetime, timezone, timedelta
@@ -14,6 +19,59 @@ LOGIN_ACCOUNT_LOCKOUT_MINUTES = 10
 LOGIN_LOCKOUT_WINDOW_HOURS = 24
 LOGIN_LOCKOUT_ESCALATION_COUNT = 3
 LOGIN_ACCOUNT_SUSPENSION_HOURS = 24
+OIDC_PENDING_PROFILE_SESSION_KEY = 'pending_oidc_profile'
+OIDC_NEXT_SESSION_KEY = 'oidc_next_url'
+OIDC_PENDING_PROFILE_MAX_AGE_SECONDS = 10 * 60
+
+
+def _oidc_is_active():
+    return current_app.config.get('AUTH_MODE', 'legacy') == 'oidc'
+
+
+def _oidc_configuration_error():
+    required_keys = (
+        'OIDC_DISCOVERY_URL',
+        'OIDC_CLIENT_ID',
+        'OIDC_CLIENT_SECRET',
+        'OIDC_REDIRECT_URI',
+    )
+    missing = [key for key in required_keys if not current_app.config.get(key)]
+    if missing:
+        return 'SWITCH edu-ID sign-in is not fully configured.'
+    return None
+
+
+def _get_eduid_client():
+    return oauth.create_client('eduid')
+
+
+def _claim_values(userinfo, *claim_names):
+    values = []
+    for claim_name in claim_names:
+        value = userinfo.get(claim_name)
+        if isinstance(value, str):
+            values.append(value)
+        elif isinstance(value, (list, tuple)):
+            values.extend(item for item in value if isinstance(item, str))
+    return values
+
+
+def _has_student_affiliation(userinfo):
+    affiliations = _claim_values(
+        userinfo,
+        'eduPersonAffiliation',
+        'eduPersonScopedAffiliation',
+        'swissEduIDLinkedAffiliation',
+    )
+    return any(
+        value.strip().lower() == 'student'
+        or value.strip().lower().startswith('student@')
+        for value in affiliations
+    )
+
+
+def _render_oidc_error(message, status_code):
+    return render_template('auth/eduid_error.html', message=message), status_code
 
 
 def _send_security_email(user, subject, template, **kwargs):
@@ -76,7 +134,13 @@ def _clear_login_failures(user):
 
 
 @auth.route('/login', methods=['GET', 'POST'])
-def login():   
+def login():
+    if _oidc_is_active():
+        return eduid_login()
+    return legacy_login()
+
+
+def legacy_login():
     form = LoginForm()
     if form.validate_on_submit():
         now = datetime.now(timezone.utc)
@@ -122,6 +186,189 @@ def login():
                 db.session.commit()
         flash('Welp, invalid username or password, my friend.')
     return render_template('auth/login.html', form=form)
+
+
+@auth.route('/eduid/login')
+def eduid_login():
+    if not _oidc_is_active():
+        abort(404)
+
+    configuration_error = _oidc_configuration_error()
+    if configuration_error:
+        return _render_oidc_error(configuration_error, 503)
+
+    next_url = request.args.get('next')
+    if is_safe_local_redirect_target(next_url):
+        session[OIDC_NEXT_SESSION_KEY] = next_url
+    else:
+        session.pop(OIDC_NEXT_SESSION_KEY, None)
+    session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+
+    nonce = secrets.token_urlsafe(32)
+    try:
+        return _get_eduid_client().authorize_redirect(
+            redirect_uri=current_app.config['OIDC_REDIRECT_URI'],
+            nonce=nonce,
+        )
+    except Exception as exc:
+        current_app.logger.warning(
+            'Could not start OIDC authorization (%s).',
+            type(exc).__name__,
+        )
+        return _render_oidc_error(
+            'SWITCH edu-ID is temporarily unavailable. Please try again later.',
+            503,
+        )
+
+
+@auth.route('/eduid/callback')
+def eduid_callback():
+    if not _oidc_is_active():
+        abort(404)
+
+    configuration_error = _oidc_configuration_error()
+    if configuration_error:
+        return _render_oidc_error(configuration_error, 503)
+
+    try:
+        eduid_client = _get_eduid_client()
+        # Authlib consumes and validates the session-bound state here. It also
+        # verifies the ID token, including issuer, audience, signature and nonce.
+        token = eduid_client.authorize_access_token()
+        if not token.get('id_token'):
+            raise ValueError('OIDC response did not contain an ID token')
+        id_token_claims = dict(token.get('userinfo') or {})
+        subject = id_token_claims.get('sub')
+        if not isinstance(subject, str) or not subject.strip() or len(subject) > 255:
+            raise ValueError('OIDC response did not contain a valid subject')
+        subject = subject.strip()
+        userinfo = dict(eduid_client.userinfo(token=token))
+        if userinfo.get('sub') != subject:
+            raise ValueError('UserInfo subject does not match the ID token')
+    except (OAuthError, KeyError, TypeError, ValueError) as exc:
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        session.pop(OIDC_NEXT_SESSION_KEY, None)
+        current_app.logger.warning(
+            'OIDC callback validation failed (%s).',
+            type(exc).__name__,
+        )
+        return _render_oidc_error(
+            'The SWITCH edu-ID response could not be validated. Please start the sign-in again.',
+            400,
+        )
+    except Exception as exc:
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        session.pop(OIDC_NEXT_SESSION_KEY, None)
+        current_app.logger.warning(
+            'OIDC callback failed (%s).',
+            type(exc).__name__,
+        )
+        return _render_oidc_error(
+            'SWITCH edu-ID is temporarily unavailable. Please try again later.',
+            503,
+        )
+
+    if not _has_student_affiliation(userinfo):
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        session.pop(OIDC_NEXT_SESSION_KEY, None)
+        return _render_oidc_error(
+            'CommonRoom is currently available only to users with an active student affiliation.',
+            403,
+        )
+
+    user = User.query.filter_by(oidc_sub=subject).first()
+    if user is not None:
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        login_user(user)
+        session.permanent = True
+        next_url = session.pop(OIDC_NEXT_SESSION_KEY, None)
+        flash(f'{user.username} is now locked in!')
+        return redirect(next_url if is_safe_local_redirect_target(next_url) else url_for('main.index'))
+
+    session[OIDC_PENDING_PROFILE_SESSION_KEY] = {
+        'sub': subject,
+        'issued_at': int(time.time()),
+    }
+    return redirect(url_for('auth.eduid_create_profile'))
+
+
+def _pending_oidc_subject():
+    pending = session.get(OIDC_PENDING_PROFILE_SESSION_KEY)
+    if not isinstance(pending, dict):
+        return None
+    subject = pending.get('sub')
+    issued_at = pending.get('issued_at')
+    if (
+        not isinstance(subject, str)
+        or not subject
+        or not isinstance(issued_at, int)
+        or time.time() - issued_at > OIDC_PENDING_PROFILE_MAX_AGE_SECONDS
+        or issued_at > time.time() + 60
+    ):
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        return None
+    return subject
+
+
+@auth.route('/eduid/create-profile', methods=['GET', 'POST'])
+def eduid_create_profile():
+    if not _oidc_is_active():
+        abort(404)
+
+    subject = _pending_oidc_subject()
+    if subject is None:
+        return _render_oidc_error(
+            'Your profile setup session has expired. Please start the SWITCH edu-ID sign-in again.',
+            400,
+        )
+
+    existing_user = User.query.filter_by(oidc_sub=subject).first()
+    if existing_user is not None:
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        login_user(existing_user)
+        session.permanent = True
+        return redirect(url_for('auth.eduid_welcome'))
+
+    form = OIDCProfileForm()
+    if form.validate_on_submit():
+        user = User(
+            oidc_sub=subject,
+            username=User.generate_username(),
+            confirmed=True,
+        )
+        db.session.add(user)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            user = User.query.filter_by(oidc_sub=subject).first()
+            if user is None:
+                current_app.logger.warning('Could not create OIDC profile (IntegrityError).')
+                return _render_oidc_error(
+                    'Your anonymous profile could not be created. Please try again.',
+                    409,
+                )
+
+        session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
+        login_user(user)
+        session.permanent = True
+        return redirect(url_for('auth.eduid_welcome'))
+
+    return render_template('auth/eduid_profile.html', form=form)
+
+
+@auth.route('/eduid/welcome')
+@login_required
+def eduid_welcome():
+    if not _oidc_is_active() or not current_user.oidc_sub:
+        abort(404)
+
+    next_url = session.pop(OIDC_NEXT_SESSION_KEY, None)
+    continue_url = next_url if is_safe_local_redirect_target(next_url) else url_for('main.post')
+    return render_template(
+        'auth/eduid_welcome.html',
+        continue_url=continue_url,
+    )
 
 
 @auth.route('/logout', methods=['POST'])

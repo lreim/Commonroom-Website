@@ -7,6 +7,11 @@ basedir = os.path.abspath(os.path.dirname(__file__)) #nötig für path con datab
 #configurations used in all cases  
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY')
+    AUTH_MODE = os.environ.get('AUTH_MODE', 'legacy').strip().lower()
+    OIDC_DISCOVERY_URL = os.environ.get('OIDC_DISCOVERY_URL')
+    OIDC_CLIENT_ID = os.environ.get('OIDC_CLIENT_ID')
+    OIDC_CLIENT_SECRET = os.environ.get('OIDC_CLIENT_SECRET')
+    OIDC_REDIRECT_URI = os.environ.get('OIDC_REDIRECT_URI')
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     TALKTO_MAIL_SUBJECT_PREFIX = '[COMMONROOM]'
     TALKTO_MAIL_SENDER = os.environ.get('TALKTO_MAIL_SENDER') or 'CommonRoom <noreply@commonroom.ch>'
@@ -36,6 +41,9 @@ class Config:
 
     @staticmethod
     def init_app(app):
+        if app.config.get('AUTH_MODE') not in {'legacy', 'oidc'}:
+            raise RuntimeError("AUTH_MODE must be either 'legacy' or 'oidc'.")
+
         if app.config.get('SECRET_KEY'):
             return
 

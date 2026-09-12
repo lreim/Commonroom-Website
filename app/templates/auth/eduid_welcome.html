@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}CommonRoom - Welcome{% endblock %}
+
+{% block page_content %}
+<main class="oidc-welcome-page">
+  <div class="oidc-welcome-success" role="status">
+    Your anonymous CommonRoom profile has been created.
+  </div>
+
+  <section class="oidc-welcome-layout" aria-labelledby="oidc-welcome-title">
+    <div class="oidc-welcome-copy">
+      <div class="oidc-profile-kicker">Signed in as {{ current_user.username }}</div>
+      <h1 id="oidc-welcome-title">Welcome to CommonRoom</h1>
+      <p>
+        You are now signed in with the normal CommonRoom session. You can look around immediately or add optional details to your anonymous profile.
+      </p>
+      <div class="oidc-welcome-actions">
+        <a class="btn btn-primary" href="{{ continue_url }}">Look around</a>
+        <a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">Complete profile</a>
+      </div>
+    </div>
+
+    <aside class="oidc-profile-preview" aria-label="Your new anonymous profile">
+      <img
+        src="{{ current_user.gravatar(size=120) }}"
+        alt="Avatar of {{ current_user.username }}"
+        class="oidc-profile-preview-avatar"
+      >
+      <strong>{{ current_user.username }}</strong>
+      <span>Anonymous CommonRoom profile</span>
+      <small>No SWITCH name or email stored</small>
+    </aside>
+  </section>
+</main>
+{% endblock %}

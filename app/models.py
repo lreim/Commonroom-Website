@@ -84,6 +84,7 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
+    oidc_sub = db.Column(db.String(255), unique=True, nullable=True)
     username = db.Column(db.String(64), unique=True, index=True)
     password_hash = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id')) #column is interpreted as having id calues from rows in role table
@@ -192,7 +193,7 @@ class User(UserMixin, db.Model):
         self.password_hash = generate_password_hash(password)
     
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return bool(self.password_hash) and check_password_hash(self.password_hash, password)
     
     def generate_email_change_token(self, new_email):
         s = Serializer(current_app.config['SECRET_KEY'])

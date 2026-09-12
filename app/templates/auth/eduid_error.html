@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}CommonRoom - edu-ID sign-in{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>SWITCH edu-ID sign-in was not completed</h1>
+</div>
+<p>{{ message }}</p>
+<p><a href="{{ url_for('auth.eduid_login') }}">Try SWITCH edu-ID sign-in again</a></p>
+{% endblock %}
