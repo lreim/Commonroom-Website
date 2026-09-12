@@ -2,6 +2,7 @@ import time
 import unittest
 from unittest.mock import patch
 
+from authlib.integrations.base_client.errors import OAuthError
 from flask import redirect
 
 from app import create_app, db
@@ -188,6 +189,25 @@ class OIDCAuthTestCase(unittest.TestCase):
         self.assertIn(b'could not be validated', response.data)
         with self.client.session_transaction() as client_session:
             self.assertNotIn('access_token', client_session)
+
+    def test_oauth_error_logs_only_sanitized_error_code(self):
+        self._enable_oidc()
+        sensitive_description = 'secret token and authorization code'
+        fake_client = FakeEduIDClient(
+            callback_error=OAuthError(
+                error='invalid_client',
+                description=sensitive_description,
+            )
+        )
+
+        with self.assertLogs(self.app.logger, level='WARNING') as captured_logs:
+            with patch('app.auth.views._get_eduid_client', return_value=fake_client):
+                response = self.client.get('/auth/eduid/callback')
+
+        log_output = '\n'.join(captured_logs.output)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('oauth_error=invalid_client', log_output)
+        self.assertNotIn(sensitive_description, log_output)
 
     def test_userinfo_subject_must_match_verified_id_token(self):
         self._enable_oidc()

@@ -22,6 +22,7 @@ LOGIN_ACCOUNT_SUSPENSION_HOURS = 24
 OIDC_PENDING_PROFILE_SESSION_KEY = 'pending_oidc_profile'
 OIDC_NEXT_SESSION_KEY = 'oidc_next_url'
 OIDC_PENDING_PROFILE_MAX_AGE_SECONDS = 10 * 60
+OAUTH_ERROR_CODE_MAX_LENGTH = 64
 
 
 def _oidc_is_active():
@@ -43,6 +44,21 @@ def _oidc_configuration_error():
 
 def _get_eduid_client():
     return oauth.create_client('eduid')
+
+
+def _safe_oauth_error_code(exc):
+    error_code = getattr(exc, 'error', None)
+    if not isinstance(error_code, str) or not error_code:
+        return 'unknown_oauth_error'
+    allowed_characters = frozenset(
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-'
+    )
+    if (
+        len(error_code) > OAUTH_ERROR_CODE_MAX_LENGTH
+        or any(character not in allowed_characters for character in error_code)
+    ):
+        return 'unrecognized_oauth_error'
+    return error_code
 
 
 def _claim_values(userinfo, *claim_names):
@@ -248,10 +264,17 @@ def eduid_callback():
     except (OAuthError, KeyError, TypeError, ValueError) as exc:
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
         session.pop(OIDC_NEXT_SESSION_KEY, None)
-        current_app.logger.warning(
-            'OIDC callback validation failed (%s).',
-            type(exc).__name__,
-        )
+        if isinstance(exc, OAuthError):
+            current_app.logger.warning(
+                'OIDC callback validation failed (%s, oauth_error=%s).',
+                type(exc).__name__,
+                _safe_oauth_error_code(exc),
+            )
+        else:
+            current_app.logger.warning(
+                'OIDC callback validation failed (%s).',
+                type(exc).__name__,
+            )
         return _render_oidc_error(
             'The SWITCH edu-ID response could not be validated. Please start the sign-in again.',
             400,
