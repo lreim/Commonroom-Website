@@ -122,25 +122,55 @@
       <p class="onboarding-side-note">The tag list is shared rather than fully custom, so similar experiences stay findable instead of being split across lots of almost-identical tags. If something important is missing, you can suggest it through contact or feedback.</p>
     </div>
 
-    <div class="onboarding-visual onboarding-profile-example" aria-label="Example anonymous CommonRoom profile">
-      <div class="onboarding-profile-heading">
-        <img class="onboarding-profile-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=quiet-nebula-4318&amp;size=180" alt="Avatar of quiet-nebula-4318">
-        <div>
-          <h3>quiet-nebula-4318</h3>
-          <span class="profile-label-badge">Happy to Listen</span>
-          <span class="profile-label-badge">Happy to Share Experience</span>
+    <div class="onboarding-profile-page-example" aria-label="Example of the real CommonRoom profile page">
+      <div class="page-header profile-page-header">
+        <div class="profile-page-identity">
+          <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=quiet-nebula-4318&amp;size=180" class="profile-avatar-large" alt="Avatar of quiet-nebula-4318">
+          <div class="profile-page-heading">
+            <div class="profile-page-kicker">ANONYMOUS PROFILE</div>
+            <h1>quiet-nebula-4318</h1>
+            <div class="profile-label-badges">
+              <div class="profile-label-badge">Happy to Listen</div>
+              <div class="profile-label-badge">Happy to Share Experience</div>
+            </div>
+            <div class="profile-page-activity-summary">Member since 12.09.2026 · Last seen a few minutes ago</div>
+          </div>
+        </div>
+
+        <div class="profile-page-details">
+          <div class="profile-detail-block">
+            <div class="profile-detail-label">About me</div>
+            <div class="profile-detail-value">Still figuring out what balance is supposed to look like. Always happy to compare notes.</div>
+          </div>
+          <div class="profile-detail-block">
+            <div class="profile-detail-label">Funny fact about me</div>
+            <div class="profile-detail-value">I once took the wrong tram for twenty minutes and only noticed when I saw cows.</div>
+          </div>
+          <div class="profile-detail-block profile-tags-block">
+            <div class="profile-detail-label">Tags</div>
+            <div class="profile-detail-value">
+              <span class="label label-info">exam stress</span>
+              <span class="label label-info">study motivation</span>
+              <span class="label label-info">work life balance</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-page-actions">
+          <span class="btn btn-primary onboarding-example-button">Edit profile</span>
+          <span class="btn btn-default onboarding-example-button">Show suitable profiles</span>
         </div>
       </div>
-      <div class="onboarding-profile-block"><strong>About me</strong><p>Still figuring out what balance is supposed to look like. Always happy to compare notes.</p></div>
-      <div class="onboarding-profile-block"><strong>Funny fact about me</strong><p>I once took the wrong tram for twenty minutes and only noticed when I saw cows.</p></div>
-      <div class="onboarding-profile-block">
-        <strong>Tags</strong>
-        <div class="onboarding-tag-list">
-          <span class="label label-info">exam stress</span><span class="label label-info">procrastination</span>
-          <span class="label label-info">study motivation</span><span class="label label-info">loneliness</span>
-          <span class="label label-info">career uncertainty</span><span class="label label-info">work life balance</span>
-        </div>
-      </div>
+
+      <section class="profile-posts-panel">
+        <h3>Posts</h3>
+        <ul class="posts profile-post-list">
+          <li class="post">
+            <div class="post-date">a day ago</div>
+            <div class="post-body">Does anyone have a study routine that still leaves room for an actual life?</div>
+          </li>
+        </ul>
+      </section>
     </div>
   </section>
 
@@ -210,7 +240,7 @@
       <p class="onboarding-side-note">Your requests and active conversations live in the Chat Index. New messages and request updates show up under the activity bell, where a green dot lets you know that something new happened.</p>
     </div>
 
-    <div class="onboarding-visual onboarding-chat-request-example" aria-label="Example of sending a CommonRoom chat request">
+    <div class="onboarding-chat-flow-example" aria-label="Example of the real CommonRoom chat request and chat pages">
       <div class="onboarding-chat-request-person">
         <div class="onboarding-chat-request-profile">
           <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-vector-1842&amp;size=100" alt="Avatar of lucid-vector-1842">
@@ -218,24 +248,48 @@
         </div>
         <span class="chat-start-action-button onboarding-example-button">Start a conversation</span>
       </div>
-      <div class="onboarding-chat-request-compose">
+      <div class="chat-request-compose profile-inline-request-compose onboarding-chat-request-compose">
         <h4>Send chat request to lucid-vector-1842</h4>
-        <p>This message will be sent by email together with Accept and Reject links.</p>
-        <div class="onboarding-chat-request-message">Hi lucid-vector-1842,<br><br>I found your profile on CommonRoom and would like to start a conversation with you.<br><br>What I would like to talk about:<br>– career uncertainty</div>
-        <div class="onboarding-chat-request-actions">
+        <p class="chat-request-compose-help">This message will be sent by email together with Accept and Reject links.</p>
+        <textarea class="form-control" rows="7" readonly>Hi lucid-vector-1842,
+
+I found your profile on CommonRoom and would like to start a conversation with you.
+
+What I would like to talk about:
+- career uncertainty</textarea>
+        <div class="chat-request-compose-actions">
           <span class="btn btn-primary onboarding-example-button">Send request</span>
           <span class="btn btn-default onboarding-example-button">Cancel</span>
         </div>
       </div>
       <div class="onboarding-chat-next-step"><span>after they accept</span></div>
-      <div class="onboarding-chat-preview">
-        <div class="onboarding-chat-header">
-          <div class="onboarding-chat-person"><img src="https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-vector-1842&amp;size=100" alt="Avatar of lucid-vector-1842"><div><strong>lucid-vector-1842</strong><span>anonymous 1:1 chat</span></div></div>
-          <span class="onboarding-chat-status">accepted</span>
+      <section class="chat-page chat-detail-conversation-panel onboarding-chat-detail-example">
+        <div class="chat-header">
+          <div class="chat-current-person">
+            <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-vector-1842&amp;size=100" alt="Avatar of lucid-vector-1842">
+            <div><h3>Chat with <span>lucid-vector-1842</span></h3></div>
+          </div>
+          <div class="chat-header-actions"><span class="btn btn-default onboarding-example-button">Block user</span></div>
         </div>
-        <div class="chat-message"><div class="chat-bubble"><div class="chat-meta"><span class="chat-author">lucid-vector-1842</span><span class="chat-time">18:42</span></div><div class="chat-body">I saw you've also dealt with career uncertainty. How did you figure out whether your direction was right?</div></div></div>
-        <div class="chat-message chat-message-own"><div class="chat-bubble"><div class="chat-meta"><span class="chat-author">gentle-lattice-9721</span><span class="chat-time">18:44</span></div><div class="chat-body">Honestly, it took me quite a while. But I can tell you what eventually helped me decide :)</div></div></div>
-      </div>
+        <ul class="chat-messages">
+          <li class="chat-message">
+            <div class="chat-message-stack">
+              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">lucid-vector-1842</span></div><div class="chat-body">I saw you've also dealt with career uncertainty. How did you figure out whether your direction was right?</div></div>
+              <span class="chat-time">12.09.2026 18:42</span>
+            </div>
+          </li>
+          <li class="chat-message chat-message-own">
+            <div class="chat-message-stack">
+              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">gentle-lattice-9721</span></div><div class="chat-body">Honestly, it took me quite a while. But I can tell you what eventually helped me decide :)</div></div>
+              <span class="chat-time">12.09.2026 18:44</span>
+            </div>
+          </li>
+        </ul>
+        <div class="chat-form">
+          <input type="text" placeholder="Write a message..." readonly>
+          <button type="button" class="onboarding-example-button">Send</button>
+        </div>
+      </section>
     </div>
   </section>
 

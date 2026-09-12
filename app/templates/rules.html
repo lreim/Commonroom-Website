@@ -2,173 +2,89 @@
 {% block title %}Rules{% endblock %}
 
 {% block page_content %}
-<div class="page-header">
+<main class="rules-page">
+  <header class="page-header rules-hero">
     <h1>Rules to remember</h1>
-</div>
+    <p>There is an actual person behind every anonymous username -> don't be a bootyhole</p>
+  </header>
 
+  <section class="rules-intro" aria-labelledby="rules-why-title">
+    <div>
+      <h2 id="rules-why-title">Why these rules matter</h2>
+      <p>CommonRoom only works if people feel comfortable sharing, replying, talking, or simply being here, so please treat the room and the people in it accordingly. We have enough other places for spam and gossip.</p>
+      <p class="rules-emphasis">It depends on you whether this place dies or flourishes. So please be a lovely part of the room :)</p>
+    </div>
+  </section>
 
-<div class="reading-page">
+  <div class="rules-grid">
+    <article class="rules-card">
+      <div class="rules-card-heading">
+        <span class="rules-card-number" aria-hidden="true">1</span>
+        <h2>Consent and boundaries</h2>
+      </div>
+      <p><strong>Only yes is a yes.</strong> Everyone is free to decline a request, leave a chat, not answer, or block someone. Nobody owes you a reply or an explanation.</p>
+      <p>Never pressure someone to share more, keep talking, move the chat elsewhere, or reveal who they are. If someone says no or stops replying, accept it and move on.</p>
+      <p class="rules-card-limit">Harassment, manipulation, threats, stalking, and other boundary crossing are not tolerated.</p>
+    </article>
 
-  <h3>Why these rules matter</h3>
+    <article class="rules-card">
+      <div class="rules-card-heading">
+        <span class="rules-card-number" aria-hidden="true">2</span>
+        <h2>Keep CommonRoom what it is</h2>
+      </div>
+      <p>CommonRoom is for thoughts, questions, experiences, struggles, little moments, and whatever else is genuinely on your mind.</p>
+      <p>It is not a dating or friend-finding app, marketplace, advertising space, or general ETH Q&amp;A forum. Connections can happen naturally, but they should not be your main reason for being here.</p>
+      <p><strong>Random thoughts and casual posts are welcome. Spam is not.</strong> Please do not advertise, recruit, sell things, post automated content, or flood the room.</p>
+    </article>
 
-  <p>
-    CommonRoom only works if people feel comfortable sharing, replying, talking, or simply being here.
-    There is an actual person behind every anonymous username, so please treat the room and the people in it accordingly.
-  </p>
+    <article class="rules-card">
+      <div class="rules-card-heading">
+        <span class="rules-card-number" aria-hidden="true">3</span>
+        <h2>What happens in the room stays in the room</h2>
+      </div>
+      <p>Do not screenshot, copy, publish, or share someone else's messages or personal information without their consent. Community posts should also stay inside the community.</p>
+      <p>Do not try to identify another user. Anonymity is what makes honest exchange here possible.</p>
+      <p>Avoid names, phone numbers, addresses, social media accounts, identifiable photos, or anything else that could expose you or someone else. Share your experiences without exposing people who did not choose to be part of them.</p>
+    </article>
 
-  <p>
-    It depends on you whether this place dies or flourishes.
-    So please be a lovely part of the room :)
-  </p>
+    <article class="rules-card">
+      <div class="rules-card-heading">
+        <span class="rules-card-number" aria-hidden="true">4</span>
+        <h2>Be a decent human :)</h2>
+      </div>
+      <p>Talk to people with the same respect you would want from them.</p>
+      <p>You can disagree, joke around, or share a different perspective. Just do not insult, ridicule, threaten, frighten, discriminate against, or mislead anyone.</p>
+      <p>Before posting, take a second to think about how it might feel on the other side of the screen.</p>
+    </article>
 
+    <article class="rules-card">
+      <div class="rules-card-heading">
+        <span class="rules-card-number" aria-hidden="true">5</span>
+        <h2>You do not have to fix anyone</h2>
+      </div>
+      <p>Share your own experience, but remember that you do not know everything about the person on the other side.</p>
+      <p>You can listen, relate, share what helped you, or simply say that you do not know what to say. You are not responsible for fixing anyone.</p>
+      <p>Please do not present personal opinions as professional medical, psychological, or therapeutic advice.</p>
+    </article>
 
-  <h3>1. Consent and boundaries</h3>
+    <article class="rules-card rules-card-help">
+      <div class="rules-card-heading">
+        <span class="rules-card-number" aria-hidden="true">6</span>
+        <h2>Know when CommonRoom is not enough</h2>
+      </div>
+      <p>CommonRoom is a peer space between students. It is not a crisis service, professional counselling, or a substitute for medical or psychological care.</p>
+      <p>If you are in danger, feel unsafe, may harm yourself or someone else, or need urgent support, please do not wait for a reply here.</p>
+      <a class="rules-help-link" href="{{ url_for('main.get_help_now') }}">Get Help Now <span aria-hidden="true">&rarr;</span></a>
+    </article>
+  </div>
 
-  <p>
-    Only yes is a yes.
-    If your chat request is not accepted, accept that and move on.
-    You are always free to decline a request, leave a conversation, not answer a question, or block another user.
-  </p>
-
-  <p>
-    Nobody owes anyone a reply, an explanation, or a continued conversation.
-  </p>
-
-
-  <h3>2. Keep CommonRoom what it is</h3>
-
-  <p>
-    CommonRoom is a place for sharing thoughts, questions, experiences, struggles, little moments, and whatever else is genuinely on your mind.
-  </p>
-
-  <p>
-    It is not a dating or friend-finding platform, marketplace, advertising space, or general ETH Q&amp;A forum.
-    Connections and friendships may of course happen naturally, but please do not use CommonRoom with that as your primary intention.
-  </p>
-
-  <p>
-    Keep posts and conversations centered around genuine personal exchange rather than promotion, networking, selling, or unrelated content.
-  </p>
-
-
-  <h3>3. What happens in the room stays in the room</h3>
-
-  <p>
-    Do not screenshot, copy, publish, or share another person's private messages or personal information outside CommonRoom without their consent.
-  </p>
-
-  <p>
-    Community posts are meant to be seen within the CommonRoom community, but that does not mean they should be reposted or published elsewhere.
-  </p>
-
-  <p>
-    Please also do not try to identify another user from what they share.
-    Anonymity is part of what makes honest exchange here possible.
-  </p>
-
-
-  <h3>4. Be a decent human :)</h3>
-
-  <p>
-    There is an actual person behind every anonymous username.
-    Talk to people with the same respect you would want from them.
-  </p>
-
-  <p>
-    You are free to disagree, give another perspective, joke around, or say that you experienced something differently.
-    Just do not insult, ridicule, threaten, deliberately frighten, discriminate against, or mislead other users.
-  </p>
-
-  <p>
-    Whatever you share, do so with some care and thoughtfulness about how it might be received on the other side of the screen.
-  </p>
-
-
-  <h3>5. No pressure, manipulation, or boundary crossing</h3>
-
-  <p>
-    Do not pressure anyone into sharing more than they want to, continuing a conversation, moving the conversation outside CommonRoom, or revealing personal information.
-  </p>
-
-  <p>
-    Do not repeatedly contact someone who has declined or stopped responding.
-    Respect a no, a block, silence, or any other clear boundary.
-  </p>
-
-  <p>
-    Sexual harassment, manipulation, coercion, threats, stalking, or other forms of boundary crossing are not tolerated.
-  </p>
-
-
-  <h3>6. You do not have to fix anyone</h3>
-
-  <p>
-    Share your own experiences, thoughts, and perspective, but remember that you do not know everything about the person on the other side.
-  </p>
-
-  <p>
-    You can listen, relate, disagree, share what helped you, or simply say that you do not know what to say.
-    You are not responsible for solving another person's problems.
-  </p>
-
-  <p>
-    Please avoid presenting personal opinions or experiences as professional medical, psychological, or therapeutic advice.
-  </p>
-
-
-  <h3>7. Keep the room human, not spammy</h3>
-
-  <p>
-    CommonRoom is for things you genuinely want to share or talk about.
-    Random thoughts and casual posts are absolutely welcome.
-    Spam is not.
-  </p>
-
-  <p>
-    Do not use the platform for repetitive posts, advertising, self-promotion, recruitment, selling things, automated content, or flooding the community with unrelated material.
-  </p>
-
-
-  <h3>8. Do not share information that identifies you or someone else</h3>
-
-  <p>
-    CommonRoom is designed to be anonymous.
-    Please avoid posting names, phone numbers, addresses, social media accounts, identifiable photos, or other information that could reveal your identity or someone else's.
-  </p>
-
-  <p>
-    You are of course free to talk about your experiences, but try to do so without exposing people who did not choose to be part of the conversation.
-  </p>
-
-
-  <h3>9. Know when CommonRoom is not enough</h3>
-
-  <p>
-    CommonRoom is a peer-to-peer space for exchange between students.
-    It is not a crisis service, professional counselling service, or substitute for medical or psychological care.
-  </p>
-
-  <p>
-    If you are in immediate danger, feel unsafe, think you may harm yourself or someone else, or need urgent professional support,
-    please do not wait for a reply on CommonRoom.
-    Visit <a href="{{ url_for('main.get_help_now') }}">Get Help Now</a> and contact an appropriate professional or emergency service.
-  </p>
-
-
-  <h3>See something that does not belong here?</h3>
-
-  <p>
-    If someone crosses your boundaries, breaks these rules, posts harmful content, or makes you feel unsafe,
-    please use the report function or
-    <a href="mailto:contact@commonroom.ch?subject=CommonRoom%20rule%20or%20abuse%20report">
-      send me an email
-    </a>.
-  </p>
-
-  <p>
-    Reports help me keep CommonRoom a place where people can share freely without that freedom being used against others.
-  </p>
-
-</div>
-
+  <section class="rules-report" aria-labelledby="rules-report-title">
+    <span class="rules-report-mark" aria-hidden="true">!</span>
+    <div>
+      <h2 id="rules-report-title">See something that does not belong here?</h2>
+      <p>If someone crosses your boundaries, breaks these rules, posts harmful content, or makes you feel unsafe, please report it or <a href="mailto:contact@commonroom.ch?subject=CommonRoom%20rule%20or%20abuse%20report">send me an email</a>.</p>
+      <p>Reports help me keep CommonRoom open without letting that openness be used against others.</p>
+    </div>
+  </section>
+</main>
 {% endblock %}

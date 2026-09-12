@@ -60,3 +60,26 @@ class BasicsTestCase(unittest.TestCase):
         privacy = client.get('/data-and-privacy')
         self.assertNotIn(b'landing_scroll_previews.js', onboarding.data)
         self.assertNotIn(b'landing_scroll_previews.js', privacy.data)
+
+    def test_onboarding_uses_real_profile_and_chat_structures(self):
+        response = self.app.test_client().get('/onboarding')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'profile-page-header', response.data)
+        self.assertIn(b'profile-page-details', response.data)
+        self.assertIn(b'chat-detail-conversation-panel', response.data)
+        self.assertNotIn(b'Private Chats', response.data)
+        self.assertNotIn(b'Back to chats', response.data)
+        self.assertIn(b'Write a message...', response.data)
+
+    def test_rules_page_groups_overlapping_rules_without_dropping_topics(self):
+        response = self.app.test_client().get('/rules')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Consent and boundaries', response.data)
+        self.assertIn(b'Keep CommonRoom what it is', response.data)
+        self.assertIn(b'What happens in the room stays in the room', response.data)
+        self.assertIn(b'Be a decent human :)', response.data)
+        self.assertIn(b'You do not have to fix anyone', response.data)
+        self.assertIn(b'Know when CommonRoom is not enough', response.data)
+        self.assertIn(b'See something that does not belong here?', response.data)
