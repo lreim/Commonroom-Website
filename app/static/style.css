@@ -1048,7 +1048,7 @@ html.dark-mode .rules-help-link:focus {
   padding: clamp(22px, 4vw, 38px);
   border: 1px solid #d9cfbb;
   border-radius: 28px;
-  background: linear-gradient(145deg, #fffaf0 0%, #f3f6ed 100%);
+  background: #fffaf0;
   box-shadow: 0 14px 34px rgba(72, 47, 20, 0.08);
 }
 
@@ -1129,7 +1129,7 @@ html.dark-mode .rules-help-link:focus {
 
 html.dark-mode .privacy-quick-summary {
   border-color: #4f483d;
-  background: linear-gradient(145deg, #29231d 0%, #283025 100%);
+  background: #29231d;
   box-shadow: none;
 }
 
