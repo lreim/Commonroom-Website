@@ -3,9 +3,9 @@
 {% block page_content %}
 <div class="page-header">
   <h1>
-    <a href="{{ url_for('main.user', username=user.username) }}">{{ user.username }}</a>
+    <a href="{{ url_for('main.user', username=user.username) }}">{{ display_username(user) }}</a>
   </h1>
-  <img src="{{ user.gravatar(size=100) }}" class="img-rounded profile-avatar-large">
+  <img src="{{ display_avatar_url(user, 100) }}" class="img-rounded profile-avatar-large settings-profile-avatar" alt="Avatar of {{ display_username(user) }}">
   {% if user == current_user %}
     <p>
     <a class="btn btn-default" href="{{ url_for('.edit_profile') }}">Edit Profile</a>

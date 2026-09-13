@@ -372,8 +372,12 @@ class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.now(timezone.utc))
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    timestamp = db.Column(
+        db.DateTime,
+        index=True,
+        default=lambda: datetime.now(timezone.utc),
+    )
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('posts.id'), index=True)
     post_type = db.Column(db.String(16), nullable=False, default='relate', index=True)
     is_starter = db.Column(db.Boolean, nullable=False, default=False)

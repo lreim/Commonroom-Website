@@ -112,10 +112,10 @@
           <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
         </div>
         <div class="profile-menu">
-          <a href="{{ url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
+          <a href="{{ url_for('main.admin_profile') if admin_demo_mode else url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
             <img
-              src="{{ current_user.gravatar(size=40) }}"
-              alt="{{ current_user.username }}"
+              src="{{ display_avatar_url(current_user, 40) }}"
+              alt="{{ display_username(current_user) }}"
               class="profile-menu-avatar"
             >
           </a>
@@ -127,7 +127,7 @@
               data-timeout-minutes="{{ session_timeout_minutes }}"
             ></div>
             {% endif %}
-            <a href="{{ url_for('main.user', username=current_user.username) }}">Profile Info</a>
+            <a href="{{ url_for('main.admin_profile') if admin_demo_mode else url_for('main.user', username=current_user.username) }}">Profile Info</a>
             <a href="{{ url_for('main.settings') }}">Settings</a>
             {% if current_user.is_administrator() %}
             <a href="{{ url_for('main.starter_posts_admin') }}">Starter Posts</a>
@@ -407,6 +407,18 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  document.querySelectorAll("[data-open-contact-panel]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const contactPanel = document.getElementById("floating-contact-panel");
+      if (!contactPanel) {
+        return;
+      }
+      panels.forEach(function (panel) {
+        panel.open = panel === contactPanel;
+      });
+    });
+  });
+
   panels.forEach(function (panel) {
     const closeButton = panel.querySelector("[data-floating-panel-close]");
     const summary = panel.querySelector("summary");
@@ -609,7 +621,7 @@ document.addEventListener("DOMContentLoaded", function () {
       <p class="floating-contact-card-text">Open your email app and send me a message directly.</p>
       <a
         class="floating-contact-card-link"
-        href="mailto:contact@commonroom.ch?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
+        href="mailto:contact@commonroom.ch?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ display_username(current_user)|urlencode }}{% else %}Username{% endif %}"
       >
         Write an email
       </a>
@@ -653,7 +665,7 @@ document.addEventListener("DOMContentLoaded", function () {
       <p class="floating-contact-card-text">Open your email app and send an abuse report directly.</p>
       <a
         class="floating-contact-card-link floating-abuse-card-link"
-        href="mailto:report-abuse@commonroom.ch?subject=Report%20abuse%20%E2%80%94%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}"
+        href="mailto:report-abuse@commonroom.ch?subject=Report%20abuse%20%E2%80%94%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ display_username(current_user)|urlencode }}{% else %}Username{% endif %}"
       >
         Write a report
       </a>

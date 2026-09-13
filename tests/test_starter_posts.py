@@ -51,7 +51,7 @@ class StarterPostAdminTestCase(unittest.TestCase):
         self._login(self.app.config['TALKTO_ADMIN'], 'AdminPassword1')
 
         create_response = self.client.post(
-            '/admin/starter-posts',
+            '/admin/profile',
             data={
                 'body': 'What helped you settle into university life?',
                 'post_type': 'question',
@@ -61,7 +61,7 @@ class StarterPostAdminTestCase(unittest.TestCase):
         self.assertEqual(create_response.status_code, 302)
         starter_post = Post.query.one()
         self.assertTrue(starter_post.is_starter)
-        self.assertEqual(starter_post.author_id, admin.id)
+        self.assertIsNone(starter_post.author_id)
         self.assertEqual(starter_post.post_type, 'question')
 
         edit_response = self.client.post(
@@ -111,6 +111,58 @@ class StarterPostAdminTestCase(unittest.TestCase):
         response = self.client.get(f'/admin/starter-posts/{regular_post.id}/edit')
 
         self.assertEqual(response.status_code, 404)
+
+    def test_starter_post_is_public_platform_content_without_admin_profile(self):
+        admin = self._create_user(
+            self.app.config['TALKTO_ADMIN'],
+            'commonroom-admin',
+            'AdminPassword1',
+        )
+        starter_post = Post(
+            body='A conversation starter from CommonRoom',
+            author=admin,
+            post_type='question',
+            is_starter=True,
+        )
+        db.session.add(starter_post)
+        db.session.commit()
+
+        feed_response = self.client.get('/post')
+
+        self.assertEqual(feed_response.status_code, 200)
+        self.assertIn(b'Starter post', feed_response.data)
+        self.assertIn(b'A conversation starter from CommonRoom', feed_response.data)
+        self.assertIn(b'Logo_Website_small.jpg', feed_response.data)
+        self.assertIn(b'/admin/profile', feed_response.data)
+        self.assertNotIn(b'commonroom-admin', feed_response.data)
+
+        admin_profile_response = self.client.get('/admin/profile')
+
+        self.assertEqual(admin_profile_response.status_code, 200)
+        self.assertIn(b'<h1>Admin</h1>', admin_profile_response.data)
+        self.assertIn(b'data-open-contact-panel', admin_profile_response.data)
+        self.assertIn(b'A conversation starter from CommonRoom', admin_profile_response.data)
+        self.assertNotIn(b'commonroom-admin', admin_profile_response.data)
+
+        profile_response = self.client.get('/user/commonroom-admin')
+
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertNotIn(b'A conversation starter from CommonRoom', profile_response.data)
+
+        ordinary_role = Role.query.filter_by(name='User').one()
+        self._create_user(
+            'ordinary@ethz.ch',
+            'ordinary-user',
+            'UserPassword1',
+            role=ordinary_role,
+        )
+        self._login('ordinary@ethz.ch', 'UserPassword1')
+
+        thread_response = self.client.get(f'/post/{starter_post.id}')
+
+        self.assertEqual(thread_response.status_code, 200)
+        self.assertIn(b'Starter post', thread_response.data)
+        self.assertNotIn(b'commonroom-admin', thread_response.data)
 
 
 if __name__ == '__main__':

@@ -12,6 +12,7 @@ from .forms import LoginForm, OIDCLinkAccountForm, OIDCProfileForm, Registration
 from .. import db, oauth
 from ..email import send_email
 from ..security import is_safe_local_redirect_target
+from ..admin_demo import activate_admin_demo_mode, clear_admin_demo_mode
 from datetime import datetime, timezone, timedelta
 
 LOGIN_ACCOUNT_MAX_FAILURES = 6
@@ -23,6 +24,20 @@ OIDC_PENDING_PROFILE_SESSION_KEY = 'pending_oidc_profile'
 OIDC_NEXT_SESSION_KEY = 'oidc_next_url'
 OIDC_PENDING_PROFILE_MAX_AGE_SECONDS = 10 * 60
 OAUTH_ERROR_CODE_MAX_LENGTH = 64
+
+
+def _login_with_demo_mode(user, remember=False):
+    login_user(user, remember)
+    session.permanent = True
+    activate_admin_demo_mode(user)
+
+
+def _login_name(user):
+    return 'Admin' if user.is_administrator() else user.username
+
+
+def _default_login_url(user):
+    return url_for('main.index')
 
 
 def _oidc_is_active():
@@ -189,10 +204,9 @@ def legacy_login():
             if user.verify_password(form.password.data):
                 _clear_login_failures(user)
 
-                login_user(user, form.remember_me.data)
-                session.permanent = True
-                flash(f"{user.username} is now locked in!")
-                return redirect(next_url if is_safe_local_redirect_target(next_url) else url_for('main.index'))
+                _login_with_demo_mode(user, form.remember_me.data)
+                flash(f"{_login_name(user)} is now locked in!")
+                return redirect(next_url if is_safe_local_redirect_target(next_url) else _default_login_url(user))
 
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= LOGIN_ACCOUNT_MAX_FAILURES:
@@ -302,11 +316,10 @@ def eduid_callback():
     user = User.query.filter_by(oidc_sub=subject).first()
     if user is not None:
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
-        login_user(user)
-        session.permanent = True
+        _login_with_demo_mode(user)
         next_url = session.pop(OIDC_NEXT_SESSION_KEY, None)
-        flash(f'{user.username} is now locked in!')
-        return redirect(next_url if is_safe_local_redirect_target(next_url) else url_for('main.index'))
+        flash(f'{_login_name(user)} is now locked in!')
+        return redirect(next_url if is_safe_local_redirect_target(next_url) else _default_login_url(user))
 
     session[OIDC_PENDING_PROFILE_SESSION_KEY] = {
         'sub': subject,
@@ -348,8 +361,7 @@ def eduid_create_profile():
     existing_user = User.query.filter_by(oidc_sub=subject).first()
     if existing_user is not None:
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
-        login_user(existing_user)
-        session.permanent = True
+        _login_with_demo_mode(existing_user)
         return redirect(url_for('auth.eduid_welcome'))
 
     form = OIDCProfileForm()
@@ -373,8 +385,7 @@ def eduid_create_profile():
                 )
 
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
-        login_user(user)
-        session.permanent = True
+        _login_with_demo_mode(user)
         return redirect(url_for('auth.eduid_welcome'))
 
     return render_template('auth/eduid_profile.html', form=form)
@@ -395,9 +406,8 @@ def eduid_link_account():
     existing_subject_user = User.query.filter_by(oidc_sub=subject).first()
     if existing_subject_user is not None:
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
-        login_user(existing_subject_user)
-        session.permanent = True
-        return redirect(url_for('main.index'))
+        _login_with_demo_mode(existing_subject_user)
+        return redirect(_default_login_url(existing_subject_user))
 
     form = OIDCLinkAccountForm()
     if form.validate_on_submit():
@@ -447,12 +457,11 @@ def eduid_link_account():
                     )
 
                 session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
-                login_user(user)
-                session.permanent = True
+                _login_with_demo_mode(user)
                 next_url = session.pop(OIDC_NEXT_SESSION_KEY, None)
-                flash(f'{user.username} is now connected to SWITCH edu-ID and logged in!')
+                flash(f'{_login_name(user)} is now connected to SWITCH edu-ID and logged in!')
                 return redirect(
-                    next_url if is_safe_local_redirect_target(next_url) else url_for('main.index')
+                    next_url if is_safe_local_redirect_target(next_url) else _default_login_url(user)
                 )
 
             user.failed_login_attempts += 1
@@ -484,6 +493,7 @@ def eduid_welcome():
 @auth.route('/logout', methods=['POST'])
 @login_required
 def logout():
+    clear_admin_demo_mode()
     logout_user()     #removes and resets the user session
     flash('You have been logged out, see you soon!')
     return redirect(url_for('main.index'))

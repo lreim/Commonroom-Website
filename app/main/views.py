@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 from sqlalchemy import func
-from flask import Response, render_template, session, redirect, url_for, current_app, request, flash, jsonify
+from flask import Response, abort, render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
 from .forms import PostForm, ReplyForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db, csrf
@@ -18,6 +18,7 @@ from app.decorators import admin_required, permission_required
 from ..models import Permission
 from ..email import send_email
 from ..security import is_safe_local_redirect_target
+from ..admin_demo import is_admin_demo_mode, set_admin_demo_mode
 
 #ATTENTION: with blueprint use main. iinstead of app. 
 
@@ -777,7 +778,14 @@ def post_thread(post_id):
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     return_to = request.args.get('return_to', type=str)
-    posts = user.posts.order_by(Post.timestamp.desc()).all()
+    posts = user.posts.filter_by(is_starter=False).order_by(Post.timestamp.desc()).all()
+    if is_admin_demo_mode() and user.id == current_user.id:
+        posts = (
+            Post.query
+            .filter_by(is_starter=True, parent_id=None)
+            .order_by(Post.timestamp.desc())
+            .all()
+        )
     recommend_profiles = request.args.get('recommend', 0, type=int) == 1
     recommended_users = []
 
@@ -813,6 +821,49 @@ def user(username):
         return_to=return_to if is_safe_local_redirect_target(return_to) else None,
         recommend_profiles=recommend_profiles,
         recommended_users=recommended_users,
+    )
+
+
+@main.route('/admin/profile', methods=['GET', 'POST'])
+def admin_profile():
+    starter_form = StarterPostForm()
+    if request.method == 'POST':
+        if not current_user.is_authenticated or not current_user.is_administrator():
+            abort(403)
+        if starter_form.validate_on_submit():
+            starter_post = Post(
+                body=starter_form.body.data,
+                author_id=None,
+                post_type=starter_form.post_type.data,
+                is_starter=True,
+            )
+            db.session.add(starter_post)
+            db.session.commit()
+            flash('Starter post published as CommonRoom platform content.')
+            return redirect(url_for('main.admin_profile'))
+
+    if current_user.is_authenticated and current_user.is_administrator():
+        admin_user = current_user._get_current_object()
+    else:
+        admin_email = current_app.config.get('TALKTO_ADMIN')
+        if not admin_email:
+            abort(404)
+        admin_user = User.query.filter_by(email=admin_email).first_or_404()
+    starter_posts = (
+        Post.query
+        .filter_by(is_starter=True, parent_id=None)
+        .order_by(Post.timestamp.desc())
+        .all()
+    )
+    return render_template(
+        'user.html',
+        user=admin_user,
+        posts=starter_posts,
+        return_to=None,
+        recommend_profiles=False,
+        recommended_users=[],
+        force_admin_demo=True,
+        starter_form=starter_form,
     )
 
 
@@ -961,23 +1012,26 @@ def for_admins_only():
     return "For administrators!"
 
 
-@main.route('/admin/starter-posts', methods=['GET', 'POST'])
+@main.route('/admin/demo-profile/<mode>', methods=['POST'])
+@login_required
+@admin_required
+def set_admin_demo_profile(mode):
+    if mode not in {'admin', 'personal'}:
+        return ('', 404)
+    set_admin_demo_mode(mode == 'admin')
+    if mode == 'admin':
+        flash('Admin demo profile is now active.')
+    else:
+        flash('Your personal profile is now visible to you.')
+    if mode == 'admin':
+        return redirect(url_for('main.admin_profile'))
+    return redirect(url_for('main.user', username=current_user.username))
+
+
+@main.route('/admin/starter-posts', methods=['GET'])
 @login_required
 @admin_required
 def starter_posts_admin():
-    form = StarterPostForm()
-    if form.validate_on_submit():
-        starter_post = Post(
-            body=form.body.data,
-            author=current_user._get_current_object(),
-            post_type=form.post_type.data,
-            is_starter=True,
-        )
-        db.session.add(starter_post)
-        db.session.commit()
-        flash('Starter post published.')
-        return redirect(url_for('main.starter_posts_admin'))
-
     starter_posts = (
         Post.query
         .filter_by(is_starter=True, parent_id=None)
@@ -986,7 +1040,6 @@ def starter_posts_admin():
     )
     return render_template(
         'admin/starter_posts.html',
-        form=form,
         starter_posts=starter_posts,
         editing_post=None,
         active_page=None,

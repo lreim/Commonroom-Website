@@ -14,19 +14,34 @@
 {%- endmacro %}
 
 {% macro render_post_node(node, form, level=0) -%}
-<li class="post post-thread-item{% if level > 0 %} post-thread-reply{% endif %}" style="margin-left: {{ level * 24 }}px;">
+<li class="post post-thread-item{% if level > 0 %} post-thread-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}" style="margin-left: {{ level * 24 }}px;">
     <div class="profile-thumbnail">
+        {% if node.is_starter %}
+        <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
+            <img
+                class="img-rounded profile-thumbnail starter-post-logo"
+                src="{{ url_for('static', filename='Logo_Website_small.jpg') }}"
+                alt="CommonRoom"
+            >
+        </a>
+        {% else %}
         <a href="{{ url_for('.user', username=node.author.username) }}">
             <img class="img-rounded profile-thumbnail" src="{{ node.author.gravatar(size=level > 0 and 36 or 40) }}">
         </a>
+        {% endif %}
     </div>
     <div class="post-content">
+        {% if node.is_starter %}
+        <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
+        {% endif %}
         <div class="post-date">{{ moment(node.timestamp).fromNow() }}</div>
+        {% if not node.is_starter %}
         <div class="post-author">
             <a href="{{ url_for('.user', username=node.author.username) }}" data-profile-preview='{{ post_preview_payload(node) }}'>
                 {{ node.author.username }}
             </a>
         </div>
+        {% endif %}
         <div class="post-body">{{ node.body }}</div>
     </div>
     <div class="post-side-actions">

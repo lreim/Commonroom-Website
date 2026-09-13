@@ -5,12 +5,13 @@
 <main class="starter-post-admin">
   <header class="starter-post-admin-header">
     <div class="starter-post-admin-kicker">ADMIN ONLY</div>
-    <h1>{% if editing_post %}Edit starter post{% else %}Starter posts{% endif %}</h1>
+    <h1>{% if editing_post %}Edit starter post{% else %}Manage starter posts{% endif %}</h1>
     <p>
-      Write community prompts in your own words. They are published as regular posts under your administrator profile.
+      Starter posts are CommonRoom platform content and are not connected to your personal profile.
     </p>
   </header>
 
+  {% if editing_post %}
   <section class="starter-post-editor" aria-labelledby="starter-post-editor-title">
     <h2 id="starter-post-editor-title">
       {% if editing_post %}Edit post #{{ editing_post.id }}{% else %}Write a starter post{% endif %}
@@ -46,6 +47,9 @@
       </div>
     </form>
   </section>
+  {% else %}
+  <p><a class="btn btn-primary" href="{{ url_for('main.admin_profile') }}">Write a starter post from the Admin profile</a></p>
+  {% endif %}
 
   <section class="starter-post-list" aria-labelledby="starter-post-list-title">
     <h2 id="starter-post-list-title">Published starter posts</h2>

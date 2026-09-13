@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}User{% endblock %}
 {% block page_content %}
+{% set viewing_admin_demo = (force_admin_demo|default(false)) or (admin_demo_mode and current_user.is_authenticated and user.id == current_user.id) %}
 <div
   data-inline-chat-request-root
   data-has-contact-email="{{ 'true' if current_user.is_authenticated and current_user.contact_email else 'false' }}"
@@ -13,11 +14,11 @@
   </p>
   {% endif %}
   <div class="profile-page-identity">
-    <img src="{{ user.gravatar(size=120) }}" class="profile-avatar-large" alt="Avatar of {{ user.username }}">
+    <img src="{{ url_for('static', filename='Logo_Website_small.jpg') if viewing_admin_demo else display_avatar_url(user, 120) }}" class="profile-avatar-large{% if viewing_admin_demo %} admin-demo-profile-avatar{% endif %}" alt="Avatar of {% if viewing_admin_demo %}Admin{% else %}{{ display_username(user) }}{% endif %}">
     <div class="profile-page-heading">
-      <div class="profile-page-kicker">ANONYMOUS PROFILE</div>
-      <h1>{{ user.username }}</h1>
-      {% if user.profile_label_values %}
+      <div class="profile-page-kicker">{% if viewing_admin_demo %}COMMONROOM ADMIN{% else %}ANONYMOUS PROFILE{% endif %}</div>
+      <h1>{% if viewing_admin_demo %}Admin{% else %}{{ display_username(user) }}{% endif %}</h1>
+      {% if not viewing_admin_demo and user.profile_label_values %}
       <div class="profile-label-badges">
         {% for label_text in user.profile_label_texts %}
         <div class="profile-label-badge">{{ label_text }}</div>
@@ -25,15 +26,37 @@
       </div>
       {% endif %}
       <div class="profile-page-activity-summary">
+        {% if viewing_admin_demo %}
+        CommonRoom moderation and community support
+        {% else %}
         Member since {{ moment(user.member_since).format('L') }} · Last seen {{ moment(user.last_seen).fromNow() }}
+        {% endif %}
       </div>
     </div>
   </div>
-  {% if current_user.is_administrator() %}
+  {% if current_user.is_administrator() and not viewing_admin_demo %}
   <p class="profile-admin-email"><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
   {% endif %}
 
   <div class="profile-page-details">
+  {% if viewing_admin_demo %}
+  <div class="profile-detail-block">
+    <div class="profile-detail-label">About me</div>
+    <div class="profile-detail-value">I look after CommonRoom and help keep this space welcoming, respectful, and safe.</div>
+  </div>
+  <div class="profile-detail-block">
+    <div class="profile-detail-label">What I am here for</div>
+    <div class="profile-detail-value">Supporting the community, sharing conversation starters, and making the platform easier to use.</div>
+  </div>
+  <div class="profile-detail-block profile-tags-block">
+    <div class="profile-detail-label">Topics</div>
+    <div class="profile-detail-value">
+      <span class="label label-info">CommonRoom</span>
+      <span class="label label-info">Community</span>
+      <span class="label label-info">Support</span>
+    </div>
+  </div>
+  {% else %}
   {% if user.about_me %}
   <div class="profile-detail-block">
     <div class="profile-detail-label">About me</div>
@@ -56,14 +79,29 @@
     </div>
   </div>
   {% endif %}
+  {% endif %}
   </div>
 
   <div class="profile-page-actions">
-  {% if current_user.is_authenticated and user == current_user %}
+  {% if viewing_admin_demo %}
+  <button type="button" class="btn btn-primary" data-open-contact-panel>Contact me</button>
+  {% endif %}
+  {% if viewing_admin_demo and current_user.is_authenticated and current_user.is_administrator() and user.id == current_user.id %}
+  <form method="post" action="{{ url_for('main.set_admin_demo_profile', mode='personal') }}" class="admin-demo-toggle-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-primary">Show my personal profile</button>
+  </form>
+  {% elif current_user.is_authenticated and user == current_user %}
   <a class="btn btn-primary" href="{{ url_for('.edit_profile') }}">Edit profile</a>
   <a class="btn btn-default" href="{{ url_for('main.user', username=user.username, recommend=1) }}">Show suitable profiles</a>
+  {% if current_user.is_administrator() %}
+  <form method="post" action="{{ url_for('main.set_admin_demo_profile', mode='admin') }}" class="admin-demo-toggle-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-default">Show Admin demo profile</button>
+  </form>
   {% endif %}
-  {% if current_user.is_authenticated and user != current_user %}
+  {% endif %}
+  {% if current_user.is_authenticated and user != current_user and not viewing_admin_demo %}
   <button
     type="button"
     class="btn btn-primary"
@@ -73,11 +111,40 @@
     style="display:inline-block; margin-top: 8px;"
   >Start a chat</button>
   {% endif %}
-  {% if current_user.is_administrator() %}
+  {% if current_user.is_administrator() and not viewing_admin_demo %}
   <a class="btn btn-primary" href="{{ url_for('.edit_profile_admin', id=user.id) }}">Edit Profile [Admin]</a>
   {% endif %}
   </div>
 </div>
+
+{% if viewing_admin_demo and current_user.is_authenticated and current_user.is_administrator() and user.id == current_user.id and starter_form is defined %}
+<section class="starter-post-editor admin-profile-starter-editor" aria-labelledby="admin-profile-starter-editor-title">
+  <h2 id="admin-profile-starter-editor-title">Write a starter post</h2>
+  <p>Starter posts are published as CommonRoom platform content and are not connected to your personal profile.</p>
+  <form method="post" action="{{ url_for('main.admin_profile') }}">
+    {{ starter_form.hidden_tag() }}
+    <div class="form-group{% if starter_form.body.errors %} has-error{% endif %}">
+      {{ starter_form.body.label(class="control-label") }}
+      {{ starter_form.body(class="form-control", rows="5", placeholder="Write an open question or conversation starter in your own words.") }}
+      {% for error in starter_form.body.errors %}<span class="help-block">{{ error }}</span>{% endfor %}
+    </div>
+    <fieldset class="post-type-fieldset">
+      <legend>{{ starter_form.post_type.label.text }}</legend>
+      {% for option in starter_form.post_type %}
+      <label class="post-type-option">
+        {{ option(required=true) }}
+        <span>{{ option.label.text }}</span>
+      </label>
+      {% endfor %}
+    </fieldset>
+    {% for error in starter_form.post_type.errors %}<div class="post-type-error" role="alert">{{ error }}</div>{% endfor %}
+    <div class="starter-post-editor-actions">
+      {{ starter_form.submit(class="btn btn-primary") }}
+      <a class="btn btn-default" href="{{ url_for('main.starter_posts_admin') }}">Manage existing starter posts</a>
+    </div>
+  </form>
+</section>
+{% endif %}
 
 {% if current_user.is_authenticated and user == current_user and recommend_profiles %}
 <div class="profile-recommendations">
@@ -165,9 +232,18 @@
 <ul class="posts profile-post-list">
   {% for post in posts %}
   <li class="post">
+    {% if post.is_starter %}
+    <a class="starter-post-badge" href="{{ url_for('main.post_thread', post_id=post.id) }}">Starter post</a>
+    {% endif %}
     <div class="post-date">{{ moment(post.timestamp).fromNow() }}</div>
-    <div class="post-body">{{ post.body }}</div>
+    <div class="post-body">
+      {% if post.is_starter %}<a class="admin-profile-starter-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">{% endif %}
+      {{ post.body }}
+      {% if post.is_starter %}</a>{% endif %}
+    </div>
   </li>
+  {% else %}
+  <li class="admin-demo-profile-note">No starter posts have been published yet.</li>
   {% endfor %}
 </ul>
 </section>

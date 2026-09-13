@@ -148,7 +148,7 @@
 
   <section class="about-editorial-section about-editorial-compact">
     <h2>Questions or concerns?</h2>
-    <p>If you have any questions, miss a feature, have feedback, or want to report abuse, please do not hesitate to reach out to me. Please <a href="mailto:contact@commonroom.ch?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ current_user.username|urlencode }}{% else %}Username{% endif %}">send me an email</a>.</p>
+    <p>If you have any questions, miss a feature, have feedback, or want to report abuse, please do not hesitate to reach out to me. Please <a href="mailto:contact@commonroom.ch?subject=Questions%20to%20website%20CommonRoom%20%E2%80%94%20{% if current_user.is_authenticated %}{{ display_username(current_user)|urlencode }}{% else %}Username{% endif %}">send me an email</a>.</p>
   </section>
 </article>
 {% endblock %}

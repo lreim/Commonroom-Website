@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
@@ -72,6 +72,8 @@ def create_app(config_name):
 
     @app.context_processor
     def inject_session_timeout():
+        from .admin_demo import is_admin_demo_mode
+
         notification_payload = {"items": [], "has_unseen": False}
         if current_user.is_authenticated:
             from .notifications import build_notifications_for_user
@@ -79,11 +81,26 @@ def create_app(config_name):
             notification_payload = build_notifications_for_user(current_user)
         lifetime = app.config.get('PERMANENT_SESSION_LIFETIME')
         timeout_minutes = int(lifetime.total_seconds() // 60) if lifetime else 0
+        admin_demo_mode = is_admin_demo_mode()
+
+        def display_username(user):
+            if admin_demo_mode and user.id == current_user.id:
+                return 'Admin'
+            return user.username
+
+        def display_avatar_url(user, size=40):
+            if admin_demo_mode and user.id == current_user.id:
+                return url_for('static', filename='Logo_Website_small.jpg')
+            return user.gravatar(size=size)
+
         return dict(
             session_timeout_minutes=timeout_minutes,
             current_time=datetime.now(timezone.utc),
             notification_items=notification_payload["items"],
             has_unseen_notifications=notification_payload["has_unseen"],
+            admin_demo_mode=admin_demo_mode,
+            display_username=display_username,
+            display_avatar_url=display_avatar_url,
         )
     
     # attach routes and custom error pages here

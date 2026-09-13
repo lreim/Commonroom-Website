@@ -3405,6 +3405,12 @@ html.theme-toggle-ready .theme-switch {
   margin-bottom: 18px;
 }
 
+.settings-profile-avatar {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+}
+
 .profile-label-badge {
   display: inline-block;
   margin: 6px 0 14px;
@@ -3974,6 +3980,10 @@ html.dark-mode .welcome-scroll-cue:focus {
     opacity: 1;
     transform: translate(0, -50%);
     visibility: visible;
+  }
+
+  .welcome-bubble:first-child .welcome-bubble-link-preview {
+    width: clamp(72px, 19vw, 94px);
   }
 
   .welcome-bubble:nth-child(5) .welcome-bubble-link-preview {
@@ -7116,6 +7126,63 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
   font-size: 11px;
 }
 
+.starter-post-badge {
+  display: inline-block;
+  margin-bottom: 5px;
+  padding: 2px 6px;
+  border: 1px solid #d6c5ae;
+  border-radius: 999px;
+  background: #f5ead8;
+  color: #765d42;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.starter-post-badge:hover,
+.starter-post-badge:focus {
+  color: #5f4932;
+  text-decoration: none;
+}
+
+.starter-post-logo {
+  padding: 2px;
+  background: #fffaf0;
+  object-fit: cover;
+}
+
+.admin-demo-toggle-form {
+  display: inline-block;
+  margin: 0;
+}
+
+.admin-demo-profile-avatar {
+  padding: 4px;
+  background: #fffaf0;
+  object-fit: cover;
+}
+
+.admin-demo-profile-note {
+  margin: 0;
+  color: #6d624e;
+  line-height: 1.6;
+}
+
+.admin-profile-starter-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-profile-starter-link:hover,
+.admin-profile-starter-link:focus {
+  color: #60342c;
+  text-decoration: underline;
+}
+
 .post-page-list .post-author {
   margin-bottom: 3px;
 }
@@ -7291,6 +7358,28 @@ html.dark-mode .post-compose-examples span + span::before {
 
 html.dark-mode .post-page-list .post-author a {
   color: #f1ebdd;
+}
+
+html.dark-mode .starter-post-badge {
+  border-color: #5b4b3d;
+  background: #3a3027;
+  color: #d9c8b2;
+}
+
+html.dark-mode .starter-post-badge:hover,
+html.dark-mode .starter-post-badge:focus,
+html.dark-mode .admin-profile-starter-link:hover,
+html.dark-mode .admin-profile-starter-link:focus {
+  color: #f1ebdd;
+}
+
+html.dark-mode .starter-post-logo,
+html.dark-mode .admin-demo-profile-avatar {
+  background: #332a22;
+}
+
+html.dark-mode .admin-demo-profile-note {
+  color: #bfb29f;
 }
 
 @media (max-width: 767px) {
