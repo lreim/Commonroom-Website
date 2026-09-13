@@ -141,6 +141,17 @@ def _sanitize_referrer_domain(value):
     return value
 
 
+def _validated_analytics_session_token(value):
+    token = (value or "").strip()
+    if (
+        not token
+        or len(token) > 64
+        or any(not (character.isalnum() or character in "-_") for character in token)
+    ):
+        return None
+    return token
+
+
 def _build_visit_timeline(range_key, visits_query=None):
     now = datetime.now(timezone.utc)
     if range_key == "24h":
@@ -540,15 +551,22 @@ def feedback():
 def track_page_visit():
     if not _analytics_request_has_same_origin():
         return ("", 204)
-    if current_user.is_authenticated and current_user.is_administrator():
-        return ("", 204)
 
     payload = request.get_json(silent=True) or {}
+    session_token = _validated_analytics_session_token(payload.get("session_token"))
+    if current_user.is_authenticated and current_user.is_administrator():
+        if session_token:
+            PageVisit.query.filter_by(
+                session_token=session_token,
+                user_id=None,
+            ).delete(synchronize_session=False)
+            db.session.commit()
+        return ("", 204)
+
     page_key = (payload.get("page_key") or "").strip()
     path = (payload.get("path") or request.path or "").strip()
     duration_ms = payload.get("duration_ms", 0)
     visit_token = (payload.get("visit_token") or "").strip()
-    session_token = (payload.get("session_token") or "").strip()
     device_type = (payload.get("device_type") or "desktop").strip().lower()
     acquisition_source = _sanitize_analytics_label(payload.get("acquisition_source"), 80)
     acquisition_medium = _sanitize_analytics_label(payload.get("acquisition_medium"), 40)
@@ -574,13 +592,6 @@ def track_page_visit():
 
     if len(visit_token) > 64:
         visit_token = visit_token[:64]
-
-    if (
-        not session_token
-        or len(session_token) > 64
-        or any(not (character.isalnum() or character in "-_") for character in session_token)
-    ):
-        session_token = None
 
     normalized_path = urlparse(path[:255]).path or "/"
     if not _path_matches_tracked_page(page_key, normalized_path):

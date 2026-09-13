@@ -159,21 +159,58 @@
 document.addEventListener("DOMContentLoaded", function () {
   const trackedPageKey = {{ active_page|default(None)|tojson }};
   const trackingUrl = {{ url_for('main.track_page_visit')|tojson }};
+  const currentUserIsAdmin = {{ (current_user.is_authenticated and current_user.is_administrator())|tojson }};
   const trackedPages = ["index", "about", "onboarding", "rules", "feedback", "tag_search", "chat_index", "post", "get_help_now", "data_and_privacy"];
-  if (!trackedPageKey || trackedPages.indexOf(trackedPageKey) === -1) {
-    return;
-  }
-
   const startedAt = Date.now();
-  const visitToken = trackedPageKey + "-" + startedAt + "-" + Math.random().toString(36).slice(2, 10);
-  const deviceType = window.matchMedia("(max-width: 1380px)").matches ? "mobile" : "desktop";
   let analyticsSessionToken = "";
-  let acquisition = {};
   try {
     analyticsSessionToken = window.sessionStorage.getItem("commonroomAnalyticsSession") || "";
     if (!analyticsSessionToken) {
       analyticsSessionToken = "tab-" + startedAt + "-" + Math.random().toString(36).slice(2, 18);
       window.sessionStorage.setItem("commonroomAnalyticsSession", analyticsSessionToken);
+    }
+  } catch (error) {
+    analyticsSessionToken = "";
+  }
+
+  if (currentUserIsAdmin && analyticsSessionToken) {
+    fetch(trackingUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_token: analyticsSessionToken }),
+      credentials: "same-origin",
+      keepalive: true
+    }).catch(function () {});
+  }
+
+  if (!trackedPageKey || trackedPages.indexOf(trackedPageKey) === -1 || currentUserIsAdmin) {
+    return;
+  }
+
+  const currentPath = window.location.pathname;
+  const deviceType = window.matchMedia("(max-width: 1380px)").matches ? "mobile" : "desktop";
+  let visitToken = trackedPageKey + "-" + startedAt + "-" + Math.random().toString(36).slice(2, 10);
+  let acquisition = {};
+  try {
+    const navigationEntry = window.performance && window.performance.getEntriesByType
+      ? window.performance.getEntriesByType("navigation")[0]
+      : null;
+    const isReload = navigationEntry && navigationEntry.type === "reload";
+    const storedPageView = JSON.parse(window.sessionStorage.getItem("commonroomAnalyticsPageView") || "null");
+    if (
+      isReload &&
+      storedPageView &&
+      storedPageView.pageKey === trackedPageKey &&
+      storedPageView.path === currentPath &&
+      storedPageView.visitToken
+    ) {
+      visitToken = storedPageView.visitToken;
+    } else {
+      window.sessionStorage.setItem("commonroomAnalyticsPageView", JSON.stringify({
+        pageKey: trackedPageKey,
+        path: currentPath,
+        visitToken: visitToken
+      }));
     }
 
     const storedAcquisition = window.sessionStorage.getItem("commonroomAnalyticsAcquisition");
@@ -204,7 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
       window.sessionStorage.setItem("commonroomAnalyticsAcquisition", JSON.stringify(acquisition));
     }
   } catch (error) {
-    analyticsSessionToken = "";
     acquisition = {};
   }
   let hasSentVisit = false;

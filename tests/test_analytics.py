@@ -89,6 +89,47 @@ class AnalyticsTestCase(unittest.TestCase):
 
         self.assertIsNone(PageVisit.query.one().session_token)
 
+    def test_reload_token_is_counted_only_once(self):
+        payload = {
+            "page_key": "about",
+            "path": "/about",
+            "duration_ms": 1000,
+            "visit_token": "same-page-load-token",
+            "session_token": "same-tab-session",
+            "device_type": "desktop",
+        }
+
+        self.client.post("/analytics/page-visit", json=payload)
+        self.client.post("/analytics/page-visit", json=payload)
+
+        self.assertEqual(PageVisit.query.count(), 1)
+
+    def test_admin_login_removes_public_visits_from_same_tab_session(self):
+        admin = self._create_user("admin@ethz.ch", "admin-user")
+        self._add_visit("index", "/", "admin-before-login", "admin-tab", 2)
+        self._add_visit("about", "/about", "someone-else", "other-tab", 1)
+        db.session.commit()
+
+        self.client.post(
+            "/auth/login",
+            data={"email": admin.email, "password": "Password123"},
+        )
+        response = self.client.post(
+            "/analytics/page-visit",
+            json={"session_token": "admin-tab"},
+        )
+
+        self.assertEqual(response.status_code, 204)
+        self.assertIsNone(PageVisit.query.filter_by(visit_token="admin-before-login").first())
+        self.assertIsNotNone(PageVisit.query.filter_by(visit_token="someone-else").first())
+
+    def test_tracking_script_reuses_page_token_on_reload(self):
+        response = self.client.get("/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'commonroomAnalyticsPageView', response.data)
+        self.assertIn(b'navigationEntry.type === "reload"', response.data)
+
     def test_dashboard_shows_content_profiles_hours_and_journeys(self):
         admin = self._create_user("admin@ethz.ch", "admin-user")
         first_user = self._create_user(
