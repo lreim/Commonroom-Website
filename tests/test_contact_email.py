@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from app import create_app, db
-from app.models import ChatRequest, Role, User
+from app.models import ChatRequest, Conversation, Role, User
 
 
 class ContactEmailTestCase(unittest.TestCase):
@@ -124,6 +124,23 @@ class ContactEmailTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b'data-has-contact-email="false"', response.data)
         self.assertIn(b'/edit-profile?chat_required=1#contact-email', response.data)
+
+    def test_existing_chat_detail_renders_user_link(self):
+        requester = self._create_user('requester@ethz.ch', 'requester')
+        requested = self._create_user('requested@ethz.ch', 'requested')
+        conversation = Conversation(
+            user_a_id=min(requester.id, requested.id),
+            user_b_id=max(requester.id, requested.id),
+        )
+        db.session.add(conversation)
+        db.session.commit()
+        self._login(requester.email)
+
+        response = self.client.get(f'/chat/{conversation.id}')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Chat with', response.data)
+        self.assertIn(b'requested', response.data)
 
 
 if __name__ == '__main__':

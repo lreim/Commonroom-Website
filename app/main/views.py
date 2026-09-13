@@ -629,11 +629,13 @@ def post():
             parent_post = Post.query.get_or_404(reply_to_id)
             if parent_post.parent is not None:
                 parent_post = parent_post.parent
+        posting_as_admin = is_admin_demo_mode()
         post = Post(
             body=submitted_form.body.data,
-            author=current_user._get_current_object(),
+            author_id=None if posting_as_admin else current_user.id,
             parent=parent_post,
             post_type=parent_post.post_type if parent_post is not None else form.post_type.data,
+            is_starter=posting_as_admin,
         )
         db.session.add(post)
         db.session.commit()
@@ -759,10 +761,13 @@ def post_thread(post_id):
                 ancestor = ancestor.parent
             if ancestor.id != root_post.id:
                 parent_post = root_post
+        replying_as_admin = is_admin_demo_mode()
         reply = Post(
             body=form.body.data,
-            author=current_user._get_current_object(),
+            author_id=None if replying_as_admin else current_user.id,
             parent=parent_post,
+            post_type=parent_post.post_type,
+            is_starter=replying_as_admin,
         )
         db.session.add(reply)
         db.session.commit()
@@ -1042,7 +1047,7 @@ def set_admin_demo_profile(mode):
         return ('', 404)
     set_admin_demo_mode(mode == 'admin')
     if mode == 'admin':
-        flash('Admin demo profile is now active.')
+        flash('Admin profile is now active.')
     else:
         flash('Your personal profile is now visible to you.')
     if mode == 'admin':

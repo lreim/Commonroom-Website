@@ -98,7 +98,7 @@
   {% if current_user.is_administrator() %}
   <form method="post" action="{{ url_for('main.set_admin_demo_profile', mode='admin') }}" class="admin-demo-toggle-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="btn btn-default">Show Admin demo profile</button>
+    <button type="submit" class="btn btn-default">Show Admin profile</button>
   </form>
   {% endif %}
   {% endif %}

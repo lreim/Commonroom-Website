@@ -68,12 +68,30 @@ class AdminDemoModeTestCase(unittest.TestCase):
         personal_response = self.client.get(switch_response.location)
         self.assertIn(b'<h1>personal-admin-name</h1>', personal_response.data)
         self.assertIn(b'My personal profile text.', personal_response.data)
-        self.assertIn(b'Show Admin demo profile', personal_response.data)
+        self.assertIn(b'Show Admin profile', personal_response.data)
+        self.assertNotIn(b'>Starter Posts</a>', personal_response.data)
+
+        personal_post_page = self.client.get('/post')
+        self.assertIn(b'as personal-admin-name', personal_post_page.data)
 
         demo_switch_response = self.client.post('/admin/demo-profile/admin')
 
         self.assertEqual(demo_switch_response.status_code, 302)
         self.assertTrue(demo_switch_response.location.endswith('/admin/profile'))
+
+        admin_post_response = self.client.post(
+            '/post',
+            data={
+                'body': 'A platform post written in Admin mode.',
+                'post_type': 'question',
+            },
+        )
+        self.assertEqual(admin_post_response.status_code, 302)
+        admin_post = Post.query.filter_by(
+            body='A platform post written in Admin mode.'
+        ).one()
+        self.assertTrue(admin_post.is_starter)
+        self.assertIsNone(admin_post.author_id)
 
         regular_post = Post(
             body='This remains a personal anonymous post.',
@@ -87,7 +105,7 @@ class AdminDemoModeTestCase(unittest.TestCase):
         post_feed_response = self.client.get('/post')
 
         self.assertEqual(post_feed_response.status_code, 200)
-        self.assertIn(b'as personal-admin-name', post_feed_response.data)
+        self.assertIn(b'as Admin', post_feed_response.data)
         self.assertIn(b'href="/user/personal-admin-name"', post_feed_response.data)
         self.assertIn(b'This remains a personal anonymous post.', post_feed_response.data)
 

@@ -41,7 +41,7 @@
                 ) }}
                 <span class="post-compose-username">
                 {% if current_user.is_authenticated %}
-                    as {{ current_user.username }}
+                    as {{ display_username(current_user) }}
                 {% else %}
                     <a href="{{ url_for('auth.login', next=request.url) }}">(log in)</a>
                 {% endif %}
