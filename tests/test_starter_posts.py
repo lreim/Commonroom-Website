@@ -51,7 +51,7 @@ class StarterPostAdminTestCase(unittest.TestCase):
         self._login(self.app.config['TALKTO_ADMIN'], 'AdminPassword1')
 
         create_response = self.client.post(
-            '/admin/profile',
+            '/admin/starter-posts',
             data={
                 'body': 'What helped you settle into university life?',
                 'post_type': 'question',

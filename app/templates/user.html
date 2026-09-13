@@ -91,6 +91,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-primary">Show my personal profile</button>
   </form>
+  <a class="btn btn-default" href="{{ url_for('main.starter_posts_admin') }}">Write a starter post</a>
   {% elif current_user.is_authenticated and user == current_user %}
   <a class="btn btn-primary" href="{{ url_for('.edit_profile') }}">Edit profile</a>
   <a class="btn btn-default" href="{{ url_for('main.user', username=user.username, recommend=1) }}">Show suitable profiles</a>
@@ -116,35 +117,6 @@
   {% endif %}
   </div>
 </div>
-
-{% if viewing_admin_demo and current_user.is_authenticated and current_user.is_administrator() and user.id == current_user.id and starter_form is defined %}
-<section class="starter-post-editor admin-profile-starter-editor" aria-labelledby="admin-profile-starter-editor-title">
-  <h2 id="admin-profile-starter-editor-title">Write a starter post</h2>
-  <p>Starter posts are published as CommonRoom platform content and are not connected to your personal profile.</p>
-  <form method="post" action="{{ url_for('main.admin_profile') }}">
-    {{ starter_form.hidden_tag() }}
-    <div class="form-group{% if starter_form.body.errors %} has-error{% endif %}">
-      {{ starter_form.body.label(class="control-label") }}
-      {{ starter_form.body(class="form-control", rows="5", placeholder="Write an open question or conversation starter in your own words.") }}
-      {% for error in starter_form.body.errors %}<span class="help-block">{{ error }}</span>{% endfor %}
-    </div>
-    <fieldset class="post-type-fieldset">
-      <legend>{{ starter_form.post_type.label.text }}</legend>
-      {% for option in starter_form.post_type %}
-      <label class="post-type-option">
-        {{ option(required=true) }}
-        <span>{{ option.label.text }}</span>
-      </label>
-      {% endfor %}
-    </fieldset>
-    {% for error in starter_form.post_type.errors %}<div class="post-type-error" role="alert">{{ error }}</div>{% endfor %}
-    <div class="starter-post-editor-actions">
-      {{ starter_form.submit(class="btn btn-primary") }}
-      <a class="btn btn-default" href="{{ url_for('main.starter_posts_admin') }}">Manage existing starter posts</a>
-    </div>
-  </form>
-</section>
-{% endif %}
 
 {% if current_user.is_authenticated and user == current_user and recommend_profiles %}
 <div class="profile-recommendations">
@@ -235,12 +207,18 @@
     {% if post.is_starter %}
     <a class="starter-post-badge" href="{{ url_for('main.post_thread', post_id=post.id) }}">Starter post</a>
     {% endif %}
-    <div class="post-date">{{ moment(post.timestamp).fromNow() }}</div>
+    <div class="post-date">
+      {{ moment(post.timestamp).fromNow() }}
+      {% if post.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+    </div>
     <div class="post-body">
       {% if post.is_starter %}<a class="admin-profile-starter-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">{% endif %}
       {{ post.body }}
       {% if post.is_starter %}</a>{% endif %}
     </div>
+    {% if current_user.is_authenticated and not post.is_starter and post.author_id == current_user.id %}
+    <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=post.id, next=request.path) }}">Edit</a>
+    {% endif %}
   </li>
   {% else %}
   <li class="admin-demo-profile-note">No starter posts have been published yet.</li>

@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy import func
 from flask import Response, abort, render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
-from .forms import PostForm, ReplyForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
+from .forms import PostForm, ReplyForm, EditPostForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db, csrf
 from ..models import User, Post, Role, Tag, Conversation, PageVisit, post_likes
 from ..tag_matching import match_tags, get_model
@@ -774,6 +774,45 @@ def post_thread(post_id):
         form=form,
     )
 
+
+@main.route('/post/<int:post_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_post(post_id):
+    post_to_edit = Post.query.get_or_404(post_id)
+    if post_to_edit.is_starter:
+        abort(404)
+    if post_to_edit.author_id != current_user.id:
+        abort(403)
+
+    requested_return_url = request.form.get('next') or request.args.get('next')
+    return_url = (
+        requested_return_url
+        if is_safe_local_redirect_target(requested_return_url)
+        else url_for('main.post')
+    )
+    if post_to_edit.parent_id is not None and not is_safe_local_redirect_target(requested_return_url):
+        root_post = post_to_edit
+        while root_post.parent is not None:
+            root_post = root_post.parent
+        return_url = url_for('main.post_thread', post_id=root_post.id)
+
+    form = EditPostForm(obj=post_to_edit)
+    if form.validate_on_submit():
+        post_to_edit.body = form.body.data
+        post_to_edit.edited_at = datetime.now(timezone.utc)
+        db.session.add(post_to_edit)
+        db.session.commit()
+        flash('Your post has been updated.')
+        return redirect(return_url)
+
+    return render_template(
+        'edit_post.html',
+        form=form,
+        post=post_to_edit,
+        return_url=return_url,
+        active_page='post',
+    )
+
 @main.route('/user/<username>')
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
@@ -824,24 +863,8 @@ def user(username):
     )
 
 
-@main.route('/admin/profile', methods=['GET', 'POST'])
+@main.route('/admin/profile')
 def admin_profile():
-    starter_form = StarterPostForm()
-    if request.method == 'POST':
-        if not current_user.is_authenticated or not current_user.is_administrator():
-            abort(403)
-        if starter_form.validate_on_submit():
-            starter_post = Post(
-                body=starter_form.body.data,
-                author_id=None,
-                post_type=starter_form.post_type.data,
-                is_starter=True,
-            )
-            db.session.add(starter_post)
-            db.session.commit()
-            flash('Starter post published as CommonRoom platform content.')
-            return redirect(url_for('main.admin_profile'))
-
     if current_user.is_authenticated and current_user.is_administrator():
         admin_user = current_user._get_current_object()
     else:
@@ -863,7 +886,6 @@ def admin_profile():
         recommend_profiles=False,
         recommended_users=[],
         force_admin_demo=True,
-        starter_form=starter_form,
     )
 
 
@@ -1028,10 +1050,23 @@ def set_admin_demo_profile(mode):
     return redirect(url_for('main.user', username=current_user.username))
 
 
-@main.route('/admin/starter-posts', methods=['GET'])
+@main.route('/admin/starter-posts', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def starter_posts_admin():
+    form = StarterPostForm()
+    if form.validate_on_submit():
+        starter_post = Post(
+            body=form.body.data,
+            author_id=None,
+            post_type=form.post_type.data,
+            is_starter=True,
+        )
+        db.session.add(starter_post)
+        db.session.commit()
+        flash('Starter post published as CommonRoom platform content.')
+        return redirect(url_for('main.starter_posts_admin'))
+
     starter_posts = (
         Post.query
         .filter_by(is_starter=True, parent_id=None)
@@ -1040,6 +1075,7 @@ def starter_posts_admin():
     )
     return render_template(
         'admin/starter_posts.html',
+        form=form,
         starter_posts=starter_posts,
         editing_post=None,
         active_page=None,
@@ -1059,6 +1095,7 @@ def edit_starter_post_admin(post_id):
     if form.validate_on_submit():
         starter_post.body = form.body.data
         starter_post.post_type = form.post_type.data
+        starter_post.edited_at = datetime.now(timezone.utc)
         db.session.add(starter_post)
         db.session.commit()
         flash('Starter post updated.')

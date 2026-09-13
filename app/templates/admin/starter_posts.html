@@ -11,7 +11,6 @@
     </p>
   </header>
 
-  {% if editing_post %}
   <section class="starter-post-editor" aria-labelledby="starter-post-editor-title">
     <h2 id="starter-post-editor-title">
       {% if editing_post %}Edit post #{{ editing_post.id }}{% else %}Write a starter post{% endif %}
@@ -47,9 +46,6 @@
       </div>
     </form>
   </section>
-  {% else %}
-  <p><a class="btn btn-primary" href="{{ url_for('main.admin_profile') }}">Write a starter post from the Admin profile</a></p>
-  {% endif %}
 
   <section class="starter-post-list" aria-labelledby="starter-post-list-title">
     <h2 id="starter-post-list-title">Published starter posts</h2>
@@ -57,7 +53,7 @@
     <article class="starter-post-admin-card">
       <div class="starter-post-admin-card-meta">
         <span>{{ post.post_type|capitalize }}</span>
-        <span>{{ moment(post.timestamp).fromNow() }}</span>
+        <span>{{ moment(post.timestamp).fromNow() }}{% if post.edited_at %} · edited{% endif %}</span>
       </div>
       <p>{{ post.body }}</p>
       <a class="btn btn-default" href="{{ url_for('main.edit_starter_post_admin', post_id=post.id) }}">Edit</a>

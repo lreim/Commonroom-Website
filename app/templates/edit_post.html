@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}CommonRoom - Edit post{% endblock %}
+
+{% block page_content %}
+<main class="edit-post-page">
+  <header class="page-header post-page-header">
+    <div class="post-page-eyebrow">YOUR POST</div>
+    <h1>Edit post</h1>
+    <h4>You can update the text while keeping the original conversation, replies, and reactions.</h4>
+  </header>
+
+  <section class="post-form-wrap edit-post-form-wrap">
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <input type="hidden" name="next" value="{{ return_url }}">
+      <div class="form-group{% if form.body.errors %} has-error{% endif %}">
+        {{ form.body.label(class="control-label") }}
+        {{ form.body(class="form-control", rows="7") }}
+        {% for error in form.body.errors %}<span class="help-block">{{ error }}</span>{% endfor %}
+      </div>
+      <div class="edit-post-actions">
+        {{ form.submit(class="btn btn-primary") }}
+        <a class="btn btn-default" href="{{ return_url }}">Cancel</a>
+      </div>
+    </form>
+  </section>
+</main>
+{% endblock %}

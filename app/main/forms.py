@@ -41,6 +41,15 @@ class ReplyForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class EditPostForm(FlaskForm):
+    body = TextAreaField(
+        "Post text",
+        validators=[DataRequired(), Length(1, MAX_POST_BODY_LENGTH)],
+        render_kw={"maxlength": MAX_POST_BODY_LENGTH},
+    )
+    submit = SubmitField('Save changes')
+
+
 class FeedbackForm(FlaskForm):
     category = SelectField(
         "What is this about?",

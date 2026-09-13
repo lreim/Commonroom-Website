@@ -34,7 +34,10 @@
         {% if node.is_starter %}
         <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
         {% endif %}
-        <div class="post-date">{{ moment(node.timestamp).fromNow() }}</div>
+        <div class="post-date">
+            {{ moment(node.timestamp).fromNow() }}
+            {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+        </div>
         {% if not node.is_starter %}
         <div class="post-author">
             <a href="{{ url_for('.user', username=node.author.username) }}" data-profile-preview='{{ post_preview_payload(node) }}'>
@@ -45,6 +48,9 @@
         <div class="post-body">{{ node.body }}</div>
     </div>
     <div class="post-side-actions">
+        {% if not node.is_starter and node.author_id == current_user.id %}
+        <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=node.id, next=request.path) }}">Edit</a>
+        {% endif %}
         <details class="post-reply-box" data-reply-toggle>
             <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
             <form method="post" action="{{ url_for('main.post_thread', post_id=post.id) }}">

@@ -4507,6 +4507,51 @@ html.dark-mode .landing-summary-disclaimer {
   margin-bottom: 4px;
 }
 
+.post-edited-label {
+  margin-left: 4px;
+  color: #9a8772;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+}
+
+.post-edit-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid #d6c5ae;
+  border-radius: 15px;
+  color: #765d42;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.post-edit-link:hover,
+.post-edit-link:focus {
+  border-color: #b99d7a;
+  color: #5f4932;
+  text-decoration: none;
+}
+
+.edit-post-page {
+  padding-bottom: 60px;
+}
+
+.edit-post-form-wrap {
+  max-width: 760px;
+}
+
+.edit-post-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
 .post-body {
   white-space: pre-wrap;
   line-height: 1.45;
@@ -7203,6 +7248,7 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 .post-page-list .post-side-actions summary,
@@ -7357,6 +7403,21 @@ html.dark-mode .post-compose-examples span + span::before {
 }
 
 html.dark-mode .post-page-list .post-author a {
+  color: #f1ebdd;
+}
+
+html.dark-mode .post-edited-label {
+  color: #aa9b89;
+}
+
+html.dark-mode .post-edit-link {
+  border-color: #5b4b3d;
+  color: #d9c8b2;
+}
+
+html.dark-mode .post-edit-link:hover,
+html.dark-mode .post-edit-link:focus {
+  border-color: #806b55;
   color: #f1ebdd;
 }
 
