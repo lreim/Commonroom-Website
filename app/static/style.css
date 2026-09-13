@@ -3755,8 +3755,7 @@ textarea.form-control {
   color: #533d32;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease,
-    border-color 0.2s ease, filter 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .welcome-bubble-link:hover,
@@ -3952,21 +3951,8 @@ html.dark-mode .welcome-scroll-cue:focus {
   }
 
   .welcome-bubble-link.is-scroll-preview {
-    border-color: rgba(138, 63, 97, 0.46);
-    box-shadow:
-      0 0 0 3px rgba(255, 253, 247, 0.94),
-      0 0 0 5px rgba(138, 63, 97, 0.3),
-      0 16px 32px rgba(91, 58, 20, 0.18);
-    filter: saturate(1.12) brightness(1.03);
-  }
-
-  html.dark-mode .welcome-bubble-link.is-scroll-preview {
-    border-color: rgba(225, 166, 191, 0.58);
-    box-shadow:
-      0 0 0 3px rgba(41, 34, 28, 0.94),
-      0 0 0 5px rgba(225, 166, 191, 0.34),
-      0 16px 32px rgba(0, 0, 0, 0.28);
-    filter: saturate(1.1) brightness(1.08);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(91, 58, 20, 0.14);
   }
 
   .welcome-bubble-link-preview {
