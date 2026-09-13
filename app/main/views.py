@@ -1,9 +1,13 @@
+import csv
+from collections import Counter, defaultdict
 from datetime import datetime, timezone, timedelta
+from io import StringIO
 from math import sqrt
 from urllib.parse import urlparse
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 from sqlalchemy import func
-from flask import render_template, session, redirect, url_for, current_app, request, flash, jsonify
+from flask import Response, render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
 from .forms import PostForm, ReplyForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db, csrf
@@ -18,6 +22,7 @@ from ..security import is_safe_local_redirect_target
 #ATTENTION: with blueprint use main. iinstead of app. 
 
 TRACKED_NAVBAR_PAGES = {
+    "index": "Home",
     "about": "About",
     "onboarding": "Onboarding",
     "rules": "Rules",
@@ -30,6 +35,7 @@ TRACKED_NAVBAR_PAGES = {
 }
 
 TRACKED_PAGE_PATH_PREFIXES = {
+    "index": ["/"],
     "about": ["/about"],
     "onboarding": ["/onboarding"],
     "rules": ["/rules"],
@@ -43,6 +49,8 @@ TRACKED_PAGE_PATH_PREFIXES = {
 
 MAX_TRACKED_VISIT_SECONDS = 60 * 60 * 4
 VALID_DEVICE_TYPES = {"mobile", "desktop"}
+CURRENT_ANALYTICS_VERSION = 2
+ANALYTICS_EXPORT_DATASETS = {"summary", "pages", "hours", "journeys", "acquisition", "previous"}
 
 
 def _analytics_client_token():
@@ -110,7 +118,29 @@ def _path_matches_tracked_page(page_key, path):
     return any(path == prefix or path.startswith(f"{prefix}/") or path.startswith(f"{prefix}?") for prefix in prefixes)
 
 
-def _build_visit_timeline(range_key):
+def _sanitize_analytics_label(value, max_length):
+    value = (value or "").strip().lower()
+    if not value or len(value) > max_length:
+        return None
+    if value[0] in "=+-@":
+        return None
+    if any(not (character.isalnum() or character in " ._:-") for character in value):
+        return None
+    return value
+
+
+def _sanitize_referrer_domain(value):
+    value = (value or "").strip().lower().rstrip(".")
+    if not value or len(value) > 255:
+        return None
+    if not value[0].isalnum():
+        return None
+    if any(not (character.isalnum() or character in ".-") for character in value):
+        return None
+    return value
+
+
+def _build_visit_timeline(range_key, visits_query=None):
     now = datetime.now(timezone.utc)
     if range_key == "24h":
         bucket_count = 24
@@ -131,7 +161,7 @@ def _build_visit_timeline(range_key):
 
     first_bucket_start = current_bucket_start - bucket_size * (bucket_count - 1)
     visits = (
-        _tracked_page_visits_query()
+        (visits_query if visits_query is not None else _tracked_page_visits_query())
         .filter(PageVisit.started_at >= first_bucket_start)
         .order_by(PageVisit.started_at.asc())
         .all()
@@ -163,7 +193,293 @@ def _build_visit_timeline(range_key):
         "points": points,
         "max_count": max_count,
         "total_visits": sum(point["count"] for point in points),
+        "first_bucket_start": first_bucket_start,
     }
+
+
+def _build_hour_distribution(visits):
+    local_timezone = ZoneInfo("Europe/Zurich")
+    counts = [0] * 24
+    for visit in visits:
+        started_at = visit.started_at
+        if started_at.tzinfo is None:
+            started_at = started_at.replace(tzinfo=timezone.utc)
+        counts[started_at.astimezone(local_timezone).hour] += 1
+
+    max_count = max(counts) if counts else 0
+    return {
+        "timezone": "Europe/Zurich",
+        "max_count": max_count,
+        "total_visits": sum(counts),
+        "points": [
+            {
+                "hour": hour,
+                "label": f"{hour:02d}:00",
+                "count": count,
+            }
+            for hour, count in enumerate(counts)
+        ],
+    }
+
+
+def _build_journey_stats(visits):
+    visits_by_session = defaultdict(list)
+    for visit in visits:
+        if visit.session_token:
+            visits_by_session[visit.session_token].append(visit)
+
+    first_step_counts = Counter()
+    path_counts = Counter()
+    home_session_count = 0
+
+    for session_visits in visits_by_session.values():
+        ordered_visits = sorted(session_visits, key=lambda visit: (visit.started_at, visit.id))
+        page_keys = []
+        for visit in ordered_visits:
+            if not page_keys or page_keys[-1] != visit.page_key:
+                page_keys.append(visit.page_key)
+
+        try:
+            home_index = page_keys.index("index")
+        except ValueError:
+            continue
+
+        pages_after_home = [page_key for page_key in page_keys[home_index + 1:] if page_key != "index"]
+        if not pages_after_home:
+            continue
+
+        home_session_count += 1
+        first_step_counts[pages_after_home[0]] += 1
+        path_keys = tuple(["index"] + pages_after_home[:2])
+        path_counts[path_keys] += 1
+
+    def page_name(page_key):
+        return TRACKED_NAVBAR_PAGES.get(page_key, page_key.replace("_", " ").title())
+
+    first_steps = [
+        {
+            "page_key": page_key,
+            "page_name": page_name(page_key),
+            "count": count,
+            "percent": round(count / home_session_count * 100, 1) if home_session_count else 0.0,
+        }
+        for page_key, count in first_step_counts.most_common()
+    ]
+    paths = [
+        {
+            "label": " → ".join(page_name(page_key) for page_key in path_keys),
+            "count": count,
+        }
+        for path_keys, count in path_counts.most_common(10)
+    ]
+
+    return {
+        "tracked_sessions": len(visits_by_session),
+        "home_sessions_with_next_page": home_session_count,
+        "first_steps": first_steps,
+        "paths": paths,
+    }
+
+
+def _build_page_stats(visits_query):
+    page_rows = (
+        visits_query
+        .with_entities(
+            PageVisit.page_key,
+            PageVisit.user_id,
+            func.count(PageVisit.id).label("visit_count"),
+            func.sum(PageVisit.duration_seconds).label("total_duration_seconds"),
+        )
+        .group_by(PageVisit.page_key, PageVisit.user_id)
+        .all()
+    )
+    page_row_map = {}
+    for row in page_rows:
+        bucket = page_row_map.setdefault(
+            row.page_key,
+            {
+                "logged_in_visits": 0,
+                "logged_in_total_duration_seconds": 0,
+                "public_visits": 0,
+                "public_total_duration_seconds": 0,
+            },
+        )
+        audience = "public" if row.user_id is None else "logged_in"
+        bucket[f"{audience}_visits"] += int(row.visit_count or 0)
+        bucket[f"{audience}_total_duration_seconds"] += int(row.total_duration_seconds or 0)
+
+    page_stats = []
+    for page_key, page_name in TRACKED_NAVBAR_PAGES.items():
+        row = page_row_map.get(page_key, {})
+        logged_in_visits = row.get("logged_in_visits", 0)
+        public_visits = row.get("public_visits", 0)
+        logged_in_duration = row.get("logged_in_total_duration_seconds", 0)
+        public_duration = row.get("public_total_duration_seconds", 0)
+        total_visits = logged_in_visits + public_visits
+        total_duration = logged_in_duration + public_duration
+        page_stats.append(
+            {
+                "page_key": page_key,
+                "page_name": page_name,
+                "visit_count": total_visits,
+                "avg_duration_seconds": round(total_duration / total_visits, 1) if total_visits else 0.0,
+                "total_duration_seconds": total_duration,
+                "logged_in_visits": logged_in_visits,
+                "logged_in_avg_duration_seconds": round(logged_in_duration / logged_in_visits, 1) if logged_in_visits else 0.0,
+                "logged_in_total_duration_seconds": logged_in_duration,
+                "public_visits": public_visits,
+                "public_avg_duration_seconds": round(public_duration / public_visits, 1) if public_visits else 0.0,
+                "public_total_duration_seconds": public_duration,
+            }
+        )
+    page_stats.sort(key=lambda item: (-item["visit_count"], item["page_name"].lower()))
+    return page_stats
+
+
+def _build_visit_splits(visits_query):
+    device_stats = {"mobile": 0, "desktop": 0}
+    device_rows = (
+        visits_query
+        .with_entities(PageVisit.device_type, func.count(PageVisit.id).label("visit_count"))
+        .group_by(PageVisit.device_type)
+        .all()
+    )
+    for row in device_rows:
+        if row.device_type in device_stats:
+            device_stats[row.device_type] = int(row.visit_count or 0)
+    auth_stats = {
+        "logged_in": visits_query.filter(PageVisit.user_id.isnot(None)).count(),
+        "public": visits_query.filter(PageVisit.user_id.is_(None)).count(),
+    }
+    return device_stats, auth_stats
+
+
+def _build_acquisition_stats(visits):
+    first_visit_by_session = {}
+    for visit in sorted(visits, key=lambda item: (item.started_at, item.id)):
+        session_key = visit.session_token or f"visit-{visit.id}"
+        first_visit_by_session.setdefault(session_key, visit)
+
+    channel_counts = Counter()
+    source_counts = Counter()
+    campaign_counts = Counter()
+    for visit in first_visit_by_session.values():
+        medium = (visit.acquisition_medium or "direct").lower()
+        source = (visit.acquisition_source or "direct").lower()
+        if medium == "qr":
+            channel = "QR code"
+        elif medium in {"email", "newsletter"}:
+            channel = "Email / newsletter"
+        elif medium == "referral":
+            channel = "External referral"
+        elif medium == "direct" and source == "direct":
+            channel = "Direct"
+        else:
+            channel = "Other campaign"
+        channel_counts[channel] += 1
+        source_counts[f"{source} · {medium}"] += 1
+        if visit.acquisition_campaign:
+            campaign_counts[visit.acquisition_campaign] += 1
+
+    channel_order = ["Direct", "Email / newsletter", "QR code", "External referral", "Other campaign"]
+    total_sessions = len(first_visit_by_session)
+    channels = [
+        {
+            "label": label,
+            "count": channel_counts[label],
+            "percent": round(channel_counts[label] / total_sessions * 100, 1) if total_sessions else 0.0,
+        }
+        for label in channel_order
+    ]
+    sources = [{"label": label, "count": count} for label, count in source_counts.most_common(10)]
+    campaigns = [{"label": label, "count": count} for label, count in campaign_counts.most_common(10)]
+    return {
+        "total_sessions": total_sessions,
+        "channels": channels,
+        "sources": sources,
+        "campaigns": campaigns,
+    }
+
+
+def _build_content_stats():
+    root_post_count = Post.query.filter(Post.parent_id.is_(None)).count()
+    relate_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "relate").count()
+    question_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "question").count()
+    reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
+    replied_post_count = int(
+        db.session.query(func.count(func.distinct(Post.parent_id)))
+        .filter(Post.parent_id.isnot(None))
+        .scalar()
+        or 0
+    )
+    profile_query = (
+        User.query
+        .outerjoin(Role, User.role_id == Role.id)
+        .filter((Role.name.is_(None)) | (Role.name != "Administrator"))
+    )
+    profile_count = profile_query.count()
+    profiles_with_contact_email = profile_query.filter(
+        User.contact_email.isnot(None),
+        func.length(func.trim(User.contact_email)) > 0,
+    ).count()
+    chat_stats = _compute_chat_count_stats()
+    return {
+        "total_root_posts": root_post_count,
+        "relate_post_count": relate_post_count,
+        "question_post_count": question_post_count,
+        "replied_post_count": replied_post_count,
+        "unreplied_post_count": max(root_post_count - replied_post_count, 0),
+        "total_replies": reply_count,
+        "total_posts_including_replies": root_post_count + reply_count,
+        "reply_rate": round(replied_post_count / root_post_count * 100, 1) if root_post_count else 0.0,
+        "total_profiles": profile_count,
+        "profiles_with_contact_email": profiles_with_contact_email,
+        "profiles_without_contact_email": max(profile_count - profiles_with_contact_email, 0),
+        "total_conversations": Conversation.query.count(),
+        "max_chats_per_user": chat_stats["max_chats_per_user"],
+        "chat_count_std_dev": round(chat_stats["chat_count_std_dev"], 2),
+        "tracked_user_count": chat_stats["user_count"],
+    }
+
+
+def _build_analytics_snapshot(selected_range):
+    current_query = _tracked_page_visits_query().filter(
+        PageVisit.tracking_version == CURRENT_ANALYTICS_VERSION
+    )
+    visit_timeline = _build_visit_timeline(selected_range, current_query)
+    selected_range = visit_timeline["range_key"]
+    visits_in_range_query = current_query.filter(
+        PageVisit.started_at >= visit_timeline["first_bucket_start"]
+    )
+    visits_in_range = visits_in_range_query.order_by(PageVisit.started_at.asc(), PageVisit.id.asc()).all()
+    page_stats = _build_page_stats(visits_in_range_query)
+    device_stats, auth_stats = _build_visit_splits(visits_in_range_query)
+
+    previous_query = _tracked_page_visits_query().filter(PageVisit.tracking_version.is_(None))
+    previous_page_stats = _build_page_stats(previous_query)
+    previous_device_stats, previous_auth_stats = _build_visit_splits(previous_query)
+    previous_analytics = {
+        "total_visits": previous_query.count(),
+        "page_stats": previous_page_stats,
+        "device_stats": previous_device_stats,
+        "auth_stats": previous_auth_stats,
+    }
+
+    snapshot = {
+        "page_stats": page_stats,
+        "max_page_visits": max((item["visit_count"] for item in page_stats), default=0),
+        "device_stats": device_stats,
+        "auth_stats": auth_stats,
+        "visit_timeline": visit_timeline,
+        "selected_range": selected_range,
+        "tracked_page_count": sum(1 for item in page_stats if item["visit_count"] > 0),
+        "hour_distribution": _build_hour_distribution(visits_in_range),
+        "journey_stats": _build_journey_stats(visits_in_range),
+        "acquisition_stats": _build_acquisition_stats(visits_in_range),
+        "previous_analytics": previous_analytics,
+    }
+    snapshot.update(_build_content_stats())
+    return snapshot
 
 #routes (view functions sind die index() etc.) for every page I have: @login_required before route to make it safe
 #für externe Inhalte, mails, magic links nutze external=True
@@ -231,7 +547,12 @@ def track_page_visit():
     path = (payload.get("path") or request.path or "").strip()
     duration_ms = payload.get("duration_ms", 0)
     visit_token = (payload.get("visit_token") or "").strip()
+    session_token = (payload.get("session_token") or "").strip()
     device_type = (payload.get("device_type") or "desktop").strip().lower()
+    acquisition_source = _sanitize_analytics_label(payload.get("acquisition_source"), 80)
+    acquisition_medium = _sanitize_analytics_label(payload.get("acquisition_medium"), 40)
+    acquisition_campaign = _sanitize_analytics_label(payload.get("acquisition_campaign"), 100)
+    referrer_domain = _sanitize_referrer_domain(payload.get("referrer_domain"))
 
     if page_key not in TRACKED_NAVBAR_PAGES:
         return ("", 204)
@@ -253,7 +574,14 @@ def track_page_visit():
     if len(visit_token) > 64:
         visit_token = visit_token[:64]
 
-    normalized_path = path[:255] or "/"
+    if (
+        not session_token
+        or len(session_token) > 64
+        or any(not (character.isalnum() or character in "-_") for character in session_token)
+    ):
+        session_token = None
+
+    normalized_path = urlparse(path[:255]).path or "/"
     if not _path_matches_tracked_page(page_key, normalized_path):
         return ("", 204)
 
@@ -271,6 +599,12 @@ def track_page_visit():
         path=normalized_path,
         device_type=device_type,
         visit_token=visit_token,
+        session_token=session_token,
+        tracking_version=CURRENT_ANALYTICS_VERSION,
+        acquisition_source=acquisition_source,
+        acquisition_medium=acquisition_medium,
+        acquisition_campaign=acquisition_campaign,
+        referrer_domain=referrer_domain,
         user_id=current_user.id if current_user.is_authenticated else None,
         started_at=started_at,
         ended_at=ended_at,
@@ -695,106 +1029,76 @@ def edit_starter_post_admin(post_id):
 @login_required
 @admin_required
 def analytics():
-    selected_range = request.args.get("range", "1w", type=str)
-    page_rows = (
-        _tracked_page_visits_query()
-        .with_entities(
-            PageVisit.page_key,
-            PageVisit.user_id,
-            func.count(PageVisit.id).label("visit_count"),
-            func.avg(PageVisit.duration_seconds).label("avg_duration_seconds"),
-            func.sum(PageVisit.duration_seconds).label("total_duration_seconds"),
-        )
-        .group_by(PageVisit.page_key, PageVisit.user_id)
-        .all()
-    )
+    snapshot = _build_analytics_snapshot(request.args.get("range", "1w", type=str))
+    return render_template('analytics.html', active_page=None, **snapshot)
 
-    page_row_map = {}
-    for row in page_rows:
-        bucket = page_row_map.setdefault(
-            row.page_key,
-            {
-                "logged_in_visits": 0,
-                "logged_in_total_duration_seconds": 0,
-                "public_visits": 0,
-                "public_total_duration_seconds": 0,
-            },
-        )
-        if row.user_id is None:
-            bucket["public_visits"] += int(row.visit_count or 0)
-            bucket["public_total_duration_seconds"] += int(row.total_duration_seconds or 0)
-        else:
-            bucket["logged_in_visits"] += int(row.visit_count or 0)
-            bucket["logged_in_total_duration_seconds"] += int(row.total_duration_seconds or 0)
 
-    page_stats = []
-    for page_key, page_name in TRACKED_NAVBAR_PAGES.items():
-        row = page_row_map.get(page_key)
-        logged_in_visits = row["logged_in_visits"] if row else 0
-        public_visits = row["public_visits"] if row else 0
-        logged_in_total_duration_seconds = row["logged_in_total_duration_seconds"] if row else 0
-        public_total_duration_seconds = row["public_total_duration_seconds"] if row else 0
-        total_visits = logged_in_visits + public_visits
-        total_duration_seconds = logged_in_total_duration_seconds + public_total_duration_seconds
-        page_stats.append(
-            {
-                "page_key": page_key,
-                "page_name": page_name,
-                "visit_count": total_visits,
-                "avg_duration_seconds": round(total_duration_seconds / total_visits, 1) if total_visits else 0.0,
-                "total_duration_seconds": total_duration_seconds,
-                "logged_in_visits": logged_in_visits,
-                "logged_in_avg_duration_seconds": round(logged_in_total_duration_seconds / logged_in_visits, 1) if logged_in_visits else 0.0,
-                "logged_in_total_duration_seconds": logged_in_total_duration_seconds,
-                "public_visits": public_visits,
-                "public_avg_duration_seconds": round(public_total_duration_seconds / public_visits, 1) if public_visits else 0.0,
-                "public_total_duration_seconds": public_total_duration_seconds,
-            }
-        )
+@main.route('/analytics/export.csv')
+@login_required
+@admin_required
+def analytics_export():
+    dataset = request.args.get("dataset", "summary", type=str)
+    if dataset not in ANALYTICS_EXPORT_DATASETS:
+        dataset = "summary"
+    snapshot = _build_analytics_snapshot(request.args.get("range", "1w", type=str))
+    output = StringIO()
+    writer = csv.writer(output)
 
-    page_stats.sort(key=lambda item: (-item["visit_count"], item["page_name"].lower()))
+    if dataset == "summary":
+        writer.writerow(["category", "metric", "value", "period"])
+        rows = [
+            ("visits", "new tracked visits", snapshot["visit_timeline"]["total_visits"]),
+            ("profiles", "profiles", snapshot["total_profiles"]),
+            ("profiles", "with optional email", snapshot["profiles_with_contact_email"]),
+            ("profiles", "without optional email", snapshot["profiles_without_contact_email"]),
+            ("posts", "relate posts", snapshot["relate_post_count"]),
+            ("posts", "question posts", snapshot["question_post_count"]),
+            ("posts", "posts with replies", snapshot["replied_post_count"]),
+            ("posts", "replies", snapshot["total_replies"]),
+            ("chats", "private chats", snapshot["total_conversations"]),
+        ]
+        for index, (category, metric, value) in enumerate(rows):
+            period = snapshot["selected_range"] if index == 0 else "all-time"
+            writer.writerow([category, metric, value, period])
+    elif dataset == "pages":
+        writer.writerow(["page", "visits", "average_seconds", "total_seconds", "public", "logged_in"])
+        for item in snapshot["page_stats"]:
+            writer.writerow([
+                item["page_name"], item["visit_count"], item["avg_duration_seconds"],
+                item["total_duration_seconds"], item["public_visits"], item["logged_in_visits"],
+            ])
+    elif dataset == "hours":
+        writer.writerow(["local_hour", "visits", "timezone"])
+        for item in snapshot["hour_distribution"]["points"]:
+            writer.writerow([item["label"], item["count"], snapshot["hour_distribution"]["timezone"]])
+    elif dataset == "journeys":
+        writer.writerow(["view", "path_or_page", "sessions", "percent"])
+        for item in snapshot["journey_stats"]["first_steps"]:
+            writer.writerow(["first page after Home", item["page_name"], item["count"], item["percent"]])
+        for item in snapshot["journey_stats"]["paths"]:
+            writer.writerow(["first three steps", item["label"], item["count"], ""])
+    elif dataset == "acquisition":
+        writer.writerow(["view", "source", "sessions", "percent"])
+        for item in snapshot["acquisition_stats"]["channels"]:
+            writer.writerow(["channel", item["label"], item["count"], item["percent"]])
+        for item in snapshot["acquisition_stats"]["sources"]:
+            writer.writerow(["source and medium", item["label"], item["count"], ""])
+        for item in snapshot["acquisition_stats"]["campaigns"]:
+            writer.writerow(["campaign", item["label"], item["count"], ""])
+    else:
+        writer.writerow(["page", "visits", "average_seconds", "total_seconds", "public", "logged_in"])
+        for item in snapshot["previous_analytics"]["page_stats"]:
+            writer.writerow([
+                item["page_name"], item["visit_count"], item["avg_duration_seconds"],
+                item["total_duration_seconds"], item["public_visits"], item["logged_in_visits"],
+            ])
 
-    device_stats = {"mobile": 0, "desktop": 0}
-    device_rows = (
-        _tracked_page_visits_query()
-        .with_entities(
-            PageVisit.device_type,
-            func.count(PageVisit.id).label("visit_count"),
-        )
-        .group_by(PageVisit.device_type)
-        .all()
-    )
-    for row in device_rows:
-        if row.device_type in device_stats:
-            device_stats[row.device_type] = int(row.visit_count or 0)
-
-    auth_stats = {
-        "logged_in": _tracked_page_visits_query().filter(PageVisit.user_id.isnot(None)).count(),
-        "public": _tracked_page_visits_query().filter(PageVisit.user_id.is_(None)).count(),
-    }
-
-    root_post_count = Post.query.filter(Post.parent_id.is_(None)).count()
-    reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
-    conversation_count = Conversation.query.count()
-    chat_stats = _compute_chat_count_stats()
-    visit_timeline = _build_visit_timeline(selected_range)
-
-    return render_template(
-        'analytics.html',
-        active_page=None,
-        page_stats=page_stats,
-        device_stats=device_stats,
-        auth_stats=auth_stats,
-        visit_timeline=visit_timeline,
-        selected_range=visit_timeline["range_key"],
-        tracked_page_count=len(page_stats),
-        total_root_posts=root_post_count,
-        total_replies=reply_count,
-        total_posts_including_replies=root_post_count + reply_count,
-        total_conversations=conversation_count,
-        max_chats_per_user=chat_stats["max_chats_per_user"],
-        chat_count_std_dev=round(chat_stats["chat_count_std_dev"], 2),
-        tracked_user_count=chat_stats["user_count"],
+    export_period = "all-time" if dataset == "previous" else snapshot["selected_range"]
+    filename = f"commonroom-analytics-{dataset}-{export_period}.csv"
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 @main.route('/moderator')

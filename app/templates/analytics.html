@@ -1,184 +1,443 @@
 {% extends "base.html" %}
 {% block title %}Analytics{% endblock %}
 
+{% macro metric(label, value, note) -%}
+<article class="analytics-metric">
+  <span>{{ label }}</span>
+  <strong>{{ value }}</strong>
+  <small>{{ note }}</small>
+</article>
+{%- endmacro %}
+
 {% block page_content %}
-<div class="page-header">
-  <h1>Internal Analytics</h1>
-  <h4>This is the lightweight in-app tracking overview for the navbar pages, posts, and chats.</h4>
-</div>
+<main class="analytics-dashboard">
+  <header class="page-header analytics-dashboard-header">
+    <div>
+      <span class="analytics-eyebrow">ADMIN · AGGREGATED PRODUCT HEALTH</span>
+      <h1>Internal Analytics</h1>
+      <p>Explore how CommonRoom is used without reading private content or tracking IP addresses.</p>
+    </div>
+    <nav class="analytics-range-switch" aria-label="Analytics time range">
+      <a class="{% if selected_range == '24h' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='24h') }}">24 hours</a>
+      <a class="{% if selected_range == '1w' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1w') }}">7 days</a>
+      <a class="{% if selected_range == '1m' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1m') }}">30 days</a>
+    </nav>
+  </header>
 
-<div class="reading-page">
-  <style>
-    .analytics-range-switch {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin: 16px 0 24px;
-    }
-    .analytics-range-switch .btn {
-      min-width: 88px;
-    }
-    .analytics-chart-wrap {
-      margin: 18px 0 30px;
-      padding: 22px 22px 16px;
-      background: rgba(255, 251, 242, 0.88);
-      border: 1px solid #e6d9c4;
-      border-radius: 24px;
-    }
-    .analytics-chart {
-      display: flex;
-      align-items: end;
-      gap: 10px;
-      height: 240px;
-      padding: 16px 0 10px;
-      border-bottom: 1px solid #dbc9ab;
-    }
-    .analytics-chart-bar-group {
-      flex: 1 1 0;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: end;
-      align-items: center;
-      gap: 10px;
-    }
-    .analytics-chart-bar-value {
-      font-size: 0.9em;
-      color: #7b6442;
-      line-height: 1;
-    }
-    .analytics-chart-bar {
-      width: 100%;
-      max-width: 26px;
-      min-height: 6px;
-      background: linear-gradient(180deg, #b67c67 0%, #6f342d 100%);
-      border-radius: 999px 999px 6px 6px;
-      box-shadow: 0 8px 20px rgba(111, 52, 45, 0.16);
-    }
-    .analytics-chart-labels {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .analytics-chart-label {
-      flex: 1 1 0;
-      min-width: 0;
-      font-size: 0.82em;
-      text-align: center;
-      color: #8d7552;
-      word-break: break-word;
-    }
-    html.dark-mode .analytics-chart-wrap {
-      background: rgba(41, 32, 27, 0.96);
-      border-color: #5f4636;
-    }
-    html.dark-mode .analytics-chart {
-      border-bottom-color: #6c5241;
-    }
-    html.dark-mode .analytics-chart-bar-value,
-    html.dark-mode .analytics-chart-label {
-      color: #dbc7b2;
-    }
-    html.dark-mode .analytics-chart-bar {
-      background: linear-gradient(180deg, #d5a588 0%, #97524f 100%);
-      box-shadow: none;
-    }
-  </style>
+  <section class="analytics-metric-grid" aria-label="Key metrics">
+    {{ metric("Visits", visit_timeline.total_visits, "in selected period") }}
+    {{ metric("Profiles", total_profiles, "excluding administrators") }}
+    {{ metric("Community posts", total_root_posts, "Relate + Question") }}
+    {{ metric("Replies", total_replies, reply_rate ~ "% of posts received a reply") }}
+    {{ metric("Private chats", total_conversations, "active conversations") }}
+  </section>
 
-  <h3>Visits over time</h3>
-  <p>
-    This diagram shows when the tracked navbar pages were visited in the selected recent time window.
-  </p>
+  <nav class="analytics-export-bar" aria-label="Export analytics data">
+    <span>Export aggregated CSV:</span>
+    <a href="{{ url_for('main.analytics_export', dataset='summary', range=selected_range) }}">Summary</a>
+    <a href="{{ url_for('main.analytics_export', dataset='pages', range=selected_range) }}">Pages</a>
+    <a href="{{ url_for('main.analytics_export', dataset='hours', range=selected_range) }}">Hours</a>
+    <a href="{{ url_for('main.analytics_export', dataset='journeys', range=selected_range) }}">Journeys</a>
+    <a href="{{ url_for('main.analytics_export', dataset='acquisition', range=selected_range) }}">Acquisition</a>
+    <a href="{{ url_for('main.analytics_export', dataset='previous', range=selected_range) }}">Previous analytics</a>
+  </nav>
 
-  <div class="analytics-range-switch">
-    <a class="btn {% if selected_range == '24h' %}btn-primary{% else %}btn-default{% endif %}" href="{{ url_for('main.analytics', range='24h') }}">24h</a>
-    <a class="btn {% if selected_range == '1w' %}btn-primary{% else %}btn-default{% endif %}" href="{{ url_for('main.analytics', range='1w') }}">1 week</a>
-    <a class="btn {% if selected_range == '1m' %}btn-primary{% else %}btn-default{% endif %}" href="{{ url_for('main.analytics', range='1m') }}">1 month</a>
+  <div class="analytics-view-tabs" role="tablist" aria-label="Analytics views">
+    <button type="button" class="is-active" role="tab" aria-selected="true" aria-controls="analytics-overview" data-analytics-tab="overview">Overview</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-content" data-analytics-tab="content">Content &amp; profiles</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-traffic" data-analytics-tab="traffic">Visits &amp; time</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-journeys" data-analytics-tab="journeys">Journeys</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-acquisition" data-analytics-tab="acquisition">Acquisition</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-previous" data-analytics-tab="previous">Previous analytics</button>
   </div>
 
-  <div class="analytics-chart-wrap">
-    <p>
-      Total tracked visits in this window: {{ visit_timeline.total_visits }}.
-      Highest bucket: {{ visit_timeline.max_count }}.
-    </p>
-    <div class="analytics-chart">
-      {% for point in visit_timeline.points %}
-      {% set height = 6 if visit_timeline.max_count == 0 else (point.count / visit_timeline.max_count * 180)|round(0, 'ceil')|int %}
-      <div class="analytics-chart-bar-group">
-        <div class="analytics-chart-bar-value">{{ point.count }}</div>
-        <div class="analytics-chart-bar" style="height: {{ height }}px;"></div>
+  <section id="analytics-overview" class="analytics-view-panel is-active" role="tabpanel" data-analytics-panel="overview">
+    <div class="analytics-section-heading">
+      <div>
+        <span>Selected period</span>
+        <h2>What happened over time?</h2>
+      </div>
+      <p>{{ visit_timeline.total_visits }} tracked visits · highest bucket {{ visit_timeline.max_count }}</p>
+    </div>
+
+    <div class="analytics-chart-card">
+      <div class="analytics-scroll-chart">
+        <div class="analytics-column-chart analytics-timeline-chart analytics-columns-{{ visit_timeline.points|length }}">
+          {% for point in visit_timeline.points %}
+          {% set height = 5 if visit_timeline.max_count == 0 else (point.count / visit_timeline.max_count * 180)|round(0, 'ceil')|int %}
+          <div class="analytics-column" title="{{ point.label }}: {{ point.count }} visits">
+            <span>{{ point.count }}</span>
+            <i style="height: {{ height }}px;"></i>
+            <small>{{ point.label }}</small>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% set device_total = device_stats.mobile + device_stats.desktop %}
+    {% set auth_total = auth_stats.logged_in + auth_stats.public %}
+    <div class="analytics-split-grid">
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">DEVICE</span>
+        <h3>How people visited</h3>
+        <div class="analytics-stacked-bar">
+          <i class="analytics-segment-mobile" style="width: {{ (device_stats.mobile / device_total * 100) if device_total else 0 }}%;"></i>
+          <i class="analytics-segment-desktop" style="width: {{ (device_stats.desktop / device_total * 100) if device_total else 0 }}%;"></i>
+        </div>
+        <div class="analytics-legend">
+          <span><i class="is-mobile"></i>Mobile <strong>{{ device_stats.mobile }}</strong></span>
+          <span><i class="is-desktop"></i>Desktop <strong>{{ device_stats.desktop }}</strong></span>
+        </div>
+      </article>
+
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">ACCESS</span>
+        <h3>Public or logged in?</h3>
+        <div class="analytics-stacked-bar">
+          <i class="analytics-segment-public" style="width: {{ (auth_stats.public / auth_total * 100) if auth_total else 0 }}%;"></i>
+          <i class="analytics-segment-logged-in" style="width: {{ (auth_stats.logged_in / auth_total * 100) if auth_total else 0 }}%;"></i>
+        </div>
+        <div class="analytics-legend">
+          <span><i class="is-public"></i>Public <strong>{{ auth_stats.public }}</strong></span>
+          <span><i class="is-logged-in"></i>Logged in <strong>{{ auth_stats.logged_in }}</strong></span>
+        </div>
+      </article>
+    </div>
+
+    <div class="analytics-section-heading analytics-heading-spaced">
+      <div>
+        <span>PAGE POPULARITY</span>
+        <h2>Where did visits go?</h2>
+      </div>
+      <p>{{ tracked_page_count }} pages had at least one visit.</p>
+    </div>
+    <div class="analytics-ranking">
+      {% for item in page_stats %}
+      <div class="analytics-ranking-row">
+        <span>{{ item.page_name }}</span>
+        <div><i style="width: {{ (item.visit_count / max_page_visits * 100) if max_page_visits else 0 }}%;"></i></div>
+        <strong>{{ item.visit_count }}</strong>
       </div>
       {% endfor %}
     </div>
-    <div class="analytics-chart-labels">
-      {% for point in visit_timeline.points %}
-      <div class="analytics-chart-label">{{ point.label }}</div>
-      {% endfor %}
+  </section>
+
+  <section id="analytics-content" class="analytics-view-panel" role="tabpanel" data-analytics-panel="content" hidden>
+    <div class="analytics-section-heading">
+      <div>
+        <span>COMMUNITY CONTENT</span>
+        <h2>What kind of content exists?</h2>
+      </div>
+      <p>These totals are all-time counts.</p>
     </div>
-  </div>
 
-  <h3>Page visits</h3>
-  <p>
-    This table counts actual visits to the tracked navbar pages. The duration is measured from page load until the page is left or hidden.
-  </p>
+    <div class="analytics-content-grid">
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">POST TYPES</span>
+        <h3>Relate or Question?</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ relate_post_count }}</strong><span>Relate posts</span></div>
+          <div><strong>{{ question_post_count }}</strong><span>Question posts</span></div>
+        </div>
+        <div class="analytics-stacked-bar">
+          <i class="analytics-segment-relate" style="width: {{ (relate_post_count / total_root_posts * 100) if total_root_posts else 0 }}%;"></i>
+          <i class="analytics-segment-question" style="width: {{ (question_post_count / total_root_posts * 100) if total_root_posts else 0 }}%;"></i>
+        </div>
+      </article>
 
-  <h3>Device split</h3>
-  <p>
-    Mobile visits: {{ device_stats.mobile }}. Desktop visits: {{ device_stats.desktop }}.
-  </p>
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">REPLIES</span>
+        <h3>Did posts receive a reply?</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ replied_post_count }}</strong><span>Replied posts</span></div>
+          <div><strong>{{ unreplied_post_count }}</strong><span>Without replies</span></div>
+          <div><strong>{{ total_replies }}</strong><span>Total replies</span></div>
+        </div>
+        <p class="analytics-card-note">{{ reply_rate }}% of community posts have at least one reply.</p>
+      </article>
 
-  <h3>Access type split</h3>
-  <p>
-    Logged-in visits: {{ auth_stats.logged_in }}. Public visits: {{ auth_stats.public }}.
-  </p>
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">OPTIONAL EMAIL</span>
+        <h3>Can profiles receive notifications?</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ profiles_with_contact_email }}</strong><span>With email</span></div>
+          <div><strong>{{ profiles_without_contact_email }}</strong><span>Without email</span></div>
+        </div>
+        <div class="analytics-stacked-bar">
+          <i class="analytics-segment-email" style="width: {{ (profiles_with_contact_email / total_profiles * 100) if total_profiles else 0 }}%;"></i>
+          <i class="analytics-segment-no-email" style="width: {{ (profiles_without_contact_email / total_profiles * 100) if total_profiles else 0 }}%;"></i>
+        </div>
+        <p class="analytics-card-note">Only whether an optional contact email exists is counted. The addresses are not shown here.</p>
+      </article>
 
-  {% if page_stats %}
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Page</th>
-          <th>Total visits</th>
-          <th>Total avg duration</th>
-          <th>Total duration</th>
-          <th>Logged-in visits</th>
-          <th>Logged-in avg duration</th>
-          <th>Logged-in total duration</th>
-          <th>Public visits</th>
-          <th>Public avg duration</th>
-          <th>Public total duration</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in page_stats %}
-        <tr>
-          <td>{{ item.page_name }}</td>
-          <td>{{ item.visit_count }}</td>
-          <td>{{ item.avg_duration_seconds }} s</td>
-          <td>{{ item.total_duration_seconds }} s</td>
-          <td>{{ item.logged_in_visits }}</td>
-          <td>{{ item.logged_in_avg_duration_seconds }} s</td>
-          <td>{{ item.logged_in_total_duration_seconds }} s</td>
-          <td>{{ item.public_visits }}</td>
-          <td>{{ item.public_avg_duration_seconds }} s</td>
-          <td>{{ item.public_total_duration_seconds }} s</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% else %}
-  <p>No tracked page visits exist yet.</p>
-  {% endif %}
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">PRIVATE CHATS</span>
+        <h3>Conversation distribution</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ total_conversations }}</strong><span>Chats</span></div>
+          <div><strong>{{ max_chats_per_user }}</strong><span>Most for one profile</span></div>
+          <div><strong>{{ tracked_user_count }}</strong><span>Profiles included</span></div>
+        </div>
+        <p class="analytics-card-note">Standard deviation across profiles: {{ chat_count_std_dev }}. No message content is used.</p>
+      </article>
+    </div>
+  </section>
 
-  <h3>Content and chat stats</h3>
-  <p>Tracked navbar pages with at least one visit: {{ tracked_page_count }}</p>
-  <p>Root posts: {{ total_root_posts }}</p>
-  <p>Replies on posts: {{ total_replies }}</p>
-  <p>Posts including replies: {{ total_posts_including_replies }}</p>
-  <p>1:1 chats: {{ total_conversations }}</p>
-  <p>Maximum number of chats for a single user: {{ max_chats_per_user }}</p>
-  <p>Standard deviation of chat count per user: {{ chat_count_std_dev }}</p>
-  <p>Users included in that chat distribution: {{ tracked_user_count }}</p>
-</div>
+  <section id="analytics-traffic" class="analytics-view-panel" role="tabpanel" data-analytics-panel="traffic" hidden>
+    <div class="analytics-section-heading">
+      <div>
+        <span>LOCAL TIME · EUROPE/ZURICH</span>
+        <h2>At what time did people visit?</h2>
+      </div>
+      <p>{{ hour_distribution.total_visits }} visits in the selected period.</p>
+    </div>
+
+    <div class="analytics-chart-card">
+      <div class="analytics-scroll-chart">
+        <div class="analytics-column-chart analytics-hour-chart">
+          {% for point in hour_distribution.points %}
+          {% set height = 5 if hour_distribution.max_count == 0 else (point.count / hour_distribution.max_count * 180)|round(0, 'ceil')|int %}
+          <div class="analytics-column" title="{{ point.label }}: {{ point.count }} visits">
+            <span>{{ point.count }}</span>
+            <i style="height: {{ height }}px;"></i>
+            <small>{{ point.label if point.hour % 2 == 0 else '' }}</small>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-section-heading analytics-heading-spaced">
+      <div>
+        <span>PAGE DETAILS</span>
+        <h2>Visits and time per page</h2>
+      </div>
+      <p>Duration runs from page load until the page is left or hidden.</p>
+    </div>
+
+    <div class="analytics-table-wrap">
+      <table class="analytics-table">
+        <thead>
+          <tr>
+            <th>Page</th>
+            <th>Visits</th>
+            <th>Avg. time</th>
+            <th>Total time</th>
+            <th>Public</th>
+            <th>Logged in</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in page_stats %}
+          <tr>
+            <td>{{ item.page_name }}</td>
+            <td>{{ item.visit_count }}</td>
+            <td>{{ item.avg_duration_seconds }} s</td>
+            <td>{{ item.total_duration_seconds }} s</td>
+            <td>{{ item.public_visits }}</td>
+            <td>{{ item.logged_in_visits }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="analytics-journeys" class="analytics-view-panel" role="tabpanel" data-analytics-panel="journeys" hidden>
+    <div class="analytics-section-heading">
+      <div>
+        <span>AGGREGATED PAGE FLOW</span>
+        <h2>Where do people go after Home?</h2>
+      </div>
+      <p>{{ journey_stats.home_sessions_with_next_page }} journeys include a next page after Home.</p>
+    </div>
+
+    <div class="analytics-privacy-note">
+      <strong>How this works:</strong>
+      A random ID groups page visits only inside one browser tab. It contains no IP address, email, OIDC identifier, search text, post text, or chat content. Old visits from before this update cannot appear here.
+    </div>
+
+    <div class="analytics-journey-grid">
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">FIRST PAGE AFTER HOME</span>
+        <h3>What was the first click?</h3>
+        {% if journey_stats.first_steps %}
+        <div class="analytics-first-steps">
+          {% for item in journey_stats.first_steps %}
+          <div>
+            <p><span>{{ item.page_name }}</span><strong>{{ item.count }} · {{ item.percent }}%</strong></p>
+            <i><b style="width: {{ item.percent }}%;"></b></i>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="analytics-empty">No complete Home journeys have been recorded in this period yet.</p>
+        {% endif %}
+      </article>
+
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">FIRST THREE STEPS</span>
+        <h3>Common paths</h3>
+        {% if journey_stats.paths %}
+        <ol class="analytics-path-list">
+          {% for item in journey_stats.paths %}
+          <li>
+            <span>{{ item.label }}</span>
+            <strong>{{ item.count }}</strong>
+          </li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <p class="analytics-empty">Paths will appear after new visits move from Home to another tracked page.</p>
+        {% endif %}
+      </article>
+    </div>
+  </section>
+
+  <section id="analytics-acquisition" class="analytics-view-panel" role="tabpanel" data-analytics-panel="acquisition" hidden>
+    <div class="analytics-section-heading">
+      <div>
+        <span>PRIVACY-SAFE ATTRIBUTION</span>
+        <h2>How did people arrive?</h2>
+      </div>
+      <p>{{ acquisition_stats.total_sessions }} browser-tab sessions in the selected period.</p>
+    </div>
+
+    <div class="analytics-privacy-note">
+      <strong>Newsletter and QR links must be tagged:</strong>
+      Use <code>utm_medium=email</code> for email and <code>utm_medium=qr</code> for QR codes. Without these tags, an unreferenced visit is counted as Direct. CommonRoom stores only the selected UTM labels and an external referrer domain, never the full referring URL.
+    </div>
+
+    <div class="analytics-journey-grid">
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">CHANNELS</span>
+        <h3>Direct, email, QR or referral?</h3>
+        <div class="analytics-first-steps">
+          {% for item in acquisition_stats.channels %}
+          <div>
+            <p><span>{{ item.label }}</span><strong>{{ item.count }} · {{ item.percent }}%</strong></p>
+            <i><b style="width: {{ item.percent }}%;"></b></i>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">SOURCES</span>
+        <h3>Top source and medium combinations</h3>
+        {% if acquisition_stats.sources %}
+        <ol class="analytics-path-list">
+          {% for item in acquisition_stats.sources %}
+          <li><span>{{ item.label }}</span><strong>{{ item.count }}</strong></li>
+          {% endfor %}
+        </ol>
+        {% else %}
+        <p class="analytics-empty">No new acquisition sessions have been recorded yet.</p>
+        {% endif %}
+
+        {% if acquisition_stats.campaigns %}
+        <span class="analytics-card-kicker analytics-heading-spaced">CAMPAIGNS</span>
+        <ol class="analytics-path-list">
+          {% for item in acquisition_stats.campaigns %}
+          <li><span>{{ item.label }}</span><strong>{{ item.count }}</strong></li>
+          {% endfor %}
+        </ol>
+        {% endif %}
+      </article>
+    </div>
+  </section>
+
+  <section id="analytics-previous" class="analytics-view-panel" role="tabpanel" data-analytics-panel="previous" hidden>
+    <div class="analytics-section-heading">
+      <div>
+        <span>HISTORICAL DATA · KEPT SEPARATE</span>
+        <h2>Previous analytics</h2>
+      </div>
+      <p>{{ previous_analytics.total_visits }} visits collected before the new analytics version.</p>
+    </div>
+
+    <div class="analytics-privacy-note">
+      These records remain unchanged and are excluded from every new chart above. They cannot show journeys, acquisition sources, or Home entry behavior because those fields were not collected at that time.
+    </div>
+
+    <div class="analytics-split-grid">
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">PREVIOUS DEVICE COUNTS</span>
+        <h3>Mobile or desktop</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ previous_analytics.device_stats.mobile }}</strong><span>Mobile</span></div>
+          <div><strong>{{ previous_analytics.device_stats.desktop }}</strong><span>Desktop</span></div>
+        </div>
+      </article>
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">PREVIOUS ACCESS COUNTS</span>
+        <h3>Public or logged in</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ previous_analytics.auth_stats.public }}</strong><span>Public</span></div>
+          <div><strong>{{ previous_analytics.auth_stats.logged_in }}</strong><span>Logged in</span></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="analytics-section-heading analytics-heading-spaced">
+      <div>
+        <span>PREVIOUS PAGE COUNTS</span>
+        <h2>The original page analytics</h2>
+      </div>
+    </div>
+    <div class="analytics-table-wrap">
+      <table class="analytics-table">
+        <thead>
+          <tr><th>Page</th><th>Visits</th><th>Avg. time</th><th>Total time</th><th>Public</th><th>Logged in</th></tr>
+        </thead>
+        <tbody>
+          {% for item in previous_analytics.page_stats %}
+          <tr>
+            <td>{{ item.page_name }}</td><td>{{ item.visit_count }}</td><td>{{ item.avg_duration_seconds }} s</td>
+            <td>{{ item.total_duration_seconds }} s</td><td>{{ item.public_visits }}</td><td>{{ item.logged_in_visits }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const buttons = Array.from(document.querySelectorAll("[data-analytics-tab]"));
+  const panels = Array.from(document.querySelectorAll("[data-analytics-panel]"));
+
+  function showView(viewName, updateHash) {
+    buttons.forEach(function (button) {
+      const isActive = button.dataset.analyticsTab === viewName;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+    panels.forEach(function (panel) {
+      const isActive = panel.dataset.analyticsPanel === viewName;
+      panel.classList.toggle("is-active", isActive);
+      panel.hidden = !isActive;
+    });
+    if (updateHash) {
+      window.history.replaceState(null, "", "#analytics-" + viewName);
+    }
+  }
+
+  buttons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      showView(button.dataset.analyticsTab, true);
+    });
+  });
+
+  const requestedView = window.location.hash.replace("#analytics-", "");
+  if (buttons.some(function (button) { return button.dataset.analyticsTab === requestedView; })) {
+    showView(requestedView, false);
+  }
+});
+</script>
 {% endblock %}

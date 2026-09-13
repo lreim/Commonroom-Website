@@ -197,16 +197,36 @@
   <h3>Internal page analytics</h3>
   <p>
     In addition to hosting-level logs, the platform now also keeps a small internal analytics table for a limited set of public product pages.
-    This is currently restricted to the main navbar pages such as About, Onboarding, Rules, Feedback, Tagsearch, Chats, Posts,
+    This is currently restricted to Home and the main navbar pages such as About, Onboarding, Rules, Feedback, Tagsearch, Chats, Posts,
     Get Help Now, and Data and Privacy.
     The goal is not to inspect private content, but to understand basic usage patterns of the platform itself.
   </p>
 
   <p>
-    What is stored there is intentionally narrow: the visited page key, the matching path, the visit duration in seconds,
-    a generated visit token to prevent duplicate records, the timestamp range of the visit, and, if the visitor is logged in,
-    the internal user id.
+    What is stored there is intentionally narrow: the visited page key, the matching path without URL query parameters, the visit duration in seconds,
+    a generated visit token to prevent duplicate records, the timestamp range of the visit, a random browser-tab session token,
+    the analytics version and, if the visitor is logged in, the internal user id.
     This analytics table is not meant to store chat content, post content, search text, or message bodies.
+  </p>
+
+  <p>
+    To understand whether a browser-tab session arrived directly, through an email newsletter, a QR code, or an external referral,
+    the platform can also store the explicitly supplied <code>utm_source</code>, <code>utm_medium</code>, and <code>utm_campaign</code> labels.
+    For an external referral, only the referrer's domain can be stored, not its complete URL or path.
+    Newsletter and QR attribution therefore works reliably only when the shared links contain those labels; otherwise an unreferenced visit appears as direct.
+  </p>
+
+  <p>
+    Analytics records from before the expanded tracking version remain preserved as a separate historical view and are not mixed into the new charts.
+    Administrators can export the displayed statistics as aggregate CSV files. Those exports do not include user ids, email addresses,
+    visit or session tokens, OIDC identifiers, full URLs, post content, or chat content.
+  </p>
+
+  <p>
+    The random session token makes it possible to view aggregated page paths such as Home → Onboarding → Posts.
+    It exists only for the current browser tab through session storage and is not based on an IP address, email address,
+    SWITCH edu-ID identifier, browser fingerprint, or advertising identifier.
+    The analytics overview shows combined path counts rather than a named person's browsing history.
   </p>
 
   <p>
@@ -233,7 +253,9 @@
   <p>
     That also means that I am not using this analytics to identify individuals through IP-based tracking,
     fingerprinting, cross-site profiling, advertising logic, or hidden personal behavior scoring.
-    The point of the analytics is simply to understand which core pages are used, whether usage comes more from public or logged-in access,
+    The point of the analytics is simply to understand which core pages are used, what time of day visits happen,
+    which page people usually open after Home, whether a session arrived directly or through a tagged campaign,
+    whether usage comes more from public or logged-in access,
     and whether the platform is being used more from mobile or desktop contexts.
   </p>
 
