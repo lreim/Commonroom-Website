@@ -27,6 +27,7 @@
     if (!globalPreviewCard) return;
     globalPreviewCard.style.display = "none";
     globalPreviewCard.classList.remove("landing-scroll-profile-preview");
+    globalPreviewCard.classList.remove("post-profile-preview");
     globalPreviewCard.style.right = "";
     globalPreviewCard.style.bottom = "";
     globalPreviewCard.style.width = "";
@@ -54,7 +55,7 @@
     container.appendChild(section);
   }
 
-  function showGlobalPreviewCard(user, evt) {
+  function showGlobalPreviewCard(user, evt, trigger) {
     const previewCard = ensureGlobalPreviewCard();
     const safeName = user.name || user.username;
     const safeAbout = user.about_me || "";
@@ -64,6 +65,10 @@
       : (user.tags || []);
 
     previewCard.replaceChildren();
+    previewCard.classList.toggle(
+      "post-profile-preview",
+      Boolean(trigger && trigger.closest(".post"))
+    );
 
     const header = document.createElement("div");
     header.className = "profile-preview-header";
@@ -113,18 +118,18 @@
         user = null;
       }
       if (!user || !user.username) return;
-      link.addEventListener("mouseenter", (evt) => showGlobalPreviewCard(user, evt));
+      link.addEventListener("mouseenter", (evt) => showGlobalPreviewCard(user, evt, link));
       link.addEventListener("mousemove", positionGlobalPreviewCard);
       link.addEventListener("mouseleave", hideGlobalPreviewCard);
       link.addEventListener("commonroom:landing-preview-show", function () {
         if (!window.matchMedia("(max-width: 767px)").matches) return;
-        showGlobalPreviewCard(user, { clientX: 0, clientY: 0 });
+        showGlobalPreviewCard(user, { clientX: 0, clientY: 0 }, link);
         globalPreviewCard.classList.add("landing-scroll-profile-preview");
         globalPreviewCard.style.top = "auto";
         globalPreviewCard.style.right = "12px";
         globalPreviewCard.style.bottom = "148px";
         globalPreviewCard.style.left = "auto";
-        globalPreviewCard.style.width = "min(52vw, 230px)";
+        globalPreviewCard.style.width = "min(46.8vw, 207px)";
       });
       link.addEventListener("commonroom:landing-preview-hide", hideGlobalPreviewCard);
       link.addEventListener("click", function (evt) {
@@ -142,7 +147,7 @@
         showGlobalPreviewCard(user, {
           clientX: evt.clientX || link.getBoundingClientRect().left,
           clientY: evt.clientY || link.getBoundingClientRect().bottom
-        });
+        }, link);
       });
     });
   }

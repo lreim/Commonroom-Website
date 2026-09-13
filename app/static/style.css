@@ -2,6 +2,13 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Keep the complete phone layout proportionally more compact. */
+@media (max-width: 767px) {
+  body {
+    zoom: 0.9;
+  }
+}
+
 /* Admin analytics: interactive aggregated product-health dashboard. */
 .analytics-dashboard {
   width: 100%;
@@ -6058,6 +6065,39 @@ html.dark-mode .profile-menu-timeout {
 
 .profile-preview-reason {
   color: #3f2f10;
+}
+
+/* Post-triggered profile previews are ten percent smaller than other previews. */
+.profile-preview-card.post-profile-preview {
+  width: 261px;
+  padding: 13.5px 14.5px;
+  border-radius: 18px;
+}
+
+.post-profile-preview .profile-preview-header {
+  gap: 9px;
+  margin-bottom: 7px;
+}
+
+.post-profile-preview .profile-preview-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.post-profile-preview .profile-preview-reason,
+.post-profile-preview .profile-preview-location,
+.post-profile-preview .profile-preview-about,
+.post-profile-preview .profile-preview-tags {
+  font-size: 10.8px;
+}
+
+.post-profile-preview .profile-preview-section {
+  margin-top: 7px;
+}
+
+.post-profile-preview .profile-preview-section-label,
+.post-profile-preview .profile-preview-header-labels {
+  font-size: 9.9px;
 }
 
 /* About page */
