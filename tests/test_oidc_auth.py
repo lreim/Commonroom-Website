@@ -7,7 +7,7 @@ from flask import redirect
 
 from app import create_app, db
 from app.auth.views import OIDC_PENDING_PROFILE_SESSION_KEY
-from app.models import Role, User
+from app.models import Post, Role, User
 
 
 class FakeEduIDClient:
@@ -110,6 +110,36 @@ class OIDCAuthTestCase(unittest.TestCase):
             'https://commonroom.ch/auth/eduid/callback',
         )
         self.assertTrue(fake_client.redirect_kwargs['nonce'])
+
+    def test_oidc_mode_never_displays_legacy_registration(self):
+        self._enable_oidc()
+        fake_client = FakeEduIDClient()
+        with patch('app.auth.views._get_eduid_client', return_value=fake_client):
+            response = self.client.get('/auth/register?next=/post')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.location, 'https://login.eduid.ch/authorize')
+        with self.client.session_transaction() as client_session:
+            self.assertEqual(client_session.get('oidc_next_url'), '/post')
+
+    def test_anonymous_post_actions_use_central_login(self):
+        post = Post(body='A public question', post_type='question', is_starter=True)
+        db.session.add(post)
+        db.session.commit()
+
+        response = self.client.get('/post')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertGreaterEqual(response.data.count(b'/auth/login?next='), 2)
+        self.assertNotIn(b'/auth/register?next=', response.data)
+
+        self._enable_oidc()
+        post_response = self.client.post(
+            '/post',
+            data={'body': 'Anonymous submission', 'post_type': 'question'},
+        )
+        self.assertEqual(post_response.status_code, 302)
+        self.assertIn('/auth/login?next=', post_response.location)
 
     def test_existing_oidc_user_uses_flask_login_session(self):
         self._enable_oidc()

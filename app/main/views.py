@@ -632,7 +632,7 @@ def post():
     reply_form = ReplyForm()
     reply_to_id = request.form.get('reply_to_id', type=int)
     if request.method == 'POST' and not current_user.is_authenticated:
-        return redirect(url_for('auth.register', next=request.url))
+        return redirect(url_for('auth.login', next=request.url))
     submitted_form = reply_form if reply_to_id else form
     if submitted_form.validate_on_submit():
         parent_post = None

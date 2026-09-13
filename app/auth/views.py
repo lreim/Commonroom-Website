@@ -540,6 +540,9 @@ def reset_password(token):
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    if _oidc_is_active():
+        return eduid_login()
+
     form = RegistrationForm()
     if form.validate_on_submit():
         email = canonicalize_eth_email(form.email.data)

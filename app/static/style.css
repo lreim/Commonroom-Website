@@ -4115,9 +4115,28 @@ html.dark-mode .welcome-scroll-cue:focus {
 }
 
 .homepage-post-showcase-links > a {
-  color: #8a3f61;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 20px;
+  border: 1px solid #60342c;
+  border-radius: 24px;
+  background: #6b302b;
+  box-shadow: 0 7px 16px rgba(86, 43, 35, 0.18);
+  color: #fff9ed;
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
   white-space: nowrap;
+}
+
+.homepage-post-showcase-links > a:hover,
+.homepage-post-showcase-links > a:focus {
+  background: #83443d;
+  color: #fff9ed;
+  text-decoration: none;
+  transform: translateY(-2px);
 }
 
 .homepage-post-showcase-links > span {

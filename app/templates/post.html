@@ -159,7 +159,7 @@
                 </form>
             </details>
             {% else %}
-            <a class="post-reply-register" href="{{ url_for('auth.register', next=request.url) }}">Reply</a>
+            <a class="post-reply-register" href="{{ url_for('auth.login', next=request.url) }}">Reply</a>
             {% endif %}
         </div>
     </li>

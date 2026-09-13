@@ -61,6 +61,13 @@ class BasicsTestCase(unittest.TestCase):
         self.assertNotIn(b'landing_scroll_previews.js', onboarding.data)
         self.assertNotIn(b'landing_scroll_previews.js', privacy.data)
 
+    def test_landing_page_has_visible_explore_posts_button(self):
+        response = self.app.test_client().get('/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'class="homepage-explore-posts-button"', response.data)
+        self.assertIn(b'Explore all posts', response.data)
+
     def test_onboarding_uses_real_profile_and_chat_structures(self):
         response = self.app.test_client().get('/onboarding')
 
