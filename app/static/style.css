@@ -2,13 +2,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Keep the complete phone layout proportionally more compact. */
-@media (max-width: 767px) {
-  body {
-    zoom: 0.9;
-  }
-}
-
 /* Admin analytics: interactive aggregated product-health dashboard. */
 .analytics-dashboard {
   width: 100%;
@@ -4284,7 +4277,9 @@ html.dark-mode .homepage-example-post .post-author span {
   }
 
   .homepage-post-wall {
-    grid-template-columns: 1fr;
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .post.homepage-example-post,
@@ -4293,12 +4288,40 @@ html.dark-mode .homepage-example-post .post-author span {
   .post.homepage-example-post:nth-child(4),
   .post.homepage-example-post:nth-child(5),
   .post.homepage-example-post:nth-child(6) {
-    grid-column: 1;
+    grid-column: auto;
+    width: 80%;
     transform: none;
   }
 
   .post.homepage-example-post {
     flex-wrap: wrap;
+    align-self: flex-start;
+    gap: 10px;
+    padding: 14px;
+    font-size: 80%;
+  }
+
+  .post.homepage-example-post:nth-child(even) {
+    align-self: flex-end;
+  }
+
+  .homepage-example-post .profile-thumbnail img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .homepage-example-post .post-date {
+    margin-bottom: 3px;
+    font-size: 9.6px;
+  }
+
+  .homepage-post-meta-actions {
+    gap: 9.5px;
+    margin-top: 8px;
+  }
+
+  .homepage-post-relate {
+    font-size: 10.4px;
   }
 
   .homepage-example-post .post-side-actions {
