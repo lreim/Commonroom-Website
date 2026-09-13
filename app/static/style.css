@@ -7644,3 +7644,229 @@ html.dark-mode .profile-recommendation-section-value .label {
     width: 100%;
   }
 }
+
+/* Floating profile preview: compact version of the real profile visual shown in onboarding. */
+.profile-preview-card {
+  padding: 14px;
+  border: 1px solid #dfcfb7;
+  border-radius: 24px;
+  background: #fffaf0;
+  box-shadow: 0 14px 32px rgba(72, 47, 20, 0.16);
+}
+
+.profile-preview-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 11px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5dac8;
+}
+
+.profile-preview-avatar {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border: 1px solid #d9cfbb;
+  border-radius: 50%;
+}
+
+.profile-preview-kicker {
+  margin-bottom: 4px;
+  color: #765638;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.profile-preview-name {
+  overflow-wrap: anywhere;
+  color: #2d1d00;
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.profile-preview-label-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.profile-preview-label-badge {
+  margin: 0;
+  padding: 4px 7px;
+  border-color: #d8c6ad;
+  background: #f3e8d7;
+  color: #654d34;
+  font-size: 8.5px;
+  font-weight: 600;
+}
+
+.profile-preview-section {
+  margin-top: 7px;
+  padding: 9px 10px;
+  border: 1px solid #e2d4c0;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.profile-preview-section-label {
+  margin-bottom: 4px;
+  color: #5b3b12;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.profile-preview-about,
+.profile-preview-funny-fact {
+  color: #514436;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.profile-preview-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.profile-preview-tag {
+  display: inline-block;
+  margin: 0;
+  padding: 4px 7px;
+  border: 1px solid #c9e2ec;
+  border-radius: 999px;
+  background: #e5f3f8;
+  color: #476f80;
+  font-family: Georgia, serif;
+  font-size: 8.5px;
+  font-weight: 400;
+}
+
+.profile-preview-card.post-profile-preview {
+  padding: 12.5px 13px;
+}
+
+.post-profile-preview .profile-preview-avatar {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+}
+
+.landing-scroll-profile-preview .profile-preview-header {
+  display: flex;
+}
+
+html.dark-mode .profile-preview-card {
+  border-color: #514336;
+  background: #29221c;
+  box-shadow: none;
+}
+
+html.dark-mode .profile-preview-header {
+  border-bottom-color: #514336;
+}
+
+html.dark-mode .profile-preview-kicker {
+  color: #d1b894;
+}
+
+html.dark-mode .profile-preview-name,
+html.dark-mode .profile-preview-section-label,
+html.dark-mode .profile-preview-about,
+html.dark-mode .profile-preview-funny-fact {
+  color: #f1ebdd;
+}
+
+html.dark-mode .profile-preview-label-badge {
+  border-color: #665746;
+  background: #3a3027;
+  color: #e4d5c0;
+}
+
+html.dark-mode .profile-preview-section {
+  border-color: #514336;
+  background: #332a22;
+}
+
+html.dark-mode .profile-preview-tag {
+  border-color: #4f7483;
+  background: #354f5a;
+  color: #d0e8f0;
+}
+
+/* Use the scale of the onboarding profile visual instead of the old tiny tooltip. */
+.profile-preview-card,
+.profile-preview-card.post-profile-preview {
+  width: min(340px, calc(100vw - 24px));
+  padding: 18px;
+}
+
+.profile-preview-header,
+.post-profile-preview .profile-preview-header {
+  gap: 15px;
+  margin-bottom: 14px;
+  padding-bottom: 16px;
+}
+
+.profile-preview-avatar,
+.post-profile-preview .profile-preview-avatar {
+  width: 64px;
+  height: 64px;
+  flex-basis: 64px;
+}
+
+.profile-preview-kicker {
+  margin-bottom: 6px;
+  font-size: 10px;
+}
+
+.profile-preview-name {
+  font-size: 22px;
+}
+
+.profile-preview-label-badges {
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.profile-preview-label-badge {
+  padding: 5px 9px;
+  font-size: 10px;
+}
+
+.profile-preview-section,
+.post-profile-preview .profile-preview-section {
+  margin-top: 9px;
+  padding: 12px 13px;
+  border-radius: 17px;
+}
+
+.profile-preview-section-label,
+.post-profile-preview .profile-preview-section-label {
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+
+.profile-preview-about,
+.profile-preview-funny-fact,
+.post-profile-preview .profile-preview-about,
+.post-profile-preview .profile-preview-funny-fact {
+  font-size: 13px;
+}
+
+.profile-preview-tag {
+  padding: 5px 9px;
+  font-size: 10px;
+}
+
+@media (max-width: 767px) {
+  .profile-preview-card,
+  .profile-preview-card.post-profile-preview,
+  .profile-preview-card.landing-scroll-profile-preview {
+    width: min(82vw, 340px);
+    max-height: 68vh;
+  }
+}

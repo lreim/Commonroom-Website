@@ -6,7 +6,7 @@
     "username": post.author.username,
     "name": post.author.name or "",
     "about_me": (post.author.about_me or "")[:180],
-    "matching_tags": post.author.tags|map(attribute="name")|list|sort,
+    "funny_fact": (post.author.funny_fact or "")[:180],
     "tags": post.author.tags|map(attribute="name")|list|sort,
     "profile_labels": post.author.profile_label_texts,
     "avatar_url": post.author.gravatar(size=48)

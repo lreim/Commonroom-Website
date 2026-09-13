@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 
-{% macro example_profile(username, avatar_url, about_me, tags, profile_labels) -%}
+{% macro example_profile(username, avatar_url, about_me, tags, profile_labels, funny_fact="") -%}
 <span
   class="homepage-profile-preview-trigger"
   data-profile-preview='{{ {
     "username": username,
     "name": "",
     "about_me": about_me,
-    "matching_tags": tags,
+    "funny_fact": funny_fact,
     "tags": tags,
     "profile_labels": profile_labels,
     "avatar_url": avatar_url

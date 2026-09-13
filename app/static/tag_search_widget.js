@@ -17,8 +17,18 @@
 
   function positionGlobalPreviewCard(evt) {
     if (!globalPreviewCard || globalPreviewCard.style.display === "none") return;
-    const x = evt.clientX + 14;
-    const y = evt.clientY + 14;
+    const margin = 12;
+    const cardBounds = globalPreviewCard.getBoundingClientRect();
+    const requestedX = evt.clientX + 14;
+    const requestedY = evt.clientY + 14;
+    const x = Math.max(
+      margin,
+      Math.min(requestedX, window.innerWidth - cardBounds.width - margin)
+    );
+    const y = Math.max(
+      margin,
+      Math.min(requestedY, window.innerHeight - cardBounds.height - margin)
+    );
     globalPreviewCard.style.left = `${x}px`;
     globalPreviewCard.style.top = `${y}px`;
   }
@@ -55,14 +65,34 @@
     container.appendChild(section);
   }
 
+  function appendPreviewTags(container, tags) {
+    if (!tags.length) return;
+    const section = document.createElement("div");
+    section.className = "profile-preview-section profile-preview-tags-section";
+
+    const sectionLabel = document.createElement("div");
+    sectionLabel.className = "profile-preview-section-label";
+    sectionLabel.textContent = "Tags";
+
+    const tagList = document.createElement("div");
+    tagList.className = "profile-preview-tag-list";
+    tags.forEach((tag) => {
+      const chip = document.createElement("span");
+      chip.className = "label label-info profile-preview-tag";
+      chip.textContent = tag;
+      tagList.appendChild(chip);
+    });
+
+    section.append(sectionLabel, tagList);
+    container.appendChild(section);
+  }
+
   function showGlobalPreviewCard(user, evt, trigger) {
     const previewCard = ensureGlobalPreviewCard();
-    const safeName = user.name || user.username;
     const safeAbout = user.about_me || "";
+    const safeFunnyFact = user.funny_fact || "";
     const safeLabels = user.profile_labels || [];
-    const safeTags = (user.matching_tags && user.matching_tags.length > 0)
-      ? user.matching_tags
-      : (user.tags || []);
+    const safeTags = user.tags || [];
 
     previewCard.replaceChildren();
     previewCard.classList.toggle(
@@ -81,29 +111,33 @@
     const heading = document.createElement("div");
     heading.className = "profile-preview-heading";
 
+    const kicker = document.createElement("div");
+    kicker.className = "profile-preview-kicker";
+    kicker.textContent = "ANONYMOUS PROFILE";
+
     const name = document.createElement("div");
     name.className = "profile-preview-name";
-    name.textContent = safeName;
-    heading.appendChild(name);
-
-    header.append(avatar, heading);
+    name.textContent = user.username;
+    heading.append(kicker, name);
 
     if (safeLabels.length) {
       const labels = document.createElement("div");
-      labels.className = "profile-preview-header-labels";
-      labels.textContent = safeLabels.join(", ");
-      header.appendChild(labels);
+      labels.className = "profile-preview-label-badges";
+      safeLabels.forEach((label) => {
+        const badge = document.createElement("span");
+        badge.className = "profile-label-badge profile-preview-label-badge";
+        badge.textContent = label;
+        labels.appendChild(badge);
+      });
+      heading.appendChild(labels);
     }
 
+    header.append(avatar, heading);
+
     previewCard.appendChild(header);
-    appendPreviewSection(
-      previewCard,
-      "Matching tags",
-      safeTags.join(", "),
-      "profile-preview-reason"
-    );
     appendPreviewSection(previewCard, "About me", safeAbout, "profile-preview-about");
-    appendPreviewSection(previewCard, "Tags", safeTags.join(", "), "profile-preview-tags");
+    appendPreviewSection(previewCard, "Funny fact about me", safeFunnyFact, "profile-preview-funny-fact");
+    appendPreviewTags(previewCard, safeTags);
 
     previewCard.style.display = "block";
     positionGlobalPreviewCard(evt);
@@ -129,7 +163,7 @@
         globalPreviewCard.style.right = "12px";
         globalPreviewCard.style.bottom = "148px";
         globalPreviewCard.style.left = "auto";
-        globalPreviewCard.style.width = "min(46.8vw, 207px)";
+        globalPreviewCard.style.width = "min(82vw, 340px)";
       });
       link.addEventListener("commonroom:landing-preview-hide", hideGlobalPreviewCard);
       link.addEventListener("click", function (evt) {

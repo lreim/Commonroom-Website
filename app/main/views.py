@@ -935,6 +935,7 @@ def tag_search_api():
                         "match_reason": reason,
                         "name": u.name or "",
                         "about_me": (u.about_me or "")[:180],
+                        "funny_fact": (u.funny_fact or "")[:180],
                         "profile_labels": u.profile_label_texts,
                         "tags": user_tag_names[:8],
                         "avatar_url": u.gravatar(size=48),
