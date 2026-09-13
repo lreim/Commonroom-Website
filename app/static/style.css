@@ -2394,10 +2394,10 @@ html.dark-mode .starter-post-editor textarea {
 
 /* Tag search: same calm beige-and-white visual language as posts and chats. */
 .tag-search-header {
-  margin-top: 58px;
-  margin-bottom: 38px;
-  padding-bottom: 34px;
-  text-align: center;
+  margin: 0 0 52px;
+  padding: 36px 0 0;
+  border: 0;
+  text-align: left;
 }
 
 .tag-search-eyebrow {
@@ -2409,16 +2409,18 @@ html.dark-mode .starter-post-editor textarea {
 }
 
 .tag-search-header h1 {
-  margin: 0;
-  font-size: 44px;
+  margin: 0 0 8px;
+  font-size: 36px;
   font-weight: 400;
+  line-height: 1.2;
 }
 
-.tag-search-header h4 {
-  margin-top: 9px;
+.tag-search-header p {
+  margin: 0;
+  color: #6d624e;
   font-size: 16px;
   font-weight: 400;
-  line-height: 1.45;
+  line-height: 1.65;
 }
 
 .tag-design-widget {
@@ -2561,6 +2563,211 @@ html.dark-mode .starter-post-editor textarea {
   text-underline-offset: 3px;
 }
 
+.tag-design-widget .tag-results > .tag-matching-profiles-section {
+  margin: 24px 0 0 !important;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.tag-matching-profiles-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.tag-design-widget .tag-matching-profiles-heading h4 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.tag-matching-profiles-heading > span {
+  color: #8a7b66;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+}
+
+.tag-matching-profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.tag-matching-profile-card {
+  display: flex;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #dfcfba;
+  border-radius: 15px;
+  background: #ffffff;
+  box-shadow: 0 7px 18px rgba(72, 47, 20, 0.045);
+  flex-direction: column;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.tag-matching-profile-card:hover {
+  border-color: #c8ad8c;
+  box-shadow: 0 11px 24px rgba(72, 47, 20, 0.1);
+  transform: translateY(-2px);
+}
+
+.tag-matching-profile-header {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-matching-profile-avatar {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #d9cfbb;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.tag-matching-profile-identity {
+  min-width: 0;
+}
+
+.tag-matching-profile-name {
+  display: block;
+  overflow-wrap: anywhere;
+  color: #3c2a15;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.tag-matching-profile-name:hover,
+.tag-matching-profile-name:focus {
+  color: #743f37;
+}
+
+.tag-matching-profile-overlap {
+  display: block;
+  margin-top: 2px;
+  color: #9a4965;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.tag-matching-profile-tags-panel {
+  margin-top: 8px;
+  padding: 7px;
+  border: 1px solid #b7dae7;
+  border-radius: 11px;
+  background: #edf8fb;
+}
+
+.tag-matching-profile-tags-panel > strong,
+.tag-matching-profile-about > strong,
+.tag-matching-profile-other-tags > strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #38697d;
+  font-size: 10px;
+}
+
+.tag-matching-profile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag-design-widget .tag-matching-profile-tags .label {
+  margin: 0 !important;
+  padding: 3px 6px;
+  font-size: 9px;
+}
+
+.tag-matching-profile-other-tags {
+  margin-top: 7px;
+}
+
+.tag-matching-profile-other-tags > strong {
+  color: #786b59;
+}
+
+.tag-matching-profile-other-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag-design-widget .tag-matching-profile-other-tags-list .label {
+  margin: 0 !important;
+  padding: 2px 5px;
+  border-color: #ddd1c0;
+  background: #f6f1e9;
+  color: #6d6253;
+  font-size: 8px;
+}
+
+.tag-matching-profile-about {
+  margin-top: 8px;
+  color: #625642;
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.tag-matching-profile-about > strong {
+  color: #3c2a15;
+}
+
+.tag-matching-profile-about p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.tag-matching-profile-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.tag-matching-profile-labels span {
+  padding: 3px 6px;
+  border: 1px solid #dcc9af;
+  border-radius: 999px;
+  background: #f5ead8;
+  color: #654d34;
+  font-family: Arial, sans-serif;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.tag-matching-profile-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  margin-top: auto;
+  padding: 8px 8px 0;
+  color: #6b302b;
+  font-size: 10px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tag-matching-profile-action:hover,
+.tag-matching-profile-action:focus {
+  color: #8a3f38;
+  text-decoration: underline;
+}
+
+.tag-matching-profiles-empty {
+  margin: 0;
+}
+
 .edit-profile-page .tag-main-column textarea.form-control {
   min-height: 112px;
   border-radius: 16px;
@@ -2619,6 +2826,10 @@ html.dark-mode .tag-search-eyebrow {
   color: #d1b894;
 }
 
+html.dark-mode .tag-search-header p {
+  color: #cbbfa8;
+}
+
 html.dark-mode .tag-design-widget .tag-main-column,
 html.dark-mode .tag-design-widget .tag-side-column,
 html.dark-mode .tagsearch-inline-request-compose,
@@ -2668,6 +2879,40 @@ html.dark-mode .tag-design-widget .tag-match-user-link {
   color: #e8d6be;
 }
 
+html.dark-mode .tag-matching-profile-card {
+  border-color: #514336;
+  background: #332a22;
+  box-shadow: none;
+}
+
+html.dark-mode .tag-matching-profile-name,
+html.dark-mode .tag-matching-profile-about > strong {
+  color: #f1ebdd;
+}
+
+html.dark-mode .tag-matching-profile-about {
+  color: #d5c7b5;
+}
+
+html.dark-mode .tag-matching-profile-tags-panel {
+  border-color: #4f7483;
+  background: #293f47;
+}
+
+html.dark-mode .tag-matching-profile-tags-panel > strong {
+  color: #d0e8f0;
+}
+
+html.dark-mode .tag-matching-profile-labels span {
+  border-color: #665746;
+  background: #3a3027;
+  color: #e4d5c0;
+}
+
+html.dark-mode .tag-matching-profile-action {
+  color: #e9bcb4;
+}
+
 html.dark-mode .edit-profile-page .tag-main-column .checkbox {
   border-color: #514336;
   background: #332a22;
@@ -2679,7 +2924,8 @@ html.dark-mode .edit-profile-submit-row {
 
 @media (max-width: 767px) {
   .tag-search-header {
-    margin-top: 36px;
+    margin-top: 0;
+    padding-top: 24px;
   }
 
   .tag-search-header h1 {
@@ -2693,6 +2939,10 @@ html.dark-mode .edit-profile-submit-row {
 
   .tag-design-widget .tag-side-column {
     position: static;
+  }
+
+  .tag-matching-profiles-grid {
+    grid-template-columns: 1fr;
   }
 }
 

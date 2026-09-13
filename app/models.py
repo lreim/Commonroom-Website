@@ -500,6 +500,7 @@ class Tag(db.Model):
         'exam stress', 'failed an exam', 'study motivation', 'procrastination',
         'study pressure', 'overwhelmed by uni', 'study routine', 'group projects',
         'first semester', 'starting at eth', 'changing degree', 'study doubts',
+        'academic pressure', 'finals pressure', 'study strategy',
 
         # Decisions & Future
         'career uncertainty', 'internship search', "master's decision", 'phd thoughts',
@@ -515,7 +516,8 @@ class Tag(db.Model):
         # Mind & Emotions
         'stress', 'overthinking', 'self doubt', 'imposter syndrome', 'low motivation',
         'feeling motivated', 'feeling overwhelmed', 'feeling stuck', 'comparison',
-        'fear of failure',
+        'fear of failure', 'burnout', 'depressive thoughts', 'motivation',
+        'panic feelings', 'stress management',
 
         # Everyday Life
         'sleep', 'bad sleep schedule', 'work life balance', 'routines', 'flatmates',
@@ -534,8 +536,17 @@ class Tag(db.Model):
 
     @classmethod
     def library_names(cls):
-        """Return the curated public tag library currently stored in the database."""
-        rows = cls.query.filter(cls.name.in_(cls.DEFAULT_NAMES)).order_by(cls.name.asc()).all()
+        """Return curated tags plus every additional tag currently used by a profile."""
+        associated_tag_ids = db.session.query(user_tags.c.tag_id)
+        rows = (
+            cls.query
+            .filter(
+                cls.name.in_(cls.DEFAULT_NAMES)
+                | cls.id.in_(associated_tag_ids)
+            )
+            .order_by(cls.name.asc())
+            .all()
+        )
         return [tag.name for tag in rows]
 
     @staticmethod

@@ -487,64 +487,153 @@
         row.appendChild(chip);
         row.appendChild(meta);
 
-        if (mode !== "picker" && m.users && m.users.length > 0) {
-          const usersWrap = document.createElement("div");
-          usersWrap.className = "tag-match-users";
+        resultsEl.appendChild(row);
+      });
 
-          const usersLabel = document.createElement("small");
-          usersLabel.className = "text-muted tag-match-users-label";
-          usersLabel.textContent = "Matching profiles: ";
-          usersWrap.appendChild(usersLabel);
+      if (mode !== "picker") {
+        const profilesById = new Map();
+        visibleMatches.forEach((match) => {
+          (match.users || []).forEach((user) => {
+            const key = String(user.id || user.username);
+            const existing = profilesById.get(key);
+            const matchingTags = (user.matching_tags && user.matching_tags.length)
+              ? user.matching_tags
+              : [match.name];
+            if (existing) {
+              matchingTags.forEach((tag) => existing.matchingTagSet.add(tag));
+              return;
+            }
+            profilesById.set(key, {
+              user: user,
+              matchingTagSet: new Set(matchingTags)
+            });
+          });
+        });
 
-          const usersList = document.createElement("div");
-          usersList.className = "tag-match-users-list";
+        const profiles = Array.from(profilesById.values()).sort((left, right) => {
+          const countDifference = right.matchingTagSet.size - left.matchingTagSet.size;
+          return countDifference || left.user.username.localeCompare(right.user.username);
+        });
 
-          m.users.forEach((u) => {
-            const item = document.createElement("div");
-            item.className = "tag-match-user-item";
+        const profilesSection = document.createElement("section");
+        profilesSection.className = "tag-matching-profiles-section";
 
-            const link = document.createElement("a");
-            const profileUrl = new URL(u.profile_url, window.location.origin);
+        const profilesHeading = document.createElement("div");
+        profilesHeading.className = "tag-matching-profiles-heading";
+        const profilesTitle = document.createElement("h4");
+        profilesTitle.textContent = "Matching profiles";
+        const profilesCount = document.createElement("span");
+        profilesCount.textContent = `${profiles.length} found`;
+        profilesHeading.append(profilesTitle, profilesCount);
+        profilesSection.appendChild(profilesHeading);
+
+        if (profiles.length === 0) {
+          const noProfiles = document.createElement("p");
+          noProfiles.className = "text-muted tag-matching-profiles-empty";
+          noProfiles.textContent = "No profiles match these topics and profile labels yet.";
+          profilesSection.appendChild(noProfiles);
+        } else {
+          const profilesGrid = document.createElement("div");
+          profilesGrid.className = "tag-matching-profiles-grid";
+
+          profiles.forEach((profile) => {
+            const user = profile.user;
+            const matchingTags = Array.from(profile.matchingTagSet).sort();
+            const matchingTagNames = new Set(
+              matchingTags.map((tag) => String(tag).toLowerCase())
+            );
+            const otherProfileTags = (user.tags || []).filter(
+              (tag) => !matchingTagNames.has(String(tag).toLowerCase())
+            );
+            const profileUrl = new URL(user.profile_url, window.location.origin);
             profileUrl.searchParams.set(
               "return_to",
               `${window.location.pathname}${window.location.search}${window.location.hash}`
             );
-            link.href = profileUrl.toString();
-            link.textContent = u.username;
-            link.className = "tag-match-user-link";
-            if (mode !== "picker") {
-              link.addEventListener("mouseenter", (evt) => showPreviewCard(u, evt));
-              link.addEventListener("mousemove", positionPreviewCard);
-              link.addEventListener("mouseleave", hidePreviewCard);
-              link.addEventListener("click", function (evt) {
-                if (!isMobilePreviewMode()) {
-                  return;
-                }
-                if (activeMobilePreviewLink === link) {
-                  return;
-                }
-                evt.preventDefault();
-                evt.stopPropagation();
-                hidePreviewCard();
-                activeMobilePreviewLink = link;
-                link.setAttribute("data-preview-open", "true");
-                showPreviewCard(u, {
-                  clientX: evt.clientX || link.getBoundingClientRect().left,
-                  clientY: evt.clientY || link.getBoundingClientRect().bottom
-                });
+
+            const card = document.createElement("article");
+            card.className = "tag-matching-profile-card";
+
+            const header = document.createElement("div");
+            header.className = "tag-matching-profile-header";
+            const avatar = document.createElement("img");
+            avatar.className = "tag-matching-profile-avatar";
+            avatar.src = user.avatar_url || "";
+            avatar.alt = `Avatar of ${user.username}`;
+            const identity = document.createElement("div");
+            identity.className = "tag-matching-profile-identity";
+            const username = document.createElement("a");
+            username.className = "tag-matching-profile-name";
+            username.href = profileUrl.toString();
+            username.textContent = user.username;
+            const overlap = document.createElement("span");
+            overlap.className = "tag-matching-profile-overlap";
+            overlap.textContent = `${matchingTags.length} ${matchingTags.length === 1 ? "topic" : "topics"} in common`;
+            identity.append(username, overlap);
+            header.append(avatar, identity);
+            card.appendChild(header);
+
+            const matchPanel = document.createElement("div");
+            matchPanel.className = "tag-matching-profile-tags-panel";
+            const matchLabel = document.createElement("strong");
+            matchLabel.textContent = "Matching tags";
+            const matchTags = document.createElement("div");
+            matchTags.className = "tag-matching-profile-tags";
+            matchingTags.forEach((tag) => {
+              matchTags.appendChild(createTagChip(tag, "label label-info"));
+            });
+            matchPanel.append(matchLabel, matchTags);
+            card.appendChild(matchPanel);
+
+            if (otherProfileTags.length) {
+              const profileTagsPanel = document.createElement("div");
+              profileTagsPanel.className = "tag-matching-profile-other-tags";
+              const profileTagsLabel = document.createElement("strong");
+              profileTagsLabel.textContent = "Other profile tags";
+              const profileTags = document.createElement("div");
+              profileTags.className = "tag-matching-profile-other-tags-list";
+              otherProfileTags.forEach((tag) => {
+                profileTags.appendChild(createTagChip(tag, "label label-default"));
               });
+              profileTagsPanel.append(profileTagsLabel, profileTags);
+              card.appendChild(profileTagsPanel);
             }
 
-            item.appendChild(link);
-            usersList.appendChild(item);
+            if (user.about_me) {
+              const about = document.createElement("div");
+              about.className = "tag-matching-profile-about";
+              const aboutLabel = document.createElement("strong");
+              aboutLabel.textContent = "About me";
+              const aboutText = document.createElement("p");
+              aboutText.textContent = user.about_me;
+              about.append(aboutLabel, aboutText);
+              card.appendChild(about);
+            }
+
+            if (user.profile_labels && user.profile_labels.length) {
+              const labels = document.createElement("div");
+              labels.className = "tag-matching-profile-labels";
+              user.profile_labels.forEach((label) => {
+                const badge = document.createElement("span");
+                badge.textContent = label;
+                labels.appendChild(badge);
+              });
+              card.appendChild(labels);
+            }
+
+            const action = document.createElement("a");
+            action.className = "tag-matching-profile-action";
+            action.href = profileUrl.toString();
+            action.textContent = "View profile →";
+            card.appendChild(action);
+            profilesGrid.appendChild(card);
           });
 
-          usersWrap.appendChild(usersList);
-          row.appendChild(usersWrap);
+          profilesSection.appendChild(profilesGrid);
         }
 
-        resultsEl.appendChild(row);
-      });
+        resultsEl.insertBefore(profilesSection, resultsEl.firstChild);
+      }
     }
 
     async function runSearch() {
