@@ -4,10 +4,12 @@ import json
 import sqlite3
 from pathlib import Path
 
-from sentence_transformers import SentenceTransformer, util
+import torch
+import torch.nn.functional as functional
+from transformers import AutoModel, AutoTokenizer
 
 
-MODEL_NAME = "all-MiniLM-L6-v2"
+MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 DEFAULT_THRESHOLD = 0.28
 DEFAULT_TOP_K = 12
 
@@ -22,9 +24,18 @@ def fetch_tags_from_sqlite(db_path):
 
 
 def build_index(tags, model_name, threshold, top_k):
-    model = SentenceTransformer(model_name)
-    embeddings = model.encode(tags, convert_to_tensor=True, normalize_embeddings=True)
-    cosine = util.cos_sim(embeddings, embeddings).tolist()
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name)
+    model.eval()
+
+    encoded = tokenizer(tags, padding=True, truncation=True, return_tensors="pt")
+    with torch.no_grad():
+        output = model(**encoded)
+    attention_mask = encoded["attention_mask"].unsqueeze(-1)
+    summed_embeddings = (output.last_hidden_state * attention_mask).sum(dim=1)
+    token_counts = attention_mask.sum(dim=1).clamp(min=1)
+    embeddings = functional.normalize(summed_embeddings / token_counts, p=2, dim=1)
+    cosine = (embeddings @ embeddings.transpose(0, 1)).tolist()
 
     index = {
         "_meta": {
