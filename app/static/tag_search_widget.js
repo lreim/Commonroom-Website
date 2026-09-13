@@ -566,12 +566,32 @@
             username.className = "tag-matching-profile-name";
             username.href = profileUrl.toString();
             username.textContent = user.username;
+            username.addEventListener("click", function (evt) {
+              if (!isMobilePreviewMode()) {
+                return;
+              }
+              if (activeMobilePreviewLink === username) {
+                return;
+              }
+              evt.preventDefault();
+              evt.stopPropagation();
+              hidePreviewCard();
+              activeMobilePreviewLink = username;
+              username.setAttribute("data-preview-open", "true");
+              showPreviewCard(user, {
+                clientX: evt.clientX || username.getBoundingClientRect().left,
+                clientY: evt.clientY || username.getBoundingClientRect().bottom
+              });
+            });
             const overlap = document.createElement("span");
             overlap.className = "tag-matching-profile-overlap";
             overlap.textContent = `${matchingTags.length} ${matchingTags.length === 1 ? "topic" : "topics"} in common`;
             identity.append(username, overlap);
             header.append(avatar, identity);
             card.appendChild(header);
+            card.addEventListener("mouseenter", (evt) => showPreviewCard(user, evt));
+            card.addEventListener("mousemove", positionPreviewCard);
+            card.addEventListener("mouseleave", hidePreviewCard);
 
             const matchPanel = document.createElement("div");
             matchPanel.className = "tag-matching-profile-tags-panel";
@@ -599,33 +619,6 @@
               card.appendChild(profileTagsPanel);
             }
 
-            if (user.about_me) {
-              const about = document.createElement("div");
-              about.className = "tag-matching-profile-about";
-              const aboutLabel = document.createElement("strong");
-              aboutLabel.textContent = "About me";
-              const aboutText = document.createElement("p");
-              aboutText.textContent = user.about_me;
-              about.append(aboutLabel, aboutText);
-              card.appendChild(about);
-            }
-
-            if (user.profile_labels && user.profile_labels.length) {
-              const labels = document.createElement("div");
-              labels.className = "tag-matching-profile-labels";
-              user.profile_labels.forEach((label) => {
-                const badge = document.createElement("span");
-                badge.textContent = label;
-                labels.appendChild(badge);
-              });
-              card.appendChild(labels);
-            }
-
-            const action = document.createElement("a");
-            action.className = "tag-matching-profile-action";
-            action.href = profileUrl.toString();
-            action.textContent = "View profile →";
-            card.appendChild(action);
             profilesGrid.appendChild(card);
           });
 
@@ -645,7 +638,14 @@
         return;
       }
       try {
-        const params = new URLSearchParams({ q });
+        const params = new URLSearchParams();
+        const typedQuery = input ? input.value.trim() : "";
+        if (typedQuery) {
+          params.set("q", typedQuery);
+        }
+        Array.from(selected)
+          .sort()
+          .forEach((tag) => params.append("tags", tag));
         getSelectedProfileLabels().forEach((label) => params.append("labels", label));
         const url = `${endpoint}?${params.toString()}`;
         const resp = await fetch(url, { headers: { Accept: "application/json" } });

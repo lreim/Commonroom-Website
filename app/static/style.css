@@ -2665,7 +2665,6 @@ html.dark-mode .starter-post-editor textarea {
 }
 
 .tag-matching-profile-tags-panel > strong,
-.tag-matching-profile-about > strong,
 .tag-matching-profile-other-tags > strong {
   display: block;
   margin-bottom: 4px;
@@ -2706,62 +2705,6 @@ html.dark-mode .starter-post-editor textarea {
   background: #f6f1e9;
   color: #6d6253;
   font-size: 8px;
-}
-
-.tag-matching-profile-about {
-  margin-top: 8px;
-  color: #625642;
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.tag-matching-profile-about > strong {
-  color: #3c2a15;
-}
-
-.tag-matching-profile-about p {
-  display: -webkit-box;
-  overflow: hidden;
-  margin: 0;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-}
-
-.tag-matching-profile-labels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.tag-matching-profile-labels span {
-  padding: 3px 6px;
-  border: 1px solid #dcc9af;
-  border-radius: 999px;
-  background: #f5ead8;
-  color: #654d34;
-  font-family: Arial, sans-serif;
-  font-size: 8px;
-  font-weight: 700;
-}
-
-.tag-matching-profile-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  margin-top: auto;
-  padding: 8px 8px 0;
-  color: #6b302b;
-  font-size: 10px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.tag-matching-profile-action:hover,
-.tag-matching-profile-action:focus {
-  color: #8a3f38;
-  text-decoration: underline;
 }
 
 .tag-matching-profiles-empty {
@@ -2885,13 +2828,8 @@ html.dark-mode .tag-matching-profile-card {
   box-shadow: none;
 }
 
-html.dark-mode .tag-matching-profile-name,
-html.dark-mode .tag-matching-profile-about > strong {
+html.dark-mode .tag-matching-profile-name {
   color: #f1ebdd;
-}
-
-html.dark-mode .tag-matching-profile-about {
-  color: #d5c7b5;
 }
 
 html.dark-mode .tag-matching-profile-tags-panel {
@@ -2903,14 +2841,14 @@ html.dark-mode .tag-matching-profile-tags-panel > strong {
   color: #d0e8f0;
 }
 
-html.dark-mode .tag-matching-profile-labels span {
+html.dark-mode .tag-matching-profile-other-tags > strong {
+  color: #cbbfa8;
+}
+
+html.dark-mode .tag-design-widget .tag-matching-profile-other-tags-list .label {
   border-color: #665746;
   background: #3a3027;
   color: #e4d5c0;
-}
-
-html.dark-mode .tag-matching-profile-action {
-  color: #e9bcb4;
 }
 
 html.dark-mode .edit-profile-page .tag-main-column .checkbox {

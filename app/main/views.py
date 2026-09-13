@@ -987,7 +987,37 @@ def tag_search_api():
         value.strip() for value in request.args.getlist('labels') if value and value.strip()
     }
     all_tags = Tag.library_names()
-    matches = match_tags(query, all_tags)
+    all_tag_names = set(all_tags)
+    selected_tags = []
+    for value in request.args.getlist('tags'):
+        normalized_value = value.strip().lower()
+        if normalized_value in all_tag_names and normalized_value not in selected_tags:
+            selected_tags.append(normalized_value)
+
+    search_terms = []
+    if query:
+        search_terms.append(query)
+    search_terms.extend(
+        tag for tag in selected_tags
+        if tag.lower() not in {term.lower() for term in search_terms}
+    )
+
+    matches_by_name = {}
+    for search_term in search_terms:
+        for candidate in match_tags(search_term, all_tags):
+            existing = matches_by_name.get(candidate["name"])
+            if existing is None:
+                matches_by_name[candidate["name"]] = dict(candidate)
+                continue
+            existing["score"] = max(existing["score"], candidate["score"])
+            existing["semantic"] = max(existing["semantic"], candidate["semantic"])
+            existing["reasons"] = sorted(set(existing["reasons"] + candidate["reasons"]))
+
+    matches = sorted(
+        matches_by_name.values(),
+        key=lambda item: (item["score"], item["name"]),
+        reverse=True,
+    )
     matched_tag_names = {m["name"] for m in matches}
     tag_map = {
         t.name: t for t in Tag.query.filter(Tag.name.in_([m["name"] for m in matches])).all()
@@ -1000,7 +1030,7 @@ def tag_search_api():
             tag_users = [
                 u for u in tag.users.order_by(User.username.asc()).all()
                 if not current_user.is_authenticated or u.id != current_user.id
-            ][:6]
+            ]
             for u in tag_users:
                 user_profile_labels = set(u.profile_label_values)
                 if requested_profile_labels:
@@ -1035,6 +1065,7 @@ def tag_search_api():
     model_ready = get_model() is not None
     return jsonify({
         "query": query,
+        "selected_tags": selected_tags,
         "matches": matches,
         "all_tags": all_tags,
         "semantic_model_ready": model_ready,
