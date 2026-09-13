@@ -221,7 +221,13 @@
     {% endif %}
   </li>
   {% else %}
-  <li class="admin-demo-profile-note">No starter posts have been published yet.</li>
+  <li class="admin-demo-profile-note">
+    {% if viewing_admin_demo %}
+    No starter posts have been published yet.
+    {% else %}
+    No posts have been published yet.
+    {% endif %}
+  </li>
   {% endfor %}
 </ul>
 </section>

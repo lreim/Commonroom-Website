@@ -128,6 +128,11 @@ class AdminDemoModeTestCase(unittest.TestCase):
         with self.client.session_transaction() as client_session:
             self.assertNotIn(ADMIN_DEMO_SESSION_KEY, client_session)
 
+        profile_response = self.client.get(f'/user/{user.username}')
+        self.assertEqual(profile_response.status_code, 200)
+        self.assertIn(b'No posts have been published yet.', profile_response.data)
+        self.assertNotIn(b'No starter posts have been published yet.', profile_response.data)
+
 
 if __name__ == '__main__':
     unittest.main()
