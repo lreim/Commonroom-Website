@@ -163,7 +163,7 @@
         globalPreviewCard.style.right = "12px";
         globalPreviewCard.style.bottom = "148px";
         globalPreviewCard.style.left = "auto";
-        globalPreviewCard.style.width = "min(82vw, 340px)";
+        globalPreviewCard.style.width = "min(57.4vw, 238px)";
       });
       link.addEventListener("commonroom:landing-preview-hide", hideGlobalPreviewCard);
       link.addEventListener("click", function (evt) {

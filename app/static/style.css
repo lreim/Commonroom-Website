@@ -7800,73 +7800,73 @@ html.dark-mode .profile-preview-tag {
 /* Use the scale of the onboarding profile visual instead of the old tiny tooltip. */
 .profile-preview-card,
 .profile-preview-card.post-profile-preview {
-  width: min(340px, calc(100vw - 24px));
-  padding: 18px;
+  width: min(238px, calc(100vw - 24px));
+  padding: 13px;
 }
 
 .profile-preview-header,
 .post-profile-preview .profile-preview-header {
-  gap: 15px;
-  margin-bottom: 14px;
-  padding-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 11px;
 }
 
 .profile-preview-avatar,
 .post-profile-preview .profile-preview-avatar {
-  width: 64px;
-  height: 64px;
-  flex-basis: 64px;
+  width: 45px;
+  height: 45px;
+  flex-basis: 45px;
 }
 
 .profile-preview-kicker {
-  margin-bottom: 6px;
-  font-size: 10px;
+  margin-bottom: 4px;
+  font-size: 8px;
 }
 
 .profile-preview-name {
-  font-size: 22px;
+  font-size: 16px;
 }
 
 .profile-preview-label-badges {
-  gap: 5px;
-  margin-top: 10px;
+  gap: 4px;
+  margin-top: 7px;
 }
 
 .profile-preview-label-badge {
-  padding: 5px 9px;
-  font-size: 10px;
+  padding: 4px 6px;
+  font-size: 8px;
 }
 
 .profile-preview-section,
 .post-profile-preview .profile-preview-section {
-  margin-top: 9px;
-  padding: 12px 13px;
-  border-radius: 17px;
+  margin-top: 6px;
+  padding: 8px 9px;
+  border-radius: 12px;
 }
 
 .profile-preview-section-label,
 .post-profile-preview .profile-preview-section-label {
-  margin-bottom: 6px;
-  font-size: 11px;
+  margin-bottom: 4px;
+  font-size: 8px;
 }
 
 .profile-preview-about,
 .profile-preview-funny-fact,
 .post-profile-preview .profile-preview-about,
 .post-profile-preview .profile-preview-funny-fact {
-  font-size: 13px;
+  font-size: 10px;
 }
 
 .profile-preview-tag {
-  padding: 5px 9px;
-  font-size: 10px;
+  padding: 4px 6px;
+  font-size: 8px;
 }
 
 @media (max-width: 767px) {
   .profile-preview-card,
   .profile-preview-card.post-profile-preview,
   .profile-preview-card.landing-scroll-profile-preview {
-    width: min(82vw, 340px);
+    width: min(57.4vw, 238px);
     max-height: 68vh;
   }
 }
