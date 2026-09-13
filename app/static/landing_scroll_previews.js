@@ -7,7 +7,11 @@
   }
 
   const bubbleLinks = Array.from(document.querySelectorAll(".welcome-bubble-link"));
-  const profileLinks = Array.from(document.querySelectorAll(".homepage-profile-preview-trigger[data-profile-preview]"));
+  const profileLinks = Array.from(
+    document.querySelectorAll(".homepage-profile-preview-trigger[data-profile-preview]")
+  ).filter(function (link, index) {
+    return index % 2 === 1;
+  });
 
   function observeCentered(elements, show, hide) {
     if (elements.length === 0) return;
