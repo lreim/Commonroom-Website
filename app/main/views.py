@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone, timedelta
 from io import StringIO
 from math import sqrt
+from types import SimpleNamespace
 from urllib.parse import urlparse
 from uuid import uuid4
 from zoneinfo import ZoneInfo
@@ -154,6 +155,7 @@ def _validated_analytics_session_token(value):
 
 def _build_visit_timeline(range_key, visits_query=None):
     now = datetime.now(timezone.utc)
+    local_timezone = ZoneInfo("Europe/Zurich")
     if range_key == "24h":
         bucket_count = 24
         bucket_size = timedelta(hours=1)
@@ -195,7 +197,7 @@ def _build_visit_timeline(range_key, visits_query=None):
         bucket_start = first_bucket_start + bucket_size * index
         points.append(
             {
-                "label": bucket_start.strftime(label_format),
+                "label": bucket_start.astimezone(local_timezone).strftime(label_format),
                 "count": counts_by_index[index],
             }
         )
@@ -206,6 +208,7 @@ def _build_visit_timeline(range_key, visits_query=None):
         "max_count": max_count,
         "total_visits": sum(point["count"] for point in points),
         "first_bucket_start": first_bucket_start,
+        "timezone": "Europe/Zurich",
     }
 
 
@@ -632,7 +635,8 @@ def post():
     reply_form = ReplyForm()
     reply_to_id = request.form.get('reply_to_id', type=int)
     if request.method == 'POST' and not current_user.is_authenticated:
-        return redirect(url_for('auth.login', next=request.url))
+        return_path = request.full_path if request.query_string else request.path
+        return redirect(url_for('auth.login', next=return_path))
     submitted_form = reply_form if reply_to_id else form
     if submitted_form.validate_on_submit():
         parent_post = None
@@ -834,13 +838,6 @@ def user(username):
     user = User.query.filter_by(username=username).first_or_404()
     return_to = request.args.get('return_to', type=str)
     posts = user.posts.filter_by(is_starter=False).order_by(Post.timestamp.desc()).all()
-    if is_admin_demo_mode() and user.id == current_user.id:
-        posts = (
-            Post.query
-            .filter_by(is_starter=True, parent_id=None)
-            .order_by(Post.timestamp.desc())
-            .all()
-        )
     recommend_profiles = request.args.get('recommend', 0, type=int) == 1
     recommended_users = []
 
@@ -885,9 +882,20 @@ def admin_profile():
         admin_user = current_user._get_current_object()
     else:
         admin_email = current_app.config.get('TALKTO_ADMIN')
-        if not admin_email:
-            abort(404)
-        admin_user = User.query.filter_by(email=admin_email).first_or_404()
+        admin_user = User.query.filter_by(email=admin_email).first() if admin_email else None
+        if admin_user is None:
+            administrator_role = Role.query.filter_by(name='Administrator').first()
+            if administrator_role is not None:
+                admin_user = (
+                    User.query
+                    .filter_by(role_id=administrator_role.id)
+                    .order_by(User.id.asc())
+                    .first()
+                )
+        if admin_user is None:
+            # Starter posts are platform content and do not require a personal
+            # account to make the public Admin profile available.
+            admin_user = SimpleNamespace(id=None, username='Admin')
     starter_posts = (
         Post.query
         .filter_by(is_starter=True, parent_id=None)

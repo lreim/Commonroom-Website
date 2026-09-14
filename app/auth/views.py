@@ -1,5 +1,6 @@
 import secrets
 import time
+from urllib.parse import parse_qs, urlparse
 
 from authlib.integrations.base_client.errors import OAuthError
 from flask import abort, render_template, redirect, request, url_for, flash, session
@@ -74,6 +75,35 @@ def _safe_oauth_error_code(exc):
     ):
         return 'unrecognized_oauth_error'
     return error_code
+
+
+def _store_return_target_in_oidc_state(eduid_client, response, return_target):
+    """Keep the local destination inside Authlib's short-lived state record."""
+    if not is_safe_local_redirect_target(return_target):
+        return
+    location = response.headers.get('Location', '')
+    state = parse_qs(urlparse(location).query).get('state', [None])[0]
+    framework = getattr(eduid_client, 'framework', None)
+    if not state or framework is None:
+        return
+    state_data = framework.get_state_data(session, state)
+    if not isinstance(state_data, dict):
+        return
+    state_data['return_to'] = return_target
+    framework.set_state_data(session, state, state_data)
+
+
+def _return_target_from_oidc_state(eduid_client):
+    """Read the destination before Authlib validates and consumes the state."""
+    state = request.args.get('state')
+    framework = getattr(eduid_client, 'framework', None)
+    if not state or framework is None:
+        return None
+    state_data = framework.get_state_data(session, state)
+    if not isinstance(state_data, dict):
+        return None
+    return_target = state_data.get('return_to')
+    return return_target if is_safe_local_redirect_target(return_target) else None
 
 
 def _claim_values(userinfo, *claim_names):
@@ -173,9 +203,11 @@ def login():
 
 def legacy_login():
     form = LoginForm()
+    next_url = request.args.get('next')
+    if not is_safe_local_redirect_target(next_url):
+        next_url = None
     if form.validate_on_submit():
         now = datetime.now(timezone.utc)
-        next_url = request.args.get('next')
         email = canonicalize_eth_email(form.email.data)
         user = User.query.filter_by(email=email).first()
 
@@ -189,7 +221,7 @@ def legacy_login():
 
             if user.account_locked_until is not None and user.account_locked_until > now:
                 flash("This account has been temporarily locked. Please check your email for details.")
-                return render_template('auth/login.html', form=form)
+                return render_template('auth/login.html', form=form, next_url=next_url)
 
             if user.login_locked_until is not None and user.login_locked_until <= now:
                 user.login_locked_until = None
@@ -199,14 +231,14 @@ def legacy_login():
 
             if user.login_locked_until is not None and user.login_locked_until > now:
                 flash("Too many failed login attempts. Please try again later.")
-                return render_template('auth/login.html', form=form)
+                return render_template('auth/login.html', form=form, next_url=next_url)
 
             if user.verify_password(form.password.data):
                 _clear_login_failures(user)
 
                 _login_with_demo_mode(user, form.remember_me.data)
                 flash(f"{_login_name(user)} is now locked in!")
-                return redirect(next_url if is_safe_local_redirect_target(next_url) else _default_login_url(user))
+                return redirect(next_url or _default_login_url(user))
 
             user.failed_login_attempts += 1
             if user.failed_login_attempts >= LOGIN_ACCOUNT_MAX_FAILURES:
@@ -215,7 +247,7 @@ def legacy_login():
                 db.session.add(user)
                 db.session.commit()
         flash('Welp, invalid username or password, my friend.')
-    return render_template('auth/login.html', form=form)
+    return render_template('auth/login.html', form=form, next_url=next_url)
 
 
 @auth.route('/eduid/login')
@@ -236,10 +268,13 @@ def eduid_login():
 
     nonce = secrets.token_urlsafe(32)
     try:
-        return _get_eduid_client().authorize_redirect(
+        eduid_client = _get_eduid_client()
+        response = eduid_client.authorize_redirect(
             redirect_uri=current_app.config['OIDC_REDIRECT_URI'],
             nonce=nonce,
         )
+        _store_return_target_in_oidc_state(eduid_client, response, next_url)
+        return response
     except Exception as exc:
         current_app.logger.warning(
             'Could not start OIDC authorization (%s).',
@@ -262,6 +297,7 @@ def eduid_callback():
 
     try:
         eduid_client = _get_eduid_client()
+        state_return_target = _return_target_from_oidc_state(eduid_client)
         # Authlib consumes and validates the session-bound state here. It also
         # verifies the ID token, including issuer, audience, signature and nonce.
         token = eduid_client.authorize_access_token()
@@ -317,7 +353,8 @@ def eduid_callback():
     if user is not None:
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
         _login_with_demo_mode(user)
-        next_url = session.pop(OIDC_NEXT_SESSION_KEY, None)
+        next_url = state_return_target or session.pop(OIDC_NEXT_SESSION_KEY, None)
+        session.pop(OIDC_NEXT_SESSION_KEY, None)
         flash(f'{_login_name(user)} is now locked in!')
         return redirect(next_url if is_safe_local_redirect_target(next_url) else _default_login_url(user))
 
@@ -407,7 +444,10 @@ def eduid_link_account():
     if existing_subject_user is not None:
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
         _login_with_demo_mode(existing_subject_user)
-        return redirect(_default_login_url(existing_subject_user))
+        next_url = session.pop(OIDC_NEXT_SESSION_KEY, None)
+        return redirect(
+            next_url if is_safe_local_redirect_target(next_url) else _default_login_url(existing_subject_user)
+        )
 
     form = OIDCLinkAccountForm()
     if form.validate_on_submit():

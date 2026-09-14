@@ -66,7 +66,7 @@
 </li>
 {% set child_replies = node.replies.order_by(node.__class__.timestamp.asc()).all() %}
 {% if child_replies %}
-<details class="post-thread-branch" data-thread-toggle>
+<details class="post-thread-branch" data-thread-toggle open>
     <summary
         class="post-thread-link"
         data-closed-label="&#8627; {{ child_replies|length }} {% if child_replies|length == 1 %}reply{% else %}replies{% endif %}"

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}User{% endblock %}
 {% block page_content %}
-{% set viewing_admin_demo = (force_admin_demo|default(false)) or (admin_demo_mode and current_user.is_authenticated and user.id == current_user.id) %}
+{% set viewing_admin_demo = force_admin_demo|default(false) %}
 <div
   data-inline-chat-request-root
   data-has-contact-email="{{ 'true' if current_user.is_authenticated and current_user.contact_email else 'false' }}"
@@ -14,10 +14,10 @@
   </p>
   {% endif %}
   <div class="profile-page-identity">
-    <img src="{{ url_for('static', filename='Logo_Website_small.jpg') if viewing_admin_demo else display_avatar_url(user, 120) }}" class="profile-avatar-large{% if viewing_admin_demo %} admin-demo-profile-avatar{% endif %}" alt="Avatar of {% if viewing_admin_demo %}Admin{% else %}{{ display_username(user) }}{% endif %}">
+    <img src="{{ url_for('static', filename='Logo_Website_small.jpg') if viewing_admin_demo else user.gravatar(size=120) }}" class="profile-avatar-large{% if viewing_admin_demo %} admin-demo-profile-avatar{% endif %}" alt="Avatar of {% if viewing_admin_demo %}Admin{% else %}{{ user.username }}{% endif %}">
     <div class="profile-page-heading">
       <div class="profile-page-kicker">{% if viewing_admin_demo %}COMMONROOM ADMIN{% else %}ANONYMOUS PROFILE{% endif %}</div>
-      <h1>{% if viewing_admin_demo %}Admin{% else %}{{ display_username(user) }}{% endif %}</h1>
+      <h1>{% if viewing_admin_demo %}Admin{% else %}{{ user.username }}{% endif %}</h1>
       {% if not viewing_admin_demo and user.profile_label_values %}
       <div class="profile-label-badges">
         {% for label_text in user.profile_label_texts %}

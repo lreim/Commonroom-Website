@@ -59,6 +59,12 @@ class AdminDemoModeTestCase(unittest.TestCase):
         self.assertIn(b'Show my personal profile', demo_response.data)
         self.assertNotIn(b'My personal profile text.', demo_response.data)
 
+        direct_personal_response = self.client.get('/user/personal-admin-name')
+        self.assertEqual(direct_personal_response.status_code, 200)
+        self.assertIn(b'<h1>personal-admin-name</h1>', direct_personal_response.data)
+        self.assertIn(b'My personal profile text.', direct_personal_response.data)
+        self.assertNotIn(b'COMMONROOM ADMIN', direct_personal_response.data)
+
         switch_response = self.client.post('/admin/demo-profile/personal')
 
         self.assertEqual(switch_response.status_code, 302)
@@ -132,6 +138,26 @@ class AdminDemoModeTestCase(unittest.TestCase):
         self.assertEqual(profile_response.status_code, 200)
         self.assertIn(b'No posts have been published yet.', profile_response.data)
         self.assertNotIn(b'No starter posts have been published yet.', profile_response.data)
+
+    def test_public_admin_profile_survives_missing_configured_admin_account(self):
+        ordinary_role = Role.query.filter_by(name='User').one()
+        user = self._create_user(
+            'student@ethz.ch',
+            'ordinary-user',
+            'UserPassword1',
+            role=ordinary_role,
+        )
+        self.app.config['TALKTO_ADMIN'] = 'missing-admin@ethz.ch'
+        self.client.post(
+            '/auth/login',
+            data={'email': user.email, 'password': 'UserPassword1'},
+        )
+
+        response = self.client.get('/admin/profile')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'<h1>Admin</h1>', response.data)
+        self.assertIn(b'COMMONROOM ADMIN', response.data)
 
 
 if __name__ == '__main__':

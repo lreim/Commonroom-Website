@@ -1107,6 +1107,16 @@ html.dark-mode .rules-help-link:focus {
   line-height: 1.5;
 }
 
+.privacy-not-emphasis {
+  padding: 1px 5px 2px;
+  border-radius: 5px;
+  background: #f3dce6;
+  color: #8a3f61;
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
 .privacy-quick-limit {
   margin: 18px 0 0;
   padding: 13px 15px;
@@ -1316,6 +1326,11 @@ html.dark-mode .privacy-quick-summary {
 html.dark-mode .privacy-quick-heading > span,
 html.dark-mode .privacy-quick-card strong {
   color: #b9d6ae;
+}
+
+html.dark-mode .privacy-not-emphasis {
+  background: #583849;
+  color: #dda5be;
 }
 
 html.dark-mode .privacy-quick-heading h2,
@@ -1847,6 +1862,55 @@ html.dark-mode .privacy-contact-callout small {
 .onboarding-search-section-label { margin: 15px 0 8px; color: #2d1d00; font-size: 14px; font-weight: 700; }
 .onboarding-tag-results { display: grid; gap: 10px; }
 
+.onboarding-tagsearch-demo-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.onboarding-tagsearch-demo-main {
+  min-width: 0;
+}
+
+.onboarding-profile-label-demo {
+  margin-top: 15px;
+}
+
+.onboarding-profile-label-demo .profile-label-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 9px 12px;
+  border-radius: 15px;
+  color: #654d34;
+  font-size: 12px;
+}
+
+.onboarding-profile-label-demo > p,
+.onboarding-semantic-status {
+  margin: 6px 0 0;
+  color: #8a7b66;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.onboarding-search-example .tag-matching-profiles-section {
+  margin-top: 12px;
+}
+
+.onboarding-search-example .tag-matching-profiles-heading {
+  margin-bottom: 9px;
+}
+
+.onboarding-search-example .tag-matching-profiles-heading h4 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.onboarding-search-example .tag-matching-profile-card {
+  padding: 9px;
+}
+
 .onboarding-tag-result {
   padding: 13px 14px;
   border: 1px solid #e2d4c0;
@@ -2068,6 +2132,13 @@ html.dark-mode .onboarding-tag-result { border-color: #493e32; }
 html.dark-mode .onboarding-search-section-label { color: #f1ebdd; }
 html.dark-mode .onboarding-tag-score,
 html.dark-mode .onboarding-tag-result-label { color: #cbbfa8; }
+html.dark-mode .onboarding-profile-label-demo .profile-label-selector {
+  border-color: #514336;
+  background: #332a22;
+  color: #e1d5c1;
+}
+html.dark-mode .onboarding-profile-label-demo > p,
+html.dark-mode .onboarding-semantic-status { color: #aa9f8e; }
 html.dark-mode .onboarding-chat-request-profile strong,
 html.dark-mode .onboarding-chat-request-compose h4 { color: #f1ebdd; }
 html.dark-mode .onboarding-chat-request-compose p { color: #cbbfa8; }

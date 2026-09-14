@@ -1,7 +1,9 @@
 import unittest
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from app import create_app, db
+from app.main.views import _build_visit_timeline
 from app.models import PageVisit, Post, Role, User
 
 
@@ -176,6 +178,15 @@ class AnalyticsTestCase(unittest.TestCase):
         self.assertIn(b"Home", response.data)
         self.assertIn(b"Onboarding", response.data)
         self.assertIn(b"Posts", response.data)
+
+    def test_24_hour_timeline_uses_zurich_time_labels(self):
+        timeline = _build_visit_timeline("24h")
+        expected_hour = datetime.now(timezone.utc).astimezone(
+            ZoneInfo("Europe/Zurich")
+        ).strftime("%H:00")
+
+        self.assertEqual(timeline["timezone"], "Europe/Zurich")
+        self.assertEqual(timeline["points"][-1]["label"], expected_hour)
 
     def test_previous_analytics_stays_separate_from_new_analytics(self):
         admin = self._create_user("admin@ethz.ch", "admin-user")

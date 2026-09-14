@@ -104,6 +104,35 @@ class PostEditingTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_reply_count_opens_complete_thread_while_reply_button_stays_inline(self):
+        post = Post(
+            body='Root post with replies',
+            author=self.owner,
+            post_type='question',
+        )
+        reply = Post(
+            body='An existing reply',
+            author=self.other_user,
+            parent=post,
+            post_type='question',
+        )
+        db.session.add_all([post, reply])
+        db.session.commit()
+        self._login('owner@ethz.ch', 'OwnerPassword1')
+
+        feed_response = self.client.get('/post')
+        thread_target = f'/post/{post.id}'
+        self.assertIn(f'href="{thread_target}"'.encode(), feed_response.data)
+        self.assertIn(
+            f'data-reply-toggle id="reply-{post.id}"'.encode(),
+            feed_response.data,
+        )
+
+        thread_response = self.client.get(thread_target)
+        self.assertEqual(thread_response.status_code, 200)
+        self.assertIn(b'class="post-thread-branch" data-thread-toggle open', thread_response.data)
+        self.assertIn(b'An existing reply', thread_response.data)
+
 
 if __name__ == '__main__':
     unittest.main()

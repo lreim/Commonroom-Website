@@ -54,7 +54,7 @@
   <section id="analytics-overview" class="analytics-view-panel is-active" role="tabpanel" data-analytics-panel="overview">
     <div class="analytics-section-heading">
       <div>
-        <span>Selected period</span>
+        <span>SELECTED PERIOD · LOCAL TIME · EUROPE/ZURICH</span>
         <h2>What happened over time?</h2>
       </div>
       <p>{{ visit_timeline.total_visits }} tracked visits · highest bucket {{ visit_timeline.max_count }}</p>
@@ -168,7 +168,7 @@
           <i class="analytics-segment-email" style="width: {{ (profiles_with_contact_email / total_profiles * 100) if total_profiles else 0 }}%;"></i>
           <i class="analytics-segment-no-email" style="width: {{ (profiles_without_contact_email / total_profiles * 100) if total_profiles else 0 }}%;"></i>
         </div>
-        <p class="analytics-card-note">Only whether an optional contact email exists is counted. The addresses are not shown here.</p>
+        <p class="analytics-card-note">Only whether an optional contact email exists is counted. The addresses are <em class="privacy-not-emphasis">not</em> shown here.</p>
       </article>
 
       <article class="analytics-breakdown-card">
@@ -306,7 +306,7 @@
 
     <div class="analytics-privacy-note">
       <strong>Newsletter and QR links must be tagged:</strong>
-      Use <code>utm_medium=email</code> for email and <code>utm_medium=qr</code> for QR codes. Without these tags, an unreferenced visit is counted as Direct. CommonRoom stores only the selected UTM labels and an external referrer domain, never the full referring URL.
+      Use <code>utm_medium=email</code> for email and <code>utm_medium=qr</code> for QR codes. Without these tags, an unreferenced visit is counted as Direct. CommonRoom stores only the selected UTM labels and an external referrer domain, <em class="privacy-not-emphasis">never</em> the full referring URL.
     </div>
 
     <div class="analytics-journey-grid">

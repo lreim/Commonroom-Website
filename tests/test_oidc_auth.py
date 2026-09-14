@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from authlib.integrations.base_client.errors import OAuthError
-from flask import redirect
+from flask import redirect, session
 
 from app import create_app, db
 from app.auth.views import OIDC_PENDING_PROFILE_SESSION_KEY
@@ -16,10 +16,19 @@ class FakeEduIDClient:
         self.callback_error = callback_error
         self.userinfo_claims = userinfo
         self.redirect_kwargs = None
+        self.framework = FakeStateFramework()
 
     def authorize_redirect(self, **kwargs):
         self.redirect_kwargs = kwargs
-        return redirect('https://login.eduid.ch/authorize')
+        self.framework.set_state_data(
+            session,
+            'fake-state',
+            {
+                'redirect_uri': kwargs.get('redirect_uri'),
+                'nonce': kwargs.get('nonce'),
+            },
+        )
+        return redirect('https://login.eduid.ch/authorize?state=fake-state')
 
     def authorize_access_token(self):
         if self.callback_error:
@@ -30,6 +39,19 @@ class FakeEduIDClient:
         if self.userinfo_claims is not None:
             return self.userinfo_claims
         return token['userinfo']
+
+
+class FakeStateFramework:
+    @staticmethod
+    def _key(state):
+        return f'_state_eduid_{state}'
+
+    def get_state_data(self, client_session, state):
+        stored = client_session.get(self._key(state))
+        return stored.get('data') if isinstance(stored, dict) else None
+
+    def set_state_data(self, client_session, state, data):
+        client_session[self._key(state)] = {'data': data}
 
 
 class OIDCAuthTestCase(unittest.TestCase):
@@ -96,6 +118,56 @@ class OIDCAuthTestCase(unittest.TestCase):
         with self.client.session_transaction() as client_session:
             self.assertEqual(client_session.get('_user_id'), str(user.id))
 
+    def test_legacy_login_returns_to_requested_local_page(self):
+        user = User(
+            email='student@ethz.ch',
+            username='legacy-user',
+            password='LegacyPassword1',
+            confirmed=True,
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        response = self.client.post(
+            '/auth/login?next=/rules',
+            data={
+                'email': 'student@ethz.ch',
+                'password': 'LegacyPassword1',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith('/rules'))
+
+    def test_navbar_login_keeps_the_current_page_as_destination(self):
+        response = self.client.get('/rules')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'/auth/login?next=/rules', response.data)
+
+    def test_existing_oidc_user_returns_to_requested_page(self):
+        self._enable_oidc()
+        user = User(
+            username='existing-user',
+            oidc_sub='existing-subject',
+            confirmed=True,
+        )
+        db.session.add(user)
+        db.session.commit()
+        fake_client = FakeEduIDClient(token=self._student_token('existing-subject'))
+
+        with patch('app.auth.views._get_eduid_client', return_value=FakeEduIDClient()):
+            login_response = self.client.get('/auth/login?next=/rules')
+        self.assertEqual(login_response.status_code, 302)
+        with self.client.session_transaction() as client_session:
+            client_session.pop('oidc_next_url', None)
+
+        with patch('app.auth.views._get_eduid_client', return_value=fake_client):
+            callback_response = self.client.get('/auth/eduid/callback?state=fake-state')
+
+        self.assertEqual(callback_response.status_code, 302)
+        self.assertTrue(callback_response.location.endswith('/rules'))
+
     def test_oidc_mode_uses_oidc_for_normal_login(self):
         self.app.config['AUTH_MODE'] = 'oidc'
         fake_client = FakeEduIDClient()
@@ -103,7 +175,7 @@ class OIDCAuthTestCase(unittest.TestCase):
             response = self.client.get('/auth/login')
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, 'https://login.eduid.ch/authorize')
+        self.assertEqual(response.location, 'https://login.eduid.ch/authorize?state=fake-state')
         self.assertEqual(self.client.get('/auth/legacy/login').status_code, 404)
         self.assertEqual(
             fake_client.redirect_kwargs['redirect_uri'],
@@ -118,7 +190,7 @@ class OIDCAuthTestCase(unittest.TestCase):
             response = self.client.get('/auth/register?next=/post')
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.location, 'https://login.eduid.ch/authorize')
+        self.assertEqual(response.location, 'https://login.eduid.ch/authorize?state=fake-state')
         with self.client.session_transaction() as client_session:
             self.assertEqual(client_session.get('oidc_next_url'), '/post')
 

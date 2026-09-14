@@ -43,7 +43,7 @@
                 {% if current_user.is_authenticated %}
                     as {{ display_username(current_user) }}
                 {% else %}
-                    <a href="{{ url_for('auth.login', next=request.url) }}">(log in)</a>
+                    <a href="{{ url_for('auth.login', next=request.full_path if request.query_string else request.path) }}">(log in)</a>
                 {% endif %}
                 </span>
             </div>
@@ -127,7 +127,7 @@
                     <span class="post-like-count">{{ post.liked_by.count() }}</span>
                 </button>
                 {% else %}
-                <a class="post-like-button" href="{{ url_for('auth.login', next=request.url) }}">
+                <a class="post-like-button" href="{{ url_for('auth.login', next=request.full_path if request.query_string else request.path) }}">
                     <span class="post-relate-label">Relate</span>
                     <span aria-hidden="true">·</span>
                     <span class="post-like-count">{{ post.liked_by.count() }}</span>
@@ -147,7 +147,7 @@
             <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=post.id, next=request.full_path if request.query_string else request.path) }}">Edit</a>
             {% endif %}
             {% if current_user.is_authenticated %}
-            <details class="post-reply-box" data-reply-toggle>
+            <details class="post-reply-box" data-reply-toggle id="reply-{{ post.id }}"{% if request.args.get('reply_to')|int == post.id %} open{% endif %}>
                 <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
                 <form method="post" action="{{ url_for('main.post') }}">
                     {{ reply_form.hidden_tag() }}
@@ -159,7 +159,7 @@
                 </form>
             </details>
             {% else %}
-            <a class="post-reply-register" href="{{ url_for('auth.login', next=request.url) }}">Reply</a>
+            <a class="post-reply-register" href="{{ url_for('auth.login', next=url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id)) }}">Reply</a>
             {% endif %}
         </div>
     </li>

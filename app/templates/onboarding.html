@@ -25,7 +25,7 @@
         <p>A pseudonymous pairwise identifier and the student affiliation needed for access.</p>
       </article>
       <article class="privacy-quick-card">
-        <strong>What CommonRoom does not take from SWITCH</strong>
+        <strong>What CommonRoom does <em class="privacy-not-emphasis">not</em> take from SWITCH</strong>
         <p>No name, institutional email address, or public university identifier.</p>
       </article>
       <article class="privacy-quick-card">
@@ -34,7 +34,7 @@
       </article>
       <article class="privacy-quick-card">
         <strong>Your optional contact email</strong>
-        <p>Any valid address works. It stays private and is used for chat-request notifications, never as a public profile field.</p>
+        <p>Any valid address works. It stays private and is used for chat-request notifications, <em class="privacy-not-emphasis">never</em> as a public profile field.</p>
       </article>
     </div>
     <p class="privacy-quick-limit">
@@ -114,7 +114,7 @@
       <span class="onboarding-step-number" aria-hidden="true">3</span>
       <h2 id="onboarding-profile">Your anonymous little corner</h2>
       <p>Your username is generated automatically. Your profile gives others a little context about the person behind the anonymous name — without revealing who you actually are.</p>
-      <p>If you signed in with edu-ID, CommonRoom stores the pairwise identifier for your account, not your SWITCH name or institutional email address. Your optional contact email is entered by you separately and is never shown publicly.</p>
+      <p>If you signed in with edu-ID, CommonRoom stores the pairwise identifier for your account, <em class="privacy-not-emphasis">not</em> your SWITCH name or institutional email address. Your optional contact email is entered by you separately and is <em class="privacy-not-emphasis">never</em> shown publicly.</p>
       <p>You don't have to complete it before doing anything else. Look around first and come back to it whenever you want. Once you are signed in, you can find your profile and settings through the avatar menu in the top right.</p>
       <p>Add something in “About me”, share a funny fact, or answer an icebreaker so your profile feels less like a soulless bot profile. You can change everything later — just remember to save your changes.</p>
       <h3>Tags are things you can relate to</h3>
@@ -184,49 +184,103 @@
       <p class="onboarding-side-note">Selected tags stay highlighted, and matching profiles show which experiences overlap. You can combine tags or use semantic search when you do not know the exact wording. Other students can also find you through the things you have chosen to share — and may take the first step themselves.</p>
     </div>
 
-    <div class="onboarding-visual onboarding-search-example" aria-label="Example CommonRoom tag search and matching profiles">
-      <div class="onboarding-visual-title">Find someone who might get it</div>
-      <div class="onboarding-search-field"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> exam stress, study motivation</div>
-      <div class="onboarding-search-section-label">Selected Tags</div>
-      <div class="onboarding-selected-tags"><span class="label label-primary">exam stress</span><span class="label label-primary">study motivation</span></div>
-      <div class="onboarding-search-section-label">Matches</div>
-      <div class="onboarding-tag-results">
-        <article class="onboarding-tag-result">
-          <div><span class="label label-primary">exam stress</span><span class="onboarding-tag-score">score 1.00</span></div>
-          <span class="onboarding-tag-result-label">Matching profile:</span>
-          <a
-            href="{{ url_for('main.tag_search') }}"
-            class="onboarding-tag-profile-link"
-            data-profile-preview='{{ {
-              "username": "lucid-prime-8729",
-              "name": "lucid-prime-8729",
-              "about_me": "Still figuring out how to handle pressure without losing sight of everything else.",
-              "funny_fact": "I can recognize most ETH buildings by their coffee machines.",
-              "tags": ["exam stress", "study motivation", "procrastination"],
-              "profile_labels": ["Happy to Share Experience", "Happy to Listen"],
-              "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-prime-8729&size=120"
-            }|tojson }}'
-          >lucid-prime-8729</a>
-        </article>
-        <article class="onboarding-tag-result">
-          <div><span class="label label-info">study pressure</span><span class="onboarding-tag-score">score 0.74</span></div>
-          <span class="onboarding-tag-result-label">Matching profile:</span>
-          <a
-            href="{{ url_for('main.tag_search') }}"
-            class="onboarding-tag-profile-link"
-            data-profile-preview='{{ {
-              "username": "steady-orbit-6724",
-              "name": "steady-orbit-6724",
-              "about_me": "Learning to make university life a little less all-or-nothing.",
-              "funny_fact": "My plants have survived more exam phases than I have.",
-              "tags": ["study pressure", "study motivation", "work life balance"],
-              "profile_labels": ["Happy to Share Experience"],
-              "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&size=120"
-            }|tojson }}'
-          >steady-orbit-6724</a>
-        </article>
+    <div class="onboarding-visual onboarding-search-example tag-design-widget" aria-label="Example of the current CommonRoom tag search and matching profiles">
+      <div class="onboarding-tagsearch-demo-layout">
+        <div class="onboarding-tagsearch-demo-main">
+          <div class="onboarding-search-field">exam stress</div>
+
+          <div class="onboarding-profile-label-demo">
+            <div class="onboarding-search-section-label">Profile labels</div>
+            <div class="profile-label-selector"><span>No profile label selected</span><span aria-hidden="true">+</span></div>
+            <p>You can filter matching profiles by one or several profile labels.</p>
+          </div>
+
+          <div class="onboarding-search-section-label">Selected Tags</div>
+          <div class="onboarding-selected-tags">
+            <span class="label label-primary">exam stress</span>
+            <span class="label label-primary">study motivation</span>
+          </div>
+
+          <div class="onboarding-search-section-label">Matches</div>
+          <p class="onboarding-semantic-status">Semantic tag index is active.</p>
+
+          <section class="tag-matching-profiles-section">
+            <div class="tag-matching-profiles-heading">
+              <h4>Matching profiles</h4>
+              <span>2 found</span>
+            </div>
+            <div class="tag-matching-profiles-grid">
+              <article class="tag-matching-profile-card">
+                <div class="tag-matching-profile-header">
+                  <img class="tag-matching-profile-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-prime-8729&amp;size=120" alt="Avatar of lucid-prime-8729">
+                  <div class="tag-matching-profile-identity">
+                    <a
+                      href="{{ url_for('main.tag_search') }}"
+                      class="tag-matching-profile-name"
+                      data-profile-preview='{{ {
+                        "username": "lucid-prime-8729",
+                        "name": "lucid-prime-8729",
+                        "about_me": "Still figuring out how to handle pressure without losing sight of everything else.",
+                        "funny_fact": "I can recognize most ETH buildings by their coffee machines.",
+                        "tags": ["exam stress", "study motivation", "procrastination"],
+                        "profile_labels": ["Happy to Share Experience", "Happy to Listen"],
+                        "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-prime-8729&size=120"
+                      }|tojson }}'
+                    >lucid-prime-8729</a>
+                    <span class="tag-matching-profile-overlap">2 topics in common</span>
+                  </div>
+                </div>
+                <div class="tag-matching-profile-tags-panel">
+                  <strong>Matching tags</strong>
+                  <div class="tag-matching-profile-tags">
+                    <span class="label label-info">exam stress</span>
+                    <span class="label label-info">study motivation</span>
+                  </div>
+                </div>
+                <div class="tag-matching-profile-other-tags">
+                  <strong>Other profile tags</strong>
+                  <div class="tag-matching-profile-other-tags-list"><span class="label label-default">procrastination</span></div>
+                </div>
+              </article>
+
+              <article class="tag-matching-profile-card">
+                <div class="tag-matching-profile-header">
+                  <img class="tag-matching-profile-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&amp;size=120" alt="Avatar of steady-orbit-6724">
+                  <div class="tag-matching-profile-identity">
+                    <a
+                      href="{{ url_for('main.tag_search') }}"
+                      class="tag-matching-profile-name"
+                      data-profile-preview='{{ {
+                        "username": "steady-orbit-6724",
+                        "name": "steady-orbit-6724",
+                        "about_me": "Learning to make university life a little less all-or-nothing.",
+                        "funny_fact": "My plants have survived more exam phases than I have.",
+                        "tags": ["exam stress", "study pressure", "work life balance"],
+                        "profile_labels": ["Happy to Share Experience"],
+                        "avatar_url": "https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&size=120"
+                      }|tojson }}'
+                    >steady-orbit-6724</a>
+                    <span class="tag-matching-profile-overlap">1 topic in common</span>
+                  </div>
+                </div>
+                <div class="tag-matching-profile-tags-panel">
+                  <strong>Matching tags</strong>
+                  <div class="tag-matching-profile-tags"><span class="label label-info">exam stress</span></div>
+                </div>
+                <div class="tag-matching-profile-other-tags">
+                  <strong>Other profile tags</strong>
+                  <div class="tag-matching-profile-other-tags-list">
+                    <span class="label label-default">study pressure</span>
+                    <span class="label label-default">work life balance</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+
       </div>
-      <p class="onboarding-search-hint">Hover over a username to preview the profile and matching experiences.</p>
+      <p class="onboarding-search-hint">Hover over a profile to see the same anonymous profile preview used across CommonRoom.</p>
     </div>
   </section>
 
@@ -256,7 +310,7 @@
 I found your profile on CommonRoom and would like to start a conversation with you.
 
 What I would like to talk about:
-- career uncertainty</textarea>
+- exam stress and making a realistic study plan</textarea>
         <div class="chat-request-compose-actions">
           <span class="btn btn-primary onboarding-example-button">Send request</span>
           <span class="btn btn-default onboarding-example-button">Cancel</span>
@@ -274,13 +328,13 @@ What I would like to talk about:
         <ul class="chat-messages">
           <li class="chat-message">
             <div class="chat-message-stack">
-              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">lucid-vector-1842</span></div><div class="chat-body">I saw you've also dealt with career uncertainty. How did you figure out whether your direction was right?</div></div>
+              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">lucid-vector-1842</span></div><div class="chat-body">I saw you've also dealt with exam stress. How did you make a study plan when everything already felt behind?</div></div>
               <span class="chat-time">12.09.2026 18:42</span>
             </div>
           </li>
           <li class="chat-message chat-message-own">
             <div class="chat-message-stack">
-              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">gentle-lattice-9721</span></div><div class="chat-body">Honestly, it took me quite a while. But I can tell you what eventually helped me decide :)</div></div>
+              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">gentle-lattice-9721</span></div><div class="chat-body">I started with one course and planned only the next three days. That made it feel much less impossible :)</div></div>
               <span class="chat-time">12.09.2026 18:44</span>
             </div>
           </li>

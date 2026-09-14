@@ -68,7 +68,8 @@
         {%else%}
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
-        <li><a href="{{ url_for('auth.login')}}">Sign In</a></li>
+        {% set login_return_path = request.full_path if request.query_string else request.path %}
+        <li><a href="{{ url_for('auth.login', next=login_return_path) if request.endpoint != 'auth.login' else url_for('auth.login') }}">Sign In</a></li>
         {%endif%}
       </ul>
       <div class="navbar-right-controls">
