@@ -2292,15 +2292,6 @@ body {
   opacity: 0.86;
 }
 
-.commonroom-site-footer .commonroom-site-footer-vmp-logo {
-  display: block;
-  width: 43px;
-  height: 40px;
-  object-fit: contain;
-  filter: invert(1);
-  opacity: 0.82;
-}
-
 @media (max-width: 767px) {
   .commonroom-site-footer {
     padding: 15px 20px 82px;
@@ -6478,11 +6469,6 @@ html.dark-mode .commonroom-site-footer-inner {
 
 html.dark-mode .commonroom-site-footer .commonroom-site-footer-eth-logo {
   filter: invert(1);
-  opacity: 0.88;
-}
-
-html.dark-mode .commonroom-site-footer .commonroom-site-footer-vmp-logo {
-  filter: none;
   opacity: 0.88;
 }
 
