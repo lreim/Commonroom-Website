@@ -9,8 +9,8 @@
 
 <div class="reading-page">
   <p class="about-editorial-summary"><strong>In short:</strong><br>
-    CommonRoom verifies access while keeping your public identity pseudonymous. It does not import your name,
-    institutional email address, or public university identifier from SWITCH edu-ID. You decide what appears on your profile.
+    SWITCH edu-ID confirms that you are a student. CommonRoom does not import your name, institutional email address,
+    or public university identifier. Other students see only your generated identity and what you choose to share.
   </p>
 
   <section class="privacy-quick-summary privacy-quick-summary-page" aria-labelledby="privacy-at-a-glance-title">
@@ -19,20 +19,20 @@
     </div>
     <div class="privacy-quick-grid">
       <article class="privacy-quick-card privacy-quick-card-stored">
-        <strong>Stored for your account</strong>
-        <p>A generated username, the pairwise edu-ID identifier when used, optional private contact email, chosen profile content, posts, chat requests, messages, and necessary activity metadata.</p>
+        <strong>What CommonRoom receives</strong>
+        <p>A pseudonymous identifier that belongs only to CommonRoom and confirmation that you are a student.</p>
       </article>
       <article class="privacy-quick-card privacy-quick-card-not-stored">
-        <strong>Not imported from SWITCH</strong>
-        <p>No name, institutional email address, or public university identifier. Tokens and authorization codes are not saved in your CommonRoom account.</p>
+        <strong>What stays with SWITCH</strong>
+        <p>Your name, institutional email address, and public university identifier are not imported into CommonRoom.</p>
       </article>
       <article class="privacy-quick-card">
-        <strong>Never public profile data</strong>
-        <p>Your login email, optional contact email, password hash, pairwise identifier, and internal account ID are not shown to other students.</p>
+        <strong>What other students see</strong>
+        <p>Your generated username and avatar, plus profile information, posts, and replies that you choose to publish.</p>
       </article>
       <article class="privacy-quick-card">
-        <strong>Security controls</strong>
-        <p>OIDC state and nonce checks, CSRF protection, secure production cookies, session limits, hashed legacy passwords, login throttling, signed email links, chat consent, and blocking.</p>
+        <strong>What remains private</strong>
+        <p>Your optional contact email, edu-ID identifier, and internal account information are not shown on your profile.</p>
       </article>
     </div>
     <p class="privacy-quick-limit">
@@ -40,281 +40,97 @@
     </p>
   </section>
 
-  <h3>SWITCH edu-ID and the pairwise identifier</h3>
-  <p>
-    With edu-ID login, CommonRoom requests only OpenID access plus the affiliation needed to confirm that <code>student</code> is present.
-    The verified pairwise <code>sub</code> value connects future sign-ins to the same anonymous CommonRoom account.
-    Because it is pairwise, it is specific to this client rather than a public university-wide identifier.
-  </p>
-  <p>
-    CommonRoom does not request or store your SWITCH name, institutional email address, or public unique identifier.
-    The login response is checked through OIDC discovery, issuer validation, state, nonce, and token validation.
-    Access tokens, ID tokens, authorization codes, and complete OIDC responses are not stored in the user profile and are not deliberately logged.
-  </p>
+  <section class="privacy-details" aria-labelledby="privacy-details-title">
+    <header class="privacy-details-heading">
+      <h2 id="privacy-details-title">More details</h2>
+    </header>
 
-  <h3>What data is used</h3>
-  <p>
-    At the moment, the platform uses your login email address where legacy login requires one, an optional private contact email,
-    a generated username, a password hash where legacy login requires one, optional profile text,
-    optional funny fact / icebreaker text, optional profile labels, selected tags, chat requests, chat messages,
-    and basic activity timestamps such as when an account was created or last seen.
-  </p>
+    <details class="privacy-detail">
+      <summary>
+        <span class="privacy-detail-number" aria-hidden="true">01</span>
+        <span class="privacy-detail-heading-copy">
+          <strong>Your account and identity</strong>
+          <small>Why your SWITCH identity does not become your CommonRoom identity.</small>
+        </span>
+        <span class="privacy-detail-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="privacy-detail-content">
+        <p>SWITCH tells CommonRoom only that the sign-in is valid, that the account has student affiliation, and provides a pairwise, pseudonymous identifier used to recognise the same account next time.</p>
+        <p>CommonRoom does not import your name, institutional email address, or public university identifier. Your public account uses a generated username and avatar instead.</p>
+        <p>The identifier from SWITCH is stored privately and is not visible to other students. Your sign-in is protected through the established SWITCH edu-ID login and a secure CommonRoom session.</p>
+      </div>
+    </details>
 
-  <p>
-    Some of this data is required for the platform to function at all, and some of it is optional and only exists
-    because you decide to add it to your profile.
-  </p>
+    <details class="privacy-detail">
+      <summary>
+        <span class="privacy-detail-number" aria-hidden="true">02</span>
+        <span class="privacy-detail-heading-copy">
+          <strong>Your public profile</strong>
+          <small>What is visible and what you control yourself.</small>
+        </span>
+        <span class="privacy-detail-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="privacy-detail-content">
+        <p>Other students can see your generated username, avatar, selected tags and profile labels, as well as anything you write in your profile, posts, or replies.</p>
+        <p>You decide what to write. To stay anonymous, do not add your name, contact details, or other information that could identify you to free-text fields.</p>
+        <p>Your optional contact email, edu-ID identifier, and internal account ID are never shown on your public profile.</p>
+      </div>
+    </details>
 
-  <h3>Email, contact, and account identity</h3>
-  <p>
-    With legacy authentication, your login email address is used for registration, login, confirmation, password reset,
-    and email changes. A separate, optional contact email can be any valid email address and is used for chat-request emails.
-    It is stored internally and is never shown on your public profile. SWITCH edu-ID does not provide or populate this field.
-  </p>
+    <details class="privacy-detail">
+      <summary>
+        <span class="privacy-detail-number" aria-hidden="true">03</span>
+        <span class="privacy-detail-heading-copy">
+          <strong>Chats, contact, and safety</strong>
+          <small>What is stored when you contact another student.</small>
+        </span>
+        <span class="privacy-detail-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="privacy-detail-content">
+        <p>You may add any valid email address to receive chat-request notifications. It is separate from SWITCH, remains private, and is never shown to other students. You can remove it again.</p>
+        <p>A chat begins only after the other person accepts a request. Messages are accessible only to the two participating accounts, but they are stored on the CommonRoom server and are not end-to-end encrypted.</p>
+        <p>You can block another account. This prevents new requests and further messages between those accounts.</p>
+      </div>
+    </details>
 
-  <p>
-    A contact email is required before a user can send or receive a chat request by email. It can be removed again, but chat-request email functionality
-    then remains unavailable until another address is provided. It is used for contact and notifications, not as part of the public anonymous identity.
-  </p>
+    <details class="privacy-detail">
+      <summary>
+        <span class="privacy-detail-number" aria-hidden="true">04</span>
+        <span class="privacy-detail-heading-copy">
+          <strong>Technical data and analytics</strong>
+          <small>What is measured when you visit the website.</small>
+        </span>
+        <span class="privacy-detail-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="privacy-detail-content">
+        <p>CommonRoom uses limited internal statistics to understand which main pages are used, whether visits come from a tagged campaign, and whether the website works across devices.</p>
+        <p>These statistics do not contain chat or post content, profile text, searches, email addresses, or SWITCH identifiers. CommonRoom does not use advertising trackers, browser fingerprinting, or IP addresses to identify visitors.</p>
+        <p>The hosting provider may keep technical server logs needed to operate, secure, and troubleshoot the website. These logs are separate from CommonRoom’s internal statistics.</p>
+      </div>
+    </details>
 
-  <h3>Passwords</h3>
-  <p>
-    Your password itself is not stored in readable form.
-    The application stores only a password hash, so the raw password is not directly known from the database.
-    Password resets and account confirmation also use signed, time-limited tokens instead of plain links without verification.
-  </p>
+    <details class="privacy-detail privacy-detail-limit">
+      <summary>
+        <span class="privacy-detail-number" aria-hidden="true">05</span>
+        <span class="privacy-detail-heading-copy">
+          <strong>Your choices and current limits</strong>
+          <small>What you can control and what CommonRoom cannot promise.</small>
+        </span>
+        <span class="privacy-detail-toggle" aria-hidden="true"></span>
+      </summary>
+      <div class="privacy-detail-content">
+        <p>You control what you write publicly and whether you add a private contact email.</p>
+        <p>Chats are stored on the server and are not end-to-end encrypted. Contact emails are not protected by a separate encrypted-at-rest email system. Access controls and secure transport reduce risk, but no online service can promise that stored data could never be exposed in a security incident.</p>
+      </div>
+    </details>
+  </section>
 
-  <h3>Generated usernames and anonymity</h3>
-  <p>
-    Usernames are generated automatically instead of asking users to invent their own public name.
-    The point of that is to reduce personal hints, identity markers, and unnecessary self-exposure.
-    The platform is designed so that your public-facing identity is mainly this generated username and the information
-    you voluntarily choose to put into your profile.
-  </p>
-
-  <h3>Profile information you choose to share</h3>
-  <p>
-    The "About me" field, the funny-fact / icebreaker field, your selected profile labels, and your tags are there
-    to help other users understand whether you might be a good fit for a conversation.
-    These fields are optional or partly optional, and you decide how much you want to reveal.
-    Because this project is meant to be low-threshold and privacy-aware, I strongly recommend not putting directly identifying
-    information into free-text profile fields.
-  </p>
-
-  <h3>Tags</h3>
-  <p>
-    Tags are an important part of how matching works.
-    They are intentionally curated instead of fully user-generated, so that the platform does not fragment into too many near-duplicates,
-    overly specific private tags, or tags that do not fit the purpose of the project.
-    If something important is missing, users can reach out and suggest additions.
-  </p>
-
-  <h3>Chat requests and chat messages</h3>
-  <p>
-    Chat data is the most sensitive part of the platform.
-    Messages are stored because the chat must still exist when one user is offline and comes back later.
-    Chat requests are also stored with their status so that the app can distinguish between pending, accepted, and rejected requests.
-    Each chat is designed as a 1:1 conversation between exactly two users, not as a group chat or public chat room.
-  </p>
-
-  <p>
-    A chat does not start immediately when one person wants to talk to another.
-    Instead, a request is created first, an email is sent, and the other person has to explicitly accept it.
-    Only after acceptance does the actual conversation become active.
-    This is meant to reduce pressure and give users more control over who can contact them.
-  </p>
-
-  <h3>Access control inside chats</h3>
-  <p>
-    Chat access is restricted to the users who actually belong to a conversation.
-    The server checks this both for the normal page request and for real-time chat events.
-    In addition, users can block each other.
-    If a block relationship exists, new chat requests are prevented and messages can no longer be sent in that conversation.
-  </p>
-
-  <h3>Notifications and activity information</h3>
-  <p>
-    The notification bell currently shows lightweight activity information such as new messages, new incoming requests,
-    or responses to your own requests.
-    This is not implemented as a large permanent notification archive.
-    The app mainly keeps a small session-based "seen" timestamp so it can decide whether an activity should still count as new.
-  </p>
-
-  <h3>Email-based flows and signed tokens</h3>
-  <p>
-    Several important actions use signed tokens with expiry limits, including account confirmation, password reset,
-    email change confirmation, and accept / reject links for chat requests sent by email.
-    This is meant to avoid insecure unauthenticated actions and to make sure that email-based actions are tied to the correct account
-    and valid only for a limited amount of time.
-  </p>
-
-  <h3>Abuse prevention and moderation-related choices</h3>
-  <p>
-    A few basic safety decisions are built into the platform.
-    The app can restrict chat access through block relationships.
-    It uses generic messaging on password-reset requests so outsiders cannot easily learn whether a given email address is registered.
-    New registrations also trigger an internal email notification to the host, which is a simple moderation and oversight measure.
-    This registration notification does not need to expose the registering user's email address to the host as part of the notification itself,
-    but can still point to the newly created user profile.
-  </p>
-
-  <p>
-    Block relationships are also stored internally.
-    This means that, if necessary, it is possible to review who blocked whom in order to better understand repeated problems or patterns of misuse.
-    In serious or repeated cases, this can also help identify a user who is being reported or who stands out through unusually frequent blocking by others.
-  </p>
-
-  <p>
-    Users also have a dedicated report-abuse contact option while logged in.
-    This is not a fully automated moderation system, but it gives users a direct way to flag a problem.
-  </p>
-
-  <h3>Sessions and login safety</h3>
-  <p>
-    The app uses a session timeout and supports a "Keep me logged in" login option.
-    In the current configuration, the permanent session lifetime is set to 20 minutes and the corresponding long-lived login duration is set to 7 days.
-    The idea is to reduce the risk of a session staying open forever when someone walks away from their device.
-  </p>
-
-  <p>
-    In production, session and remember-me cookies are marked Secure and HttpOnly and use SameSite=Lax.
-    Forms and state-changing requests are protected against cross-site request forgery. Repeated failed legacy logins are throttled and can temporarily lock an account.
-  </p>
-
-  <h3>Server provider logs and statistics</h3>
-  <p>
-    The platform is hosted on Hetzner infrastructure.
-    This also means that some basic server-side access data can exist at the hosting level, for example in the form of traffic statistics
-    or server and web logs that are relevant for stability, debugging, and security.
-    According to Hetzner's own documentation, this kind of hosting-related logging can include technical request data such as timestamps,
-    requested resources, status codes, referrer information, and browser user-agent data.
-    Hetzner also describes that IP addresses in webserver logs are anonymized there and that statistics tools such as AWStats or Report Magic
-    can be used on hosting level to evaluate log data in aggregated form.
-    This is not the same thing as building additional personal behavior tracking into the platform itself, but it is still part of the technical environment
-    in which the website runs and should therefore be mentioned transparently.
-  </p>
-
-  <h3>Internal page analytics</h3>
-  <p>
-    In addition to hosting-level logs, the platform now also keeps a small internal analytics table for a limited set of public product pages.
-    This is currently restricted to Home and the main navbar pages such as About, Onboarding, Rules, Feedback, Tagsearch, Chats, Posts,
-    Get Help Now, and Data and Privacy.
-    The goal is not to inspect private content, but to understand basic usage patterns of the platform itself.
-  </p>
-
-  <p>
-    What is stored there is intentionally narrow: the visited page key, the matching path without URL query parameters, the visit duration in seconds,
-    a generated visit token to prevent duplicate records, the timestamp range of the visit, a random browser-tab session token,
-    the analytics version and, if the visitor is logged in, the internal user id.
-    This analytics table is not meant to store chat content, post content, search text, or message bodies.
-  </p>
-
-  <p>
-    To understand whether a browser-tab session arrived directly, through an email newsletter, a QR code, or an external referral,
-    the platform can also store the explicitly supplied <code>utm_source</code>, <code>utm_medium</code>, and <code>utm_campaign</code> labels.
-    For an external referral, only the referrer's domain can be stored, not its complete URL or path.
-    Newsletter and QR attribution therefore works reliably only when the shared links contain those labels; otherwise an unreferenced visit appears as direct.
-  </p>
-
-  <p>
-    Analytics records from before the expanded tracking version remain preserved as a separate historical view and are not mixed into the new charts.
-    Administrators can export the displayed statistics as aggregate CSV files. Those exports do not include user ids, email addresses,
-    visit or session tokens, OIDC identifiers, full URLs, post content, or chat content.
-  </p>
-
-  <p>
-    The random session token makes it possible to view aggregated page paths such as Home → Onboarding → Posts.
-    It exists only for the current browser tab through session storage and is not based on an IP address, email address,
-    SWITCH edu-ID identifier, browser fingerprint, or advertising identifier.
-    The analytics overview shows combined path counts rather than a named person's browsing history.
-  </p>
-
-  <p>
-    Just as important is what is not stored there.
-    This internal analytics is not designed to collect message content, profile text content, tag-search input, email addresses,
-    passwords, abuse-report text, contact-form text, or private chat metadata at the level of individual conversation content.
-    It also does not create a personal dossier about a user's thoughts, problems, or support requests.
-  </p>
-
-  <p>
-    Some basic safeguards are built into this tracking route as well.
-    It only accepts the predefined tracked pages, checks that the request comes from the same origin,
-    rejects path / page-key combinations that do not fit together, limits the stored duration to a reasonable maximum,
-    and ignores duplicate visit tokens.
-    That does not make it mathematically impossible to manipulate, but it is meant to keep the tracking narrow, lightweight, and harder to pollute accidentally.
-  </p>
-
-  <p>
-    Also important: this internal analytics currently counts visits, not unique persons.
-    This means that the same user can appear multiple times in the statistics if they visit the same page repeatedly or return later.
-    The current internal analytics table also does not use IP addresses to deduplicate visitors there.
-  </p>
-
-  <p>
-    That also means that I am not using this analytics to identify individuals through IP-based tracking,
-    fingerprinting, cross-site profiling, advertising logic, or hidden personal behavior scoring.
-    The point of the analytics is simply to understand which core pages are used, what time of day visits happen,
-    which page people usually open after Home, whether a session arrived directly or through a tagged campaign,
-    whether usage comes more from public or logged-in access,
-    and whether the platform is being used more from mobile or desktop contexts.
-  </p>
-
-  <p>
-    In addition, administrator / host visits are excluded from the visible analytics evaluation,
-    so that the operator's own testing and maintenance behavior does not distort the usage overview shown there.
-  </p>
-
-  <p>
-    The visible analytics overview can also distinguish between public visits and visits from logged-in accounts.
-    That distinction is based on whether a stored internal user id is attached to the visit record, not on public identity display or IP-based tracking.
-  </p>
-
-  <p>
-    In practice, the analytics is used as an aggregated product-health view, not as a tool to exploit user vulnerability or curiosity.
-    It is there to answer questions such as whether onboarding is being opened, whether people find the rules page,
-    whether the chat area is used, or whether most visits come from mobile devices.
-    It is not there to mine sensitive personal patterns out of users who come here for support.
-  </p>
-
-  <h3>Feedback and anonymity during the test phase</h3>
-  <p>
-    The dedicated feedback form for the test phase is designed to stay low-threshold and as anonymous as possible.
-    When feedback is sent through that page, the user's email address is not forwarded in the feedback message.
-    If a user is logged in, only the generated anonymous username is included with the feedback, not the email address behind the account.
-  </p>
-
-  <h3>What is not publicly shown</h3>
-  <p>
-    Normal users do not get to see other users' login or contact email addresses, pairwise edu-ID identifiers, password hashes, or internal user IDs.
-    Public profile matching is based on usernames, profile text, tags, labels, and other voluntarily shared profile information.
-    Internal metadata such as confirmation tokens, password-reset tokens, and admin-related mail flows are not publicly exposed.
-  </p>
-
-  <h3>What this page intentionally does not claim</h3>
-  <p>
-    This page should not pretend that the app already does more than it really does.
-    At the moment, there is no end-to-end encryption for chats, no encrypted email-at-rest system, and no full professional-grade security architecture.
-    There is a serious attempt at privacy-aware design, but there are also clear next steps that would still improve the system.
-    For the current use case and size of the platform, the implemented level of security is considered a practical and sufficient starting point, even though it is not the final possible level of protection.
-  </p>
-
-  <h3>Current privacy and security principles</h3>
-  <p>
-    The practical principles behind the current build are:
-    keep public identity lightweight,
-    require as little data as possible,
-    do not expose contact data publicly,
-    gate chats through requests,
-    allow blocking,
-    use signed email flows,
-    and keep users informed about what is happening with their account and requests.
-  </p>
-
-  <h3>Questions or data concerns</h3>
-  <p>
-    If you have questions about your data, want clarification about what is stored, or want to report a privacy concern,
-    you can reach out through the contact option on the website.
-    For a project like this, transparency matters, so this page should grow together with the actual security measures of the platform.
-  </p>
+  <section class="privacy-contact-callout" aria-labelledby="privacy-contact-title">
+    <span>YOUR DATA, YOUR QUESTIONS</span>
+    <h2 id="privacy-contact-title">Want to know more or change something?</h2>
+    <p>You can ask what CommonRoom holds about your account or request correction or deletion through the contact option on this website.</p>
+    <button type="button" class="btn privacy-contact-button" data-open-contact-panel>Contact me</button>
+    <small>Last updated: September 2026</small>
+  </section>
 </div>
 {% endblock %}

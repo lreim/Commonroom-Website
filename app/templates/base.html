@@ -444,7 +444,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   document.querySelectorAll("[data-open-contact-panel]").forEach(function (button) {
-    button.addEventListener("click", function () {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
       const contactPanel = document.getElementById("floating-contact-panel");
       if (!contactPanel) {
         return;
@@ -461,7 +463,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (summary) {
       summary.addEventListener("click", function () {
-        if (panel.classList.contains("floating-abuse-panel")) {
+        if (
+          panel.classList.contains("floating-abuse-panel")
+          && !panel.querySelector("[data-floating-hint-repeat]")
+        ) {
           panel.classList.add("has-been-opened");
         }
         panels.forEach(function (otherPanel) {
@@ -671,13 +676,14 @@ document.addEventListener("DOMContentLoaded", function () {
     >
       <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
       <span class="floating-abuse-text">Report abuse</span>
-      {% if active_page|default('') == 'about' %}
+      {% if active_page|default('') in ['about', 'rules'] %}
       <span
         class="floating-abuse-hint floating-abuse-hint-scroll-reveal"
-        data-floating-hint-reveal-target="about-important-limits"
+        data-floating-hint-reveal-target="{{ 'about-important-limits' if active_page == 'about' else 'rules-report' }}"
+        {% if active_page == 'rules' %}data-floating-hint-repeat{% endif %}
         aria-hidden="true"
       >
-        <span>Let’s keep it safe</span>
+        <span>{{ 'Report it here' if active_page == 'rules' else 'Let’s keep it safe' }}</span>
         <svg viewBox="0 0 255 140" focusable="false">
           <defs>
             <marker id="floating-abuse-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
