@@ -104,6 +104,85 @@ class PostEditingTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_admin_mode_reply_belongs_to_personal_profile_and_is_editable(self):
+        administrator_role = Role.query.filter_by(name='Administrator').one()
+        administrator = User(
+            email='admin@ethz.ch',
+            username='admin-personal-profile',
+            password='AdminPassword1',
+            confirmed=True,
+            role=administrator_role,
+        )
+        root_post = Post(
+            body='A post that receives an Admin reply',
+            author=self.other_user,
+            post_type='question',
+        )
+        db.session.add_all([administrator, root_post])
+        db.session.commit()
+        self._login('admin@ethz.ch', 'AdminPassword1')
+
+        response = self.client.post(
+            '/post',
+            data={
+                'body': 'My editable reply',
+                'reply_to_id': root_post.id,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        reply = Post.query.filter_by(body='My editable reply').one()
+        self.assertEqual(reply.author_id, administrator.id)
+        self.assertFalse(reply.is_starter)
+
+        thread_response = self.client.get(f'/post/{root_post.id}')
+        self.assertIn(
+            f'/post/{reply.id}/edit'.encode(),
+            thread_response.data,
+        )
+
+        edit_response = self.client.post(
+            f'/post/{reply.id}/edit',
+            data={'body': 'My updated reply'},
+        )
+
+        self.assertEqual(edit_response.status_code, 302)
+        self.assertEqual(db.session.get(Post, reply.id).body, 'My updated reply')
+
+    def test_administrator_can_edit_an_existing_ownerless_starter_reply(self):
+        administrator_role = Role.query.filter_by(name='Administrator').one()
+        administrator = User(
+            email='admin@ethz.ch',
+            username='admin-personal-profile',
+            password='AdminPassword1',
+            confirmed=True,
+            role=administrator_role,
+        )
+        root_post = Post(
+            body='Root starter post',
+            author_id=None,
+            post_type='question',
+            is_starter=True,
+        )
+        old_reply = Post(
+            body='Old ownerless Admin reply',
+            author_id=None,
+            parent=root_post,
+            post_type='question',
+            is_starter=True,
+        )
+        db.session.add_all([administrator, root_post, old_reply])
+        db.session.commit()
+        self._login('admin@ethz.ch', 'AdminPassword1')
+
+        response = self.client.post(
+            f'/post/{old_reply.id}/edit',
+            data={'body': 'Corrected Admin reply'},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(db.session.get(Post, old_reply.id).body, 'Corrected Admin reply')
+
     def test_reply_count_opens_complete_thread_while_reply_button_stays_inline(self):
         post = Post(
             body='Root post with replies',

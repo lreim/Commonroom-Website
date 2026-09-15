@@ -48,7 +48,7 @@
         <div class="post-body">{{ node.body }}</div>
     </div>
     <div class="post-side-actions">
-        {% if not node.is_starter and node.author_id == current_user.id %}
+        {% if (not node.is_starter and node.author_id == current_user.id) or (node.is_starter and node.parent_id and current_user.is_administrator()) %}
         <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=node.id, next=request.path) }}">Edit</a>
         {% endif %}
         <details class="post-reply-box" data-reply-toggle>

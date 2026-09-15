@@ -644,7 +644,10 @@ def post():
             parent_post = Post.query.get_or_404(reply_to_id)
             if parent_post.parent is not None:
                 parent_post = parent_post.parent
-        posting_as_admin = is_admin_demo_mode()
+        # The Admin identity is only used for root-level starter posts. Replies
+        # always belong to the signed-in personal profile so their author can
+        # edit them normally afterwards.
+        posting_as_admin = is_admin_demo_mode() and parent_post is None
         post = Post(
             body=submitted_form.body.data,
             author_id=None if posting_as_admin else current_user.id,
@@ -776,13 +779,12 @@ def post_thread(post_id):
                 ancestor = ancestor.parent
             if ancestor.id != root_post.id:
                 parent_post = root_post
-        replying_as_admin = is_admin_demo_mode()
         reply = Post(
             body=form.body.data,
-            author_id=None if replying_as_admin else current_user.id,
+            author_id=current_user.id,
             parent=parent_post,
             post_type=parent_post.post_type,
-            is_starter=replying_as_admin,
+            is_starter=False,
         )
         db.session.add(reply)
         db.session.commit()
@@ -800,8 +802,14 @@ def post_thread(post_id):
 def edit_post(post_id):
     post_to_edit = Post.query.get_or_404(post_id)
     if post_to_edit.is_starter:
-        abort(404)
-    if post_to_edit.author_id != current_user.id:
+        # Older Admin replies were stored as ownerless starter content. Keep
+        # root starter posts in their dedicated editor, while allowing an
+        # administrator to correct those existing replies.
+        if post_to_edit.parent_id is None:
+            abort(404)
+        if not current_user.is_administrator():
+            abort(403)
+    elif post_to_edit.author_id != current_user.id:
         abort(403)
 
     requested_return_url = request.form.get('next') or request.args.get('next')
