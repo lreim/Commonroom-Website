@@ -14,7 +14,7 @@
 {%- endmacro %}
 
 {% macro render_post_node(node, form, level=0) -%}
-<li class="post post-thread-item{% if level > 0 %} post-thread-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}" style="margin-left: {{ level * 24 }}px;">
+<li id="post-{{ node.id }}" class="post post-thread-item{% if level > 0 %} post-thread-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}" style="margin-left: {{ level * 24 }}px;">
     <div class="profile-thumbnail">
         {% if node.is_starter %}
         <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">

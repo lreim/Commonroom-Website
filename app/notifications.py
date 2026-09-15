@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from flask import session, url_for
 
-from .models import ChatRequest, Conversation, Message
+from .models import ChatRequest, Conversation, Message, Post
 
 
 SESSION_KEY = "notifications_last_seen_at"
@@ -37,9 +37,69 @@ def mark_notifications_seen_now():
     session.modified = True
 
 
+def _root_post(post):
+    current = post
+    visited_ids = set()
+    while current.parent_id is not None and current.id not in visited_ids:
+        visited_ids.add(current.id)
+        current = current.parent
+    return current
+
+
+def _reply_notifications_for_user(user, seen_at):
+    participation = Post.query.filter(Post.author_id == user.id).all()
+    roots_by_id = {}
+    for post in participation:
+        root = _root_post(post)
+        roots_by_id[root.id] = root
+    if not roots_by_id:
+        return []
+
+    relevant_replies = []
+    frontier = set(roots_by_id)
+    visited_post_ids = set(frontier)
+    while frontier:
+        children = Post.query.filter(Post.parent_id.in_(frontier)).all()
+        frontier = set()
+        for child in children:
+            if child.id in visited_post_ids:
+                continue
+            visited_post_ids.add(child.id)
+            frontier.add(child.id)
+            relevant_replies.append(child)
+
+    items = []
+    for reply in relevant_replies:
+        if reply.author_id == user.id:
+            continue
+        if reply.author is not None and user.has_block_relationship(reply.author):
+            continue
+        created_at = _utc_aware(reply.timestamp)
+        if created_at is None:
+            continue
+        root = _root_post(reply)
+        author_name = reply.author.username if reply.author is not None else 'Admin'
+        if root.author_id == user.id:
+            text = f'{author_name} replied to your post'
+        else:
+            text = f'{author_name} replied to a post you also replied to'
+        items.append(
+            {
+                'kind': 'post_reply',
+                'timestamp': created_at,
+                'is_new': seen_at is None or created_at > seen_at,
+                'text': text,
+                'url': url_for('main.post_thread', post_id=root.id) + f'#post-{reply.id}',
+            }
+        )
+    return items
+
+
 def build_notifications_for_user(user, limit=8):
     seen_at = notifications_seen_at()
     items = []
+
+    items.extend(_reply_notifications_for_user(user, seen_at))
 
     pending_requests = ChatRequest.query.filter(
         ChatRequest.status == ChatRequest.STATUS_PENDING,
