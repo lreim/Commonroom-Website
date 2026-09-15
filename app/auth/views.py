@@ -14,6 +14,7 @@ from .. import db, oauth
 from ..email import send_email
 from ..security import is_safe_local_redirect_target
 from ..admin_demo import activate_admin_demo_mode, clear_admin_demo_mode
+from ..auth_funnel import complete_auth_funnel, mark_auth_funnel_profile_required, start_auth_funnel
 from datetime import datetime, timezone, timedelta
 
 LOGIN_ACCOUNT_MAX_FAILURES = 6
@@ -31,6 +32,7 @@ def _login_with_demo_mode(user, remember=False):
     login_user(user, remember)
     session.permanent = True
     activate_admin_demo_mode(user)
+    complete_auth_funnel(user)
 
 
 def _login_name(user):
@@ -206,6 +208,11 @@ def legacy_login():
     next_url = request.args.get('next')
     if not is_safe_local_redirect_target(next_url):
         next_url = None
+    intent = request.args.get('intent', type=str)
+    if intent in {'post', 'reply', 'relate'}:
+        start_auth_funnel(intent)
+    elif request.args.get('gate') == '1':
+        start_auth_funnel('protected_page')
     if form.validate_on_submit():
         now = datetime.now(timezone.utc)
         email = canonicalize_eth_email(form.email.data)
@@ -258,6 +265,12 @@ def eduid_login():
     configuration_error = _oidc_configuration_error()
     if configuration_error:
         return _render_oidc_error(configuration_error, 503)
+
+    intent = request.args.get('intent', type=str)
+    if intent in {'post', 'reply', 'relate'}:
+        start_auth_funnel(intent)
+    elif request.args.get('gate') == '1':
+        start_auth_funnel('protected_page')
 
     next_url = request.args.get('next')
     if is_safe_local_redirect_target(next_url):
@@ -358,6 +371,7 @@ def eduid_callback():
         flash(f'{_login_name(user)} is now locked in!')
         return redirect(next_url if is_safe_local_redirect_target(next_url) else _default_login_url(user))
 
+    mark_auth_funnel_profile_required()
     session[OIDC_PENDING_PROFILE_SESSION_KEY] = {
         'sub': subject,
         'issued_at': int(time.time()),

@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 
 from flask import session, url_for
 
-from .models import ChatRequest, Conversation, Message, Post
+from . import db
+from .models import ChatRequest, Conversation, Message, Post, PostThreadVisit
 
 
 SESSION_KEY = "notifications_last_seen_at"
@@ -46,14 +47,27 @@ def _root_post(post):
     return current
 
 
-def _reply_notifications_for_user(user, seen_at):
+def unread_reply_threads_for_user(user):
     participation = Post.query.filter(Post.author_id == user.id).all()
     roots_by_id = {}
+    participation_started_at = {}
     for post in participation:
         root = _root_post(post)
         roots_by_id[root.id] = root
+        participated_at = _utc_aware(post.timestamp)
+        previous = participation_started_at.get(root.id)
+        if participated_at is not None and (previous is None or participated_at < previous):
+            participation_started_at[root.id] = participated_at
     if not roots_by_id:
-        return []
+        return {}
+
+    visits = {
+        visit.root_post_id: _utc_aware(visit.last_visited_at)
+        for visit in PostThreadVisit.query.filter(
+            PostThreadVisit.user_id == user.id,
+            PostThreadVisit.root_post_id.in_(roots_by_id),
+        ).all()
+    }
 
     relevant_replies = []
     frontier = set(roots_by_id)
@@ -68,7 +82,7 @@ def _reply_notifications_for_user(user, seen_at):
             frontier.add(child.id)
             relevant_replies.append(child)
 
-    items = []
+    unread_by_root = {}
     for reply in relevant_replies:
         if reply.author_id == user.id:
             continue
@@ -78,28 +92,49 @@ def _reply_notifications_for_user(user, seen_at):
         if created_at is None:
             continue
         root = _root_post(reply)
+        threshold = participation_started_at.get(root.id)
+        last_visited_at = visits.get(root.id)
+        if last_visited_at is not None and (threshold is None or last_visited_at > threshold):
+            threshold = last_visited_at
+        if threshold is not None and created_at <= threshold:
+            continue
+
         author_name = reply.author.username if reply.author is not None else 'Admin'
         if root.author_id == user.id:
             text = f'{author_name} replied to your post'
         else:
             text = f'{author_name} replied to a post you also replied to'
-        items.append(
-            {
+        existing = unread_by_root.get(root.id)
+        if existing is None or created_at > existing['timestamp']:
+            unread_by_root[root.id] = {
                 'kind': 'post_reply',
+                'root_post': root,
+                'reply': reply,
                 'timestamp': created_at,
-                'is_new': seen_at is None or created_at > seen_at,
+                'is_new': True,
                 'text': text,
                 'url': url_for('main.post_thread', post_id=root.id) + f'#post-{reply.id}',
             }
-        )
-    return items
+    return unread_by_root
+
+
+def mark_post_thread_visited(user_id, root_post_id):
+    visit = PostThreadVisit.query.filter_by(
+        user_id=user_id,
+        root_post_id=root_post_id,
+    ).first()
+    if visit is None:
+        visit = PostThreadVisit(user_id=user_id, root_post_id=root_post_id)
+        db.session.add(visit)
+    visit.last_visited_at = datetime.now(timezone.utc)
+    db.session.commit()
 
 
 def build_notifications_for_user(user, limit=8):
     seen_at = notifications_seen_at()
     items = []
 
-    items.extend(_reply_notifications_for_user(user, seen_at))
+    items.extend(unread_reply_threads_for_user(user).values())
 
     pending_requests = ChatRequest.query.filter(
         ChatRequest.status == ChatRequest.STATUS_PENDING,

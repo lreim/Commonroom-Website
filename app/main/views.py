@@ -12,7 +12,7 @@ from flask import Response, abort, render_template, session, redirect, url_for, 
 from . import main
 from .forms import PostForm, ReplyForm, EditPostForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db, csrf
-from ..models import User, Post, Role, Tag, Conversation, PageVisit, post_likes
+from ..models import AuthFunnelAttempt, User, Post, Role, Tag, Conversation, PageVisit, post_likes
 from ..tag_matching import match_tags, get_model
 from flask_login import login_required, current_user
 from app.decorators import admin_required, permission_required
@@ -20,6 +20,7 @@ from ..models import Permission
 from ..email import send_email
 from ..security import is_safe_local_redirect_target
 from ..admin_demo import is_admin_demo_mode, set_admin_demo_mode
+from ..notifications import mark_post_thread_visited, unread_reply_threads_for_user
 
 #ATTENTION: with blueprint use main. iinstead of app. 
 
@@ -52,7 +53,7 @@ TRACKED_PAGE_PATH_PREFIXES = {
 MAX_TRACKED_VISIT_SECONDS = 60 * 60 * 4
 VALID_DEVICE_TYPES = {"mobile", "desktop"}
 CURRENT_ANALYTICS_VERSION = 2
-ANALYTICS_EXPORT_DATASETS = {"summary", "pages", "hours", "journeys", "acquisition", "previous"}
+ANALYTICS_EXPORT_DATASETS = {"summary", "pages", "hours", "journeys", "acquisition", "funnel", "previous"}
 
 
 def _analytics_client_token():
@@ -417,16 +418,12 @@ def _build_acquisition_stats(visits):
 
 
 def _build_content_stats():
-    root_post_count = Post.query.filter(Post.parent_id.is_(None)).count()
+    root_posts = Post.query.filter(Post.parent_id.is_(None)).all()
+    root_post_count = len(root_posts)
     relate_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "relate").count()
     question_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "question").count()
     reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
-    replied_post_count = int(
-        db.session.query(func.count(func.distinct(Post.parent_id)))
-        .filter(Post.parent_id.isnot(None))
-        .scalar()
-        or 0
-    )
+    replied_post_count = sum(post.replies.count() > 0 for post in root_posts)
     profile_query = (
         User.query
         .outerjoin(Role, User.role_id == Role.id)
@@ -455,6 +452,68 @@ def _build_content_stats():
         "chat_count_std_dev": round(chat_stats["chat_count_std_dev"], 2),
         "tracked_user_count": chat_stats["user_count"],
     }
+
+
+def _build_auth_funnel_stats(first_bucket_start):
+    attempts = (
+        AuthFunnelAttempt.query
+        .filter(AuthFunnelAttempt.started_at >= first_bucket_start)
+        .order_by(AuthFunnelAttempt.started_at.asc(), AuthFunnelAttempt.id.asc())
+        .all()
+    )
+    abandoned_cutoff = datetime.now(timezone.utc) - timedelta(minutes=30)
+    labels = {
+        "post": "Write a post",
+        "reply": "Reply",
+        "relate": "Relate",
+        "protected_page": "Protected page",
+    }
+    action_rows = {
+        action: {"action": action, "label": label, "started": 0, "completed": 0, "abandoned": 0}
+        for action, label in labels.items()
+    }
+    totals = {
+        "started": len(attempts),
+        "completed": 0,
+        "login_abandoned": 0,
+        "profile_abandoned": 0,
+        "in_progress": 0,
+    }
+
+    for attempt in attempts:
+        row = action_rows.get(attempt.action, action_rows["protected_page"])
+        row["started"] += 1
+        started_at = attempt.started_at
+        if started_at.tzinfo is None:
+            started_at = started_at.replace(tzinfo=timezone.utc)
+
+        if attempt.completed_at is not None:
+            totals["completed"] += 1
+            row["completed"] += 1
+            continue
+
+        profile_required_at = attempt.profile_required_at
+        if profile_required_at is not None:
+            if profile_required_at.tzinfo is None:
+                profile_required_at = profile_required_at.replace(tzinfo=timezone.utc)
+            if profile_required_at <= abandoned_cutoff:
+                totals["profile_abandoned"] += 1
+                row["abandoned"] += 1
+            else:
+                totals["in_progress"] += 1
+        elif started_at <= abandoned_cutoff:
+            totals["login_abandoned"] += 1
+            row["abandoned"] += 1
+        else:
+            totals["in_progress"] += 1
+
+    totals["completion_rate"] = (
+        round(totals["completed"] / totals["started"] * 100, 1)
+        if totals["started"] else 0.0
+    )
+    totals["actions"] = list(action_rows.values())
+    totals["abandoned_after_minutes"] = 30
+    return totals
 
 
 def _build_analytics_snapshot(selected_range):
@@ -491,6 +550,7 @@ def _build_analytics_snapshot(selected_range):
         "hour_distribution": _build_hour_distribution(visits_in_range),
         "journey_stats": _build_journey_stats(visits_in_range),
         "acquisition_stats": _build_acquisition_stats(visits_in_range),
+        "auth_funnel_stats": _build_auth_funnel_stats(visit_timeline["first_bucket_start"]),
         "previous_analytics": previous_analytics,
     }
     snapshot.update(_build_content_stats())
@@ -506,6 +566,7 @@ def index():
     return render_template('index.html', active_page='index', current_time=datetime.now(timezone.utc))
 
 @main.route('/settings')
+@login_required
 def settings():
     user = current_user._get_current_object()
     return render_template('settings.html', active_page='settings', user=user)
@@ -636,7 +697,8 @@ def post():
     reply_to_id = request.form.get('reply_to_id', type=int)
     if request.method == 'POST' and not current_user.is_authenticated:
         return_path = request.full_path if request.query_string else request.path
-        return redirect(url_for('auth.login', next=return_path))
+        intent = 'reply' if reply_to_id else 'post'
+        return redirect(url_for('auth.login', next=return_path, intent=intent))
     submitted_form = reply_form if reply_to_id else form
     if submitted_form.validate_on_submit():
         parent_post = None
@@ -749,8 +811,6 @@ def post():
 @login_required
 def toggle_post_like(post_id):
     post = Post.query.get_or_404(post_id)
-    if post.parent_id is not None:
-        return jsonify({'error': 'Only community posts can be liked.'}), 400
 
     liked = post.is_liked_by(current_user)
     if liked:
@@ -766,7 +826,9 @@ def toggle_post_like(post_id):
 def post_thread(post_id):
     root_post = Post.query.get_or_404(post_id)
     if root_post.parent is not None:
-        return redirect(url_for('main.post_thread', post_id=root_post.parent_id))
+        while root_post.parent is not None:
+            root_post = root_post.parent
+        return redirect(url_for('main.post_thread', post_id=root_post.id))
 
     form = ReplyForm()
     reply_to_id = request.form.get('reply_to_id', type=int)
@@ -789,6 +851,8 @@ def post_thread(post_id):
         db.session.add(reply)
         db.session.commit()
         return redirect(url_for('main.post_thread', post_id=root_post.id))
+
+    mark_post_thread_visited(current_user.id, root_post.id)
 
     return render_template(
         'post_thread.html',
@@ -841,6 +905,92 @@ def edit_post(post_id):
         active_page='post',
     )
 
+
+def _profile_activity_payload(posts, base_url, owner_user_id=None):
+    activity_filter = request.args.get('activity', 'all', type=str).lower()
+    if activity_filter not in {'all', 'posts', 'replies'}:
+        activity_filter = 'all'
+    activity_sort = request.args.get('sort', 'newest', type=str).lower()
+    if activity_sort not in {'newest', 'oldest'}:
+        activity_sort = 'newest'
+
+    post_count = sum(post.parent_id is None for post in posts)
+    reply_count = len(posts) - post_count
+    if activity_filter == 'posts':
+        visible_posts = [post for post in posts if post.parent_id is None]
+    elif activity_filter == 'replies':
+        visible_posts = [post for post in posts if post.parent_id is not None]
+    else:
+        visible_posts = list(posts)
+
+    def aware_timestamp(post):
+        value = post.timestamp
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
+    visible_posts.sort(
+        key=lambda post: (aware_timestamp(post), post.id),
+        reverse=activity_sort == 'newest',
+    )
+    week_cutoff = datetime.now(timezone.utc) - timedelta(days=7)
+    groups = {'recent': [], 'earlier': []}
+    for post in visible_posts:
+        root_post = post
+        while root_post.parent is not None:
+            root_post = root_post.parent
+        entry = {'post': post, 'root_post': root_post}
+        group_key = 'recent' if aware_timestamp(post) >= week_cutoff else 'earlier'
+        groups[group_key].append(entry)
+
+    if (
+        owner_user_id is not None
+        and current_user.is_authenticated
+        and current_user.id == owner_user_id
+    ):
+        unread_by_root = unread_reply_threads_for_user(current_user)
+        entries_by_root = defaultdict(list)
+        for entries in groups.values():
+            for entry in entries:
+                entries_by_root[entry['root_post'].id].append(entry)
+
+        for root_id, unread in unread_by_root.items():
+            candidates = entries_by_root.get(root_id, [])
+            if not candidates:
+                continue
+            root_entry = next(
+                (
+                    entry for entry in candidates
+                    if entry['post'].id == root_id
+                    and entry['post'].author_id == owner_user_id
+                ),
+                None,
+            )
+            marker_entry = root_entry or max(
+                candidates,
+                key=lambda entry: (
+                    aware_timestamp(entry['post']),
+                    entry['post'].id,
+                ),
+            )
+            marker_entry['unread_reply'] = unread
+
+    return {
+        'filter': activity_filter,
+        'sort': activity_sort,
+        'base_url': base_url,
+        'total_count': len(posts),
+        'post_count': post_count,
+        'reply_count': reply_count,
+        'visible_count': len(visible_posts),
+        'groups': groups,
+        'group_order': (
+            [('recent', 'This week'), ('earlier', 'Earlier')]
+            if activity_sort == 'newest'
+            else [('earlier', 'Earlier'), ('recent', 'This week')]
+        ),
+    }
+
 @main.route('/user/<username>')
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
@@ -878,6 +1028,11 @@ def user(username):
         'user.html',
         user=user,
         posts=posts,
+        activity=_profile_activity_payload(
+            posts,
+            url_for('main.user', username=user.username),
+            owner_user_id=user.id,
+        ),
         return_to=return_to if is_safe_local_redirect_target(return_to) else None,
         recommend_profiles=recommend_profiles,
         recommended_users=recommended_users,
@@ -914,6 +1069,10 @@ def admin_profile():
         'user.html',
         user=admin_user,
         posts=starter_posts,
+        activity=_profile_activity_payload(
+            starter_posts,
+            url_for('main.admin_profile'),
+        ),
         return_to=None,
         recommend_profiles=False,
         recommended_users=[],
@@ -986,7 +1145,7 @@ def edit_profile_admin(id):
 @main.route('/tags')
 def tag_search():
     if not current_user.is_authenticated:
-        return redirect(url_for('auth.register', next=request.url))
+        return redirect(url_for('auth.login', next=request.url, gate=1))
     all_tags = Tag.library_names()
     profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
     return render_template('tag_search.html', all_tags=all_tags, profile_label_choices=profile_label_choices, active_page='tag_search')
@@ -1239,6 +1398,12 @@ def analytics_export():
             writer.writerow(["source and medium", item["label"], item["count"], ""])
         for item in snapshot["acquisition_stats"]["campaigns"]:
             writer.writerow(["campaign", item["label"], item["count"], ""])
+    elif dataset == "funnel":
+        writer.writerow(["trigger", "started", "completed", "abandoned"])
+        for item in snapshot["auth_funnel_stats"]["actions"]:
+            writer.writerow([
+                item["label"], item["started"], item["completed"], item["abandoned"],
+            ])
     else:
         writer.writerow(["page", "visits", "average_seconds", "total_seconds", "public", "logged_in"])
         for item in snapshot["previous_analytics"]["page_stats"]:

@@ -195,13 +195,20 @@ class PostEditingTestCase(unittest.TestCase):
             parent=post,
             post_type='question',
         )
-        db.session.add_all([post, reply])
+        nested_reply = Post(
+            body='A nested reply',
+            author=self.owner,
+            parent=reply,
+            post_type='question',
+        )
+        db.session.add_all([post, reply, nested_reply])
         db.session.commit()
         self._login('owner@ethz.ch', 'OwnerPassword1')
 
         feed_response = self.client.get('/post')
         thread_target = f'/post/{post.id}'
         self.assertIn(f'href="{thread_target}"'.encode(), feed_response.data)
+        self.assertIn(b'2 replies', feed_response.data)
         self.assertIn(
             f'data-reply-toggle id="reply-{post.id}"'.encode(),
             feed_response.data,
@@ -211,6 +218,26 @@ class PostEditingTestCase(unittest.TestCase):
         self.assertEqual(thread_response.status_code, 200)
         self.assertIn(b'class="post-thread-branch" data-thread-toggle open', thread_response.data)
         self.assertIn(b'An existing reply', thread_response.data)
+
+    def test_reply_can_be_related(self):
+        root = Post(body='Root', author=self.owner, post_type='question')
+        reply = Post(
+            body='Relatable reply',
+            author=self.other_user,
+            parent=root,
+            post_type='question',
+        )
+        db.session.add_all([root, reply])
+        db.session.commit()
+        self._login('owner@ethz.ch', 'OwnerPassword1')
+
+        response = self.client.post(f'/post/{reply.id}/like')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.get_json()['liked'])
+        self.assertEqual(response.get_json()['count'], 1)
+        thread_response = self.client.get(f'/post/{root.id}')
+        self.assertIn(f'data-like-url="/post/{reply.id}/like"'.encode(), thread_response.data)
 
 
 if __name__ == '__main__':

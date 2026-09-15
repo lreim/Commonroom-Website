@@ -43,7 +43,7 @@
                 {% if current_user.is_authenticated %}
                     as {{ display_username(current_user) }}
                 {% else %}
-                    <a href="{{ url_for('auth.login', next=request.full_path if request.query_string else request.path) }}">(log in)</a>
+                    <a href="{{ url_for('auth.login', next=request.full_path if request.query_string else request.path, intent='post') }}">(log in)</a>
                 {% endif %}
                 </span>
             </div>
@@ -127,17 +127,18 @@
                     <span class="post-like-count">{{ post.liked_by.count() }}</span>
                 </button>
                 {% else %}
-                <a class="post-like-button" href="{{ url_for('auth.login', next=request.full_path if request.query_string else request.path) }}">
+                <a class="post-like-button" href="{{ url_for('auth.login', next=request.full_path if request.query_string else request.path, intent='relate') }}">
                     <span class="post-relate-label">Relate</span>
                     <span aria-hidden="true">·</span>
                     <span class="post-like-count">{{ post.liked_by.count() }}</span>
                 </a>
                 {% endif %}
             </div>
-            {% if post.replies.count() > 0 %}
+            {% set total_reply_count = post.descendant_reply_count %}
+            {% if total_reply_count > 0 %}
             <div class="post-thread-row">
                 <a class="post-thread-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">
-                    &#8627; {{ post.replies.count() }} {% if post.replies.count() == 1 %}reply{% else %}replies{% endif %}
+                    &#8627; {{ total_reply_count }} {% if total_reply_count == 1 %}reply{% else %}replies{% endif %}
                 </a>
             </div>
             {% endif %}
@@ -159,7 +160,7 @@
                 </form>
             </details>
             {% else %}
-            <a class="post-reply-register" href="{{ url_for('auth.login', next=url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id)) }}">Reply</a>
+            <a class="post-reply-register" href="{{ url_for('auth.login', next=url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id), intent='reply') }}">Reply</a>
             {% endif %}
         </div>
     </li>

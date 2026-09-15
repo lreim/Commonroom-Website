@@ -46,6 +46,18 @@
         </div>
         {% endif %}
         <div class="post-body">{{ node.body }}</div>
+        <div class="post-meta-actions">
+            <button
+                type="button"
+                class="post-like-button{% if node.is_liked_by(current_user) %} is-liked{% endif %}"
+                data-like-url="{{ url_for('main.toggle_post_like', post_id=node.id) }}"
+                aria-pressed="{{ 'true' if node.is_liked_by(current_user) else 'false' }}"
+            >
+                <span class="post-relate-label">{{ 'Related' if node.is_liked_by(current_user) else 'Relate' }}</span>
+                <span aria-hidden="true">·</span>
+                <span class="post-like-count">{{ node.liked_by.count() }}</span>
+            </button>
+        </div>
     </div>
     <div class="post-side-actions">
         {% if (not node.is_starter and node.author_id == current_user.id) or (node.is_starter and node.parent_id and current_user.is_administrator()) %}
@@ -131,6 +143,32 @@ document.querySelectorAll('[data-thread-toggle]').forEach(function (threadBox) {
 
   syncThreadLabel();
   threadBox.addEventListener('toggle', syncThreadLabel);
+});
+
+document.querySelectorAll('[data-like-url]').forEach(function (likeButton) {
+  likeButton.addEventListener('click', function () {
+    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    likeButton.disabled = true;
+    fetch(likeButton.dataset.likeUrl, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error('Relate request failed');
+        }
+        return response.json();
+      })
+      .then(function (data) {
+        likeButton.classList.toggle('is-liked', data.liked);
+        likeButton.setAttribute('aria-pressed', String(data.liked));
+        likeButton.querySelector('.post-relate-label').textContent = data.liked ? 'Related' : 'Relate';
+        likeButton.querySelector('.post-like-count').textContent = data.count;
+      })
+      .finally(function () {
+        likeButton.disabled = false;
+      });
+  });
 });
 </script>
 {% endblock %}

@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta, timezone
 
 from app import create_app, db
 from app.models import Post, Role, User
@@ -95,6 +96,13 @@ class ReplyNotificationTestCase(unittest.TestCase):
         self.assertIn(f'/post/{root.id}#post-{later_reply.id}'.encode(), response.data)
         self.assertNotIn(b'I joined this conversation</span>', response.data)
 
+        profile_response = self.client.get('/user/thread-participant?activity=replies')
+        self.assertIn(b'profile-activity-unread-dot', profile_response.data)
+        self.assertIn(
+            f'/post/{root.id}#post-{later_reply.id}'.encode(),
+            profile_response.data,
+        )
+
     def test_user_does_not_receive_notification_for_own_reply(self):
         root = Post(body='My post', author=self.owner, post_type='question')
         own_reply = Post(
@@ -111,6 +119,46 @@ class ReplyNotificationTestCase(unittest.TestCase):
 
         self.assertNotIn(b'replied to your post', response.data)
         self.assertNotIn(b'notification-menu-trigger has-unseen', response.data)
+
+    def test_unread_reply_dot_is_private_and_clears_when_thread_is_visited(self):
+        now = datetime.now(timezone.utc)
+        root = Post(
+            body='A post with unread activity',
+            author=self.owner,
+            post_type='question',
+            timestamp=now - timedelta(minutes=2),
+        )
+        reply = Post(
+            body='The unread response',
+            author=self.other,
+            parent=root,
+            post_type='question',
+            timestamp=now - timedelta(minutes=1),
+        )
+        db.session.add_all([root, reply])
+        db.session.commit()
+        self._login(self.owner, 'OwnerPassword1')
+
+        profile_response = self.client.get('/user/post-owner')
+        target = f'/post/{root.id}#post-{reply.id}'.encode()
+        self.assertIn(b'profile-activity-unread-dot', profile_response.data)
+        self.assertIn(target, profile_response.data)
+
+        self.client.post('/auth/logout')
+        self._login(self.other, 'OtherPassword1')
+        other_user_response = self.client.get('/user/post-owner')
+        self.assertNotIn(b'profile-activity-unread-dot', other_user_response.data)
+
+        self.client.post('/auth/logout')
+        self._login(self.owner, 'OwnerPassword1')
+
+        thread_response = self.client.get(f'/post/{root.id}')
+        self.assertEqual(thread_response.status_code, 200)
+
+        refreshed_profile = self.client.get('/user/post-owner')
+        refreshed_home = self.client.get('/')
+        self.assertNotIn(b'profile-activity-unread-dot', refreshed_profile.data)
+        self.assertNotIn(b'new-replier replied to your post', refreshed_home.data)
 
 
 if __name__ == '__main__':

@@ -399,6 +399,60 @@ class Post(db.Model):
             return False
         return self.liked_by.filter(User.id == user.id).first() is not None
 
+    @property
+    def descendant_reply_count(self):
+        count = 0
+        frontier = list(self.replies.all())
+        visited_ids = set()
+        while frontier:
+            reply = frontier.pop()
+            if reply.id in visited_ids:
+                continue
+            visited_ids.add(reply.id)
+            count += 1
+            frontier.extend(reply.replies.all())
+        return count
+
+
+class PostThreadVisit(db.Model):
+    __tablename__ = 'post_thread_visits'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    root_post_id = db.Column(
+        db.Integer,
+        db.ForeignKey('posts.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    last_visited_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('post_thread_visits', cascade='all, delete-orphan'),
+    )
+    root_post = db.relationship(
+        'Post',
+        backref=db.backref('thread_visits', cascade='all, delete-orphan'),
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            'user_id',
+            'root_post_id',
+            name='uq_post_thread_visit_user_root',
+        ),
+    )
+
 class Conversation(db.Model):
     __tablename__ = "conversations"
     id = db.Column(db.Integer, primary_key=True)
@@ -578,3 +632,20 @@ class PageVisit(db.Model):
     duration_seconds = db.Column(db.Integer, nullable=False, default=0)
 
     user = db.relationship("User")
+
+
+class AuthFunnelAttempt(db.Model):
+    __tablename__ = "auth_funnel_attempts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_token = db.Column(db.String(64), nullable=False, unique=True, index=True)
+    action = db.Column(db.String(32), nullable=False, index=True)
+    started_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True,
+    )
+    authenticated_at = db.Column(db.DateTime, nullable=True)
+    profile_required_at = db.Column(db.DateTime, nullable=True)
+    completed_at = db.Column(db.DateTime, nullable=True, index=True)

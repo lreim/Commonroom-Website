@@ -199,37 +199,93 @@
 </div>
 {% endif %}
 
-<section class="profile-posts-panel">
-<h3>Posts</h3>
-<ul class="posts profile-post-list">
-  {% for post in posts %}
-  <li class="post">
-    {% if post.is_starter %}
-    <a class="starter-post-badge" href="{{ url_for('main.post_thread', post_id=post.id) }}">Starter post</a>
-    {% endif %}
-    <div class="post-date">
-      {{ moment(post.timestamp).fromNow() }}
-      {% if post.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+<section class="profile-posts-panel profile-activity-panel">
+  <div class="profile-activity-heading">
+    <div>
+      <h3>Activity</h3>
+      <p class="profile-activity-count">
+        {{ activity.visible_count }} {% if activity.visible_count == 1 %}entry{% else %}entries{% endif %}
+        · {{ activity.post_count }} {% if activity.post_count == 1 %}post{% else %}posts{% endif %}
+        · {{ activity.reply_count }} {% if activity.reply_count == 1 %}reply{% else %}replies{% endif %}
+      </p>
     </div>
-    <div class="post-body">
-      {% if post.is_starter %}<a class="admin-profile-starter-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">{% endif %}
-      {{ post.body }}
-      {% if post.is_starter %}</a>{% endif %}
-    </div>
-    {% if current_user.is_authenticated and not post.is_starter and post.author_id == current_user.id %}
-    <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=post.id, next=request.path) }}">Edit</a>
+    <form method="get" action="{{ activity.base_url }}" class="profile-activity-sort-form">
+      <input type="hidden" name="activity" value="{{ activity.filter }}">
+      <label class="sr-only" for="profile-activity-sort">Sort activity</label>
+      <select id="profile-activity-sort" class="profile-activity-sort" name="sort" onchange="this.form.submit()">
+        <option value="newest" {% if activity.sort == 'newest' %}selected{% endif %}>Newest first</option>
+        <option value="oldest" {% if activity.sort == 'oldest' %}selected{% endif %}>Oldest first</option>
+      </select>
+    </form>
+  </div>
+
+  <nav class="profile-activity-tabs" aria-label="Filter profile activity">
+    <a class="{% if activity.filter == 'all' %}is-active{% endif %}" href="{{ activity.base_url }}?activity=all&amp;sort={{ activity.sort }}">All activity</a>
+    <a class="{% if activity.filter == 'posts' %}is-active{% endif %}" href="{{ activity.base_url }}?activity=posts&amp;sort={{ activity.sort }}">Posts · {{ activity.post_count }}</a>
+    <a class="{% if activity.filter == 'replies' %}is-active{% endif %}" href="{{ activity.base_url }}?activity=replies&amp;sort={{ activity.sort }}">Replies · {{ activity.reply_count }}</a>
+  </nav>
+
+  {% for group_key, group_label in activity.group_order %}
+    {% if activity.groups[group_key] %}
+    <section class="profile-activity-group">
+      <h4>{{ group_label }}</h4>
+      <ul class="profile-activity-list">
+        {% for item in activity.groups[group_key] %}
+        {% set post = item.post %}
+        {% set thread_url = url_for('main.post_thread', post_id=item.root_post.id) %}
+        <li class="profile-activity-entry{% if post.parent_id %} is-reply{% endif %}">
+          <div class="profile-activity-kind">
+            {% if post.parent_id %}Reply{% elif post.is_starter %}Starter post{% else %}{{ post.post_type|capitalize }}{% endif %}
+          </div>
+          <div class="profile-activity-copy">
+            {% if post.parent_id %}
+            <a class="profile-activity-context" href="{{ thread_url }}">
+              Replying to “{{ item.root_post.body|truncate(105, True) }}”
+            </a>
+            {% endif %}
+            <a class="profile-activity-body" href="{{ thread_url }}{% if post.parent_id %}#post-{{ post.id }}{% endif %}">{{ post.body }}</a>
+            <div class="profile-activity-meta">
+              {% if post.parent_id %}
+              <a href="{{ thread_url }}#post-{{ post.id }}">Open conversation ↗</a>
+              {% else %}
+              <span>Relate · {{ post.liked_by.count() }}</span>
+              <a href="{{ thread_url }}">↳ {{ post.descendant_reply_count }} {% if post.descendant_reply_count == 1 %}reply{% else %}replies{% endif %}</a>
+              {% endif %}
+              {% if current_user.is_authenticated and ((not post.is_starter and post.author_id == current_user.id) or (post.is_starter and post.parent_id and current_user.is_administrator())) %}
+              <a class="profile-activity-edit" href="{{ url_for('main.edit_post', post_id=post.id, next=request.full_path if request.query_string else request.path) }}">Edit</a>
+              {% endif %}
+            </div>
+          </div>
+          <div class="profile-activity-time">
+            {% if item.unread_reply %}
+            <a
+              class="profile-activity-unread-dot"
+              href="{{ item.unread_reply.url }}"
+              title="Open new reply"
+              aria-label="Open new reply"
+            ></a>
+            {% endif %}
+            {{ moment(post.timestamp).fromNow() }}
+            {% if post.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
     {% endif %}
-  </li>
-  {% else %}
-  <li class="admin-demo-profile-note">
-    {% if viewing_admin_demo %}
+  {% endfor %}
+
+  {% if activity.visible_count == 0 %}
+  <p class="admin-demo-profile-note">
+    {% if viewing_admin_demo and activity.filter == 'all' %}
     No starter posts have been published yet.
+    {% elif activity.filter == 'replies' %}
+    No replies have been published yet.
     {% else %}
     No posts have been published yet.
     {% endif %}
-  </li>
-  {% endfor %}
-</ul>
+  </p>
+  {% endif %}
 </section>
 </div>
 {% endblock %}

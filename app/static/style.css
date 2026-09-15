@@ -8253,6 +8253,221 @@ html.dark-mode .chat-request-compose.tagsearch-inline-request-compose {
   margin-bottom: 7px;
 }
 
+.profile-activity-panel {
+  padding: 25px 27px 28px;
+}
+
+.profile-activity-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding-bottom: 18px;
+}
+
+.profile-activity-heading h3 {
+  margin: 0;
+  color: #3c2a15;
+  font-size: 27px;
+  font-weight: 400;
+}
+
+.profile-activity-count {
+  margin: 5px 0 0;
+  color: #786b58;
+  font-size: 13px;
+}
+
+.profile-activity-sort-form {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.profile-activity-sort {
+  min-width: 145px;
+  padding: 9px 31px 9px 12px;
+  border: 1px solid #cfb98f;
+  border-radius: 12px;
+  background: #fffdf8;
+  color: #382408;
+  font-family: Georgia, serif;
+  font-size: 13px;
+}
+
+.profile-activity-tabs {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 22px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid #ddcfb5;
+  overflow-x: auto;
+}
+
+.profile-activity-tabs a {
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #725f47;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profile-activity-tabs a:hover,
+.profile-activity-tabs a:focus {
+  border-color: #d5c4a3;
+  color: #543817;
+  text-decoration: none;
+}
+
+.profile-activity-tabs a.is-active {
+  border-color: #6b302b;
+  background: #6b302b;
+  color: #fffaf0;
+}
+
+.profile-activity-group + .profile-activity-group {
+  margin-top: 24px;
+}
+
+.profile-activity-group > h4 {
+  margin: 0 0 10px 3px;
+  color: #8a7658;
+  font-family: Georgia, serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.profile-activity-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-activity-entry {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 17px 18px;
+  border: 1px solid #decdae;
+  border-radius: 16px;
+  background: #fffdf8;
+}
+
+.profile-activity-entry + .profile-activity-entry {
+  margin-top: 10px;
+}
+
+.profile-activity-kind {
+  align-self: start;
+  padding: 5px 8px;
+  border: 1px solid #d0ba92;
+  border-radius: 999px;
+  color: #6d5134;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.profile-activity-entry.is-reply .profile-activity-kind {
+  border-color: #b8dce2;
+  background: #eaf6f8;
+  color: #356f7c;
+}
+
+.profile-activity-copy {
+  min-width: 0;
+}
+
+.profile-activity-context {
+  display: block;
+  margin-bottom: 8px;
+  padding-left: 9px;
+  border-left: 3px solid #d9c49c;
+  color: #786b58;
+  font-size: 11px;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.profile-activity-context:hover,
+.profile-activity-context:focus {
+  color: #59442d;
+  text-decoration: none;
+}
+
+.profile-activity-body {
+  display: block;
+  color: #382408;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: pre-wrap;
+}
+
+.profile-activity-body:hover,
+.profile-activity-body:focus {
+  color: #6b302b;
+  text-decoration: none;
+}
+
+.profile-activity-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  color: #966047;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.profile-activity-meta a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile-activity-meta a:hover,
+.profile-activity-meta a:focus {
+  color: #6b302b;
+  text-decoration: underline;
+}
+
+.profile-activity-meta .profile-activity-edit {
+  margin-left: auto;
+  color: #725f47;
+}
+
+.profile-activity-time {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #887b68;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.profile-activity-unread-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border: 2px solid #fffdf8;
+  border-radius: 50%;
+  background: #35a76f;
+  box-shadow: 0 0 0 1px #278557, 0 2px 6px rgba(39, 133, 87, 0.32);
+}
+
+.profile-activity-unread-dot:hover,
+.profile-activity-unread-dot:focus {
+  background: #278557;
+  box-shadow: 0 0 0 3px rgba(53, 167, 111, 0.2);
+  outline: none;
+}
+
 html.dark-mode .profile-page-header,
 html.dark-mode .profile-recommendations,
 html.dark-mode .profile-posts-panel,
@@ -8286,10 +8501,79 @@ html.dark-mode .profile-page-heading .profile-label-badge {
 
 html.dark-mode .profile-page-header .profile-detail-block,
 html.dark-mode .profile-recommendation-card,
-html.dark-mode .profile-post-list .post {
+html.dark-mode .profile-post-list .post,
+html.dark-mode .profile-activity-entry {
   border-color: #514336;
   background: #332a22;
   box-shadow: none;
+}
+
+html.dark-mode .profile-activity-heading h3,
+html.dark-mode .profile-activity-body {
+  color: #f1ebdd;
+}
+
+html.dark-mode .profile-activity-count,
+html.dark-mode .profile-activity-time,
+html.dark-mode .profile-activity-context {
+  color: #bfb29f;
+}
+
+html.dark-mode .profile-activity-unread-dot {
+  border-color: #332a22;
+}
+
+html.dark-mode .profile-activity-sort {
+  border-color: #665746;
+  background: #332a22;
+  color: #f1ebdd;
+}
+
+html.dark-mode .profile-activity-tabs {
+  border-bottom-color: #514336;
+}
+
+html.dark-mode .profile-activity-tabs a {
+  color: #d8cab6;
+}
+
+html.dark-mode .profile-activity-tabs a:hover,
+html.dark-mode .profile-activity-tabs a:focus {
+  border-color: #6a5a49;
+  color: #f1ebdd;
+}
+
+html.dark-mode .profile-activity-tabs a.is-active {
+  border-color: #a86258;
+  background: #a86258;
+  color: #fffaf0;
+}
+
+html.dark-mode .profile-activity-group > h4 {
+  color: #b9aa96;
+}
+
+html.dark-mode .profile-activity-kind {
+  border-color: #705b48;
+  color: #dbc9b4;
+}
+
+html.dark-mode .profile-activity-entry.is-reply .profile-activity-kind {
+  border-color: #49656b;
+  background: #293c40;
+  color: #b8e2e8;
+}
+
+html.dark-mode .profile-activity-context {
+  border-left-color: #745c46;
+}
+
+html.dark-mode .profile-activity-body:hover,
+html.dark-mode .profile-activity-body:focus,
+html.dark-mode .profile-activity-meta,
+html.dark-mode .profile-activity-meta a:hover,
+html.dark-mode .profile-activity-meta a:focus {
+  color: #d1a28e;
 }
 
 html.dark-mode .profile-page-header .profile-tags-block .label,
@@ -8331,6 +8615,32 @@ html.dark-mode .profile-recommendation-section-value .label {
   .profile-posts-panel,
   .profile-inline-request-compose {
     padding: 20px 17px;
+  }
+
+  .profile-activity-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .profile-activity-sort-form,
+  .profile-activity-sort {
+    width: 100%;
+  }
+
+  .profile-activity-entry {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 14px;
+  }
+
+  .profile-activity-time {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .profile-activity-copy {
+    grid-column: 1 / -1;
   }
 
   .profile-recommendation-card {

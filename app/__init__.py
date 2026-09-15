@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, redirect, request, url_for
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
@@ -41,6 +41,11 @@ def create_app(config_name):
     db.init_app(app)
     migrate.init_app(app,db)
     login_manager.init_app(app)
+
+    @login_manager.unauthorized_handler
+    def handle_unauthorized_access():
+        return_path = request.full_path if request.query_string else request.path
+        return redirect(url_for('auth.login', next=return_path, gate=1))
     socketio.init_app(
         app,
         cors_allowed_origins=app.config.get('TALKTO_SITE_ORIGIN'),

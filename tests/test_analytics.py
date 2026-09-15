@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 
 from app import create_app, db
 from app.main.views import _build_visit_timeline
-from app.models import PageVisit, Post, Role, User
+from app.models import AuthFunnelAttempt, PageVisit, Post, Role, User
 
 
 class AnalyticsTestCase(unittest.TestCase):
@@ -254,6 +254,50 @@ class AnalyticsTestCase(unittest.TestCase):
         self.assertIsNone(visit.acquisition_source)
         self.assertEqual(visit.acquisition_medium, "email")
         self.assertIsNone(visit.referrer_domain)
+
+    def test_protected_action_funnel_tracks_completion_without_identifiers(self):
+        user = self._create_user('member@ethz.ch', 'member-user')
+
+        start_response = self.client.get('/auth/login?next=/post&intent=reply')
+        self.assertEqual(start_response.status_code, 200)
+        attempt = AuthFunnelAttempt.query.one()
+        self.assertEqual(attempt.action, 'reply')
+        self.assertIsNone(attempt.completed_at)
+
+        login_response = self.client.post(
+            '/auth/login?next=/post',
+            data={'email': user.email, 'password': 'Password123'},
+        )
+        self.assertEqual(login_response.status_code, 302)
+        self.assertIsNotNone(db.session.get(AuthFunnelAttempt, attempt.id).completed_at)
+
+    def test_funnel_dashboard_and_export_show_abandoned_steps(self):
+        old_time = datetime.now(timezone.utc) - timedelta(hours=1)
+        db.session.add_all([
+            AuthFunnelAttempt(
+                attempt_token='abandoned-login',
+                action='relate',
+                started_at=old_time,
+            ),
+            AuthFunnelAttempt(
+                attempt_token='abandoned-profile',
+                action='post',
+                started_at=old_time,
+                authenticated_at=old_time,
+                profile_required_at=old_time,
+            ),
+        ])
+        admin = self._create_user('admin@ethz.ch', 'admin-user')
+        self.client.post('/auth/login', data={'email': admin.email, 'password': 'Password123'})
+
+        dashboard = self.client.get('/analytics?range=24h')
+        export = self.client.get('/analytics/export.csv?dataset=funnel&range=24h')
+
+        self.assertIn(b'Where do people stop?', dashboard.data)
+        self.assertIn(b'Left during login', dashboard.data)
+        self.assertIn(b'Left during profile setup', dashboard.data)
+        self.assertIn(b'Relate,1,0,1', export.data)
+        self.assertIn(b'Write a post,1,0,1', export.data)
 
 
 if __name__ == "__main__":

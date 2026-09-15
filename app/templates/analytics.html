@@ -39,6 +39,7 @@
     <a href="{{ url_for('main.analytics_export', dataset='hours', range=selected_range) }}">Hours</a>
     <a href="{{ url_for('main.analytics_export', dataset='journeys', range=selected_range) }}">Journeys</a>
     <a href="{{ url_for('main.analytics_export', dataset='acquisition', range=selected_range) }}">Acquisition</a>
+    <a href="{{ url_for('main.analytics_export', dataset='funnel', range=selected_range) }}">Sign-in funnel</a>
     <a href="{{ url_for('main.analytics_export', dataset='previous', range=selected_range) }}">Previous analytics</a>
   </nav>
 
@@ -48,6 +49,7 @@
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-traffic" data-analytics-tab="traffic">Visits &amp; time</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-journeys" data-analytics-tab="journeys">Journeys</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-acquisition" data-analytics-tab="acquisition">Acquisition</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-funnel" data-analytics-tab="funnel">Sign-in funnel</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-previous" data-analytics-tab="previous">Previous analytics</button>
   </div>
 
@@ -345,6 +347,57 @@
         </ol>
         {% endif %}
       </article>
+    </div>
+  </section>
+
+  <section id="analytics-funnel" class="analytics-view-panel" role="tabpanel" data-analytics-panel="funnel" hidden>
+    <div class="analytics-section-heading">
+      <div>
+        <span>LOGIN AND PROFILE SETUP</span>
+        <h2>Where do people stop?</h2>
+      </div>
+      <p>{{ auth_funnel_stats.started }} protected actions started in this period.</p>
+    </div>
+
+    <div class="analytics-content-grid">
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">FUNNEL TOTALS</span>
+        <h3>From intent to access</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ auth_funnel_stats.started }}</strong><span>Started</span></div>
+          <div><strong>{{ auth_funnel_stats.completed }}</strong><span>Completed</span></div>
+          <div><strong>{{ auth_funnel_stats.login_abandoned }}</strong><span>Left during login</span></div>
+          <div><strong>{{ auth_funnel_stats.profile_abandoned }}</strong><span>Left during profile setup</span></div>
+          <div><strong>{{ auth_funnel_stats.in_progress }}</strong><span>Still in progress</span></div>
+        </div>
+        <p class="analytics-card-note">Completion rate: {{ auth_funnel_stats.completion_rate }}%. An unfinished attempt counts as abandoned after {{ auth_funnel_stats.abandoned_after_minutes }} minutes.</p>
+      </article>
+
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">ENTRY POINTS</span>
+        <h3>What required the login?</h3>
+        <div class="analytics-table-wrap">
+          <table class="analytics-table">
+            <thead>
+              <tr><th>Action</th><th>Started</th><th>Completed</th><th>Abandoned</th></tr>
+            </thead>
+            <tbody>
+              {% for item in auth_funnel_stats.actions %}
+              <tr>
+                <td>{{ item.label }}</td>
+                <td>{{ item.started }}</td>
+                <td>{{ item.completed }}</td>
+                <td>{{ item.abandoned }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+
+    <div class="analytics-privacy-note">
+      Only the type of protected action and its progress are counted. No form content, OIDC identifier, email address, IP address, or destination post is stored.
     </div>
   </section>
 
