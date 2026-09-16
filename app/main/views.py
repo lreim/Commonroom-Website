@@ -54,6 +54,15 @@ MAX_TRACKED_VISIT_SECONDS = 60 * 60 * 4
 VALID_DEVICE_TYPES = {"mobile", "desktop"}
 CURRENT_ANALYTICS_VERSION = 2
 ANALYTICS_EXPORT_DATASETS = {"summary", "pages", "hours", "journeys", "acquisition", "funnel", "previous"}
+ANALYTICS_TRAFFIC_SEGMENTS = {
+    "lecture_ersties": {
+        "key": "lecture_ersties",
+        "label": "Erstie lecture QR",
+        "source": "lecture_ersties",
+        "medium": "qr",
+        "campaign": "launch_2026_09",
+    },
+}
 
 
 def _analytics_client_token():
@@ -516,10 +525,17 @@ def _build_auth_funnel_stats(first_bucket_start):
     return totals
 
 
-def _build_analytics_snapshot(selected_range):
+def _build_analytics_snapshot(selected_range, segment_key=None):
+    selected_segment = ANALYTICS_TRAFFIC_SEGMENTS.get(segment_key)
     current_query = _tracked_page_visits_query().filter(
         PageVisit.tracking_version == CURRENT_ANALYTICS_VERSION
     )
+    if selected_segment is not None:
+        current_query = current_query.filter(
+            PageVisit.acquisition_source == selected_segment["source"],
+            PageVisit.acquisition_medium == selected_segment["medium"],
+            PageVisit.acquisition_campaign == selected_segment["campaign"],
+        )
     visit_timeline = _build_visit_timeline(selected_range, current_query)
     selected_range = visit_timeline["range_key"]
     visits_in_range_query = current_query.filter(
@@ -546,6 +562,9 @@ def _build_analytics_snapshot(selected_range):
         "auth_stats": auth_stats,
         "visit_timeline": visit_timeline,
         "selected_range": selected_range,
+        "selected_segment": selected_segment,
+        "selected_segment_key": selected_segment["key"] if selected_segment else None,
+        "traffic_segments": list(ANALYTICS_TRAFFIC_SEGMENTS.values()),
         "tracked_page_count": sum(1 for item in page_stats if item["visit_count"] > 0),
         "hour_distribution": _build_hour_distribution(visits_in_range),
         "journey_stats": _build_journey_stats(visits_in_range),
@@ -854,10 +873,30 @@ def post_thread(post_id):
 
     mark_post_thread_visited(current_user.id, root_post.id)
 
+    thread_replies = []
+    frontier = list(root_post.replies.all())
+    visited_reply_ids = set()
+    while frontier:
+        reply = frontier.pop()
+        if reply.id in visited_reply_ids:
+            continue
+        visited_reply_ids.add(reply.id)
+        thread_replies.append(reply)
+        frontier.extend(reply.replies.all())
+
+    def reply_sort_key(reply):
+        timestamp = reply.timestamp
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
+        return timestamp, reply.id
+
+    thread_replies.sort(key=reply_sort_key)
+
     return render_template(
         'post_thread.html',
         post=root_post,
         form=form,
+        thread_replies=thread_replies,
     )
 
 
@@ -1342,7 +1381,10 @@ def edit_starter_post_admin(post_id):
 @login_required
 @admin_required
 def analytics():
-    snapshot = _build_analytics_snapshot(request.args.get("range", "1w", type=str))
+    snapshot = _build_analytics_snapshot(
+        request.args.get("range", "1w", type=str),
+        request.args.get("segment", type=str),
+    )
     return render_template('analytics.html', active_page=None, **snapshot)
 
 
@@ -1353,7 +1395,10 @@ def analytics_export():
     dataset = request.args.get("dataset", "summary", type=str)
     if dataset not in ANALYTICS_EXPORT_DATASETS:
         dataset = "summary"
-    snapshot = _build_analytics_snapshot(request.args.get("range", "1w", type=str))
+    snapshot = _build_analytics_snapshot(
+        request.args.get("range", "1w", type=str),
+        request.args.get("segment", type=str),
+    )
     output = StringIO()
     writer = csv.writer(output)
 
@@ -1413,7 +1458,8 @@ def analytics_export():
             ])
 
     export_period = "all-time" if dataset == "previous" else snapshot["selected_range"]
-    filename = f"commonroom-analytics-{dataset}-{export_period}.csv"
+    segment_suffix = f"-{snapshot['selected_segment_key']}" if snapshot["selected_segment_key"] else ""
+    filename = f"commonroom-analytics-{dataset}-{export_period}{segment_suffix}.csv"
     return Response(
         output.getvalue(),
         mimetype="text/csv",

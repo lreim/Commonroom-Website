@@ -13,8 +13,8 @@
 }|tojson }}
 {%- endmacro %}
 
-{% macro render_post_node(node, form, level=0) -%}
-<li id="post-{{ node.id }}" class="post post-thread-item{% if level > 0 %} post-thread-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}" style="margin-left: {{ level * 24 }}px;">
+{% macro render_post_node(node, form, is_reply=false) -%}
+<li id="post-{{ node.id }}" class="post post-thread-item{% if is_reply %} post-thread-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}">
     <div class="profile-thumbnail">
         {% if node.is_starter %}
         <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
@@ -26,7 +26,7 @@
         </a>
         {% else %}
         <a href="{{ url_for('.user', username=node.author.username) }}">
-            <img class="img-rounded profile-thumbnail" src="{{ node.author.gravatar(size=level > 0 and 36 or 40) }}">
+            <img class="img-rounded profile-thumbnail" src="{{ node.author.gravatar(size=is_reply and 36 or 40) }}">
         </a>
         {% endif %}
     </div>
@@ -44,6 +44,13 @@
                 {{ node.author.username }}
             </a>
         </div>
+        {% endif %}
+        {% if is_reply and node.parent and node.parent.parent_id is not none %}
+        <a class="post-thread-reply-context" href="#post-{{ node.parent.id }}">
+            Replying to
+            {% if node.parent.is_starter %}Admin{% else %}{{ node.parent.author.username }}{% endif %}
+            <span>“{{ node.parent.body|truncate(90, True) }}”</span>
+        </a>
         {% endif %}
         <div class="post-body">{{ node.body }}</div>
         <div class="post-meta-actions">
@@ -76,23 +83,6 @@
         </details>
     </div>
 </li>
-{% set child_replies = node.replies.order_by(node.__class__.timestamp.asc()).all() %}
-{% if child_replies %}
-<details class="post-thread-branch" data-thread-toggle open>
-    <summary
-        class="post-thread-link"
-        data-closed-label="&#8627; {{ child_replies|length }} {% if child_replies|length == 1 %}reply{% else %}replies{% endif %}"
-        data-open-label="Hide replies"
-    >
-        &#8627; {{ child_replies|length }} {% if child_replies|length == 1 %}reply{% else %}replies{% endif %}
-    </summary>
-    <ul class="posts post-thread-children">
-        {% for child in child_replies %}
-            {{ render_post_node(child, form, level + 1) }}
-        {% endfor %}
-    </ul>
-</details>
-{% endif %}
 {%- endmacro %}
 
 {% block page_content %}
@@ -104,8 +94,24 @@
 
 <div class="post-thread-root">
     <ul class="posts post-thread-tree">
-        {{ render_post_node(post, form, 0) }}
+        {{ render_post_node(post, form) }}
     </ul>
+    {% if thread_replies %}
+    <details class="post-thread-branch" data-thread-toggle open>
+        <summary
+            class="post-thread-link"
+            data-closed-label="&#8627; {{ thread_replies|length }} {% if thread_replies|length == 1 %}reply{% else %}replies{% endif %}"
+            data-open-label="Hide replies"
+        >
+            &#8627; {{ thread_replies|length }} {% if thread_replies|length == 1 %}reply{% else %}replies{% endif %}
+        </summary>
+        <ul class="posts post-thread-children">
+            {% for reply in thread_replies %}
+                {{ render_post_node(reply, form, true) }}
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
 </div>
 {% endblock %}
 

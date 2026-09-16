@@ -17,15 +17,23 @@
       <h1>Internal Analytics</h1>
       <p>Explore how CommonRoom is used without reading private content or tracking IP addresses.</p>
     </div>
-    <nav class="analytics-range-switch" aria-label="Analytics time range">
-      <a class="{% if selected_range == '24h' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='24h') }}">24 hours</a>
-      <a class="{% if selected_range == '1w' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1w') }}">7 days</a>
-      <a class="{% if selected_range == '1m' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1m') }}">30 days</a>
-    </nav>
+    <div class="analytics-header-controls">
+      <nav class="analytics-range-switch" aria-label="Analytics traffic segment">
+        <a class="{% if not selected_segment %}is-active{% endif %}" href="{{ url_for('main.analytics', range=selected_range) }}">All visits</a>
+        {% for segment in traffic_segments %}
+        <a class="{% if selected_segment_key == segment.key %}is-active{% endif %}" href="{{ url_for('main.analytics', range=selected_range, segment=segment.key) }}">{{ segment.label }}</a>
+        {% endfor %}
+      </nav>
+      <nav class="analytics-range-switch" aria-label="Analytics time range">
+        <a class="{% if selected_range == '24h' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='24h', segment=selected_segment_key) }}">24 hours</a>
+        <a class="{% if selected_range == '1w' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1w', segment=selected_segment_key) }}">7 days</a>
+        <a class="{% if selected_range == '1m' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1m', segment=selected_segment_key) }}">30 days</a>
+      </nav>
+    </div>
   </header>
 
   <section class="analytics-metric-grid" aria-label="Key metrics">
-    {{ metric("Visits", visit_timeline.total_visits, "in selected period") }}
+    {{ metric("Visits", visit_timeline.total_visits, selected_segment.label if selected_segment else "all traffic in selected period") }}
     {{ metric("Profiles", total_profiles, "excluding administrators") }}
     {{ metric("Community posts", total_root_posts, "Relate + Question") }}
     {{ metric("Replies", total_replies, reply_rate ~ "% of posts received a reply") }}
@@ -34,12 +42,12 @@
 
   <nav class="analytics-export-bar" aria-label="Export analytics data">
     <span>Export aggregated CSV:</span>
-    <a href="{{ url_for('main.analytics_export', dataset='summary', range=selected_range) }}">Summary</a>
-    <a href="{{ url_for('main.analytics_export', dataset='pages', range=selected_range) }}">Pages</a>
-    <a href="{{ url_for('main.analytics_export', dataset='hours', range=selected_range) }}">Hours</a>
-    <a href="{{ url_for('main.analytics_export', dataset='journeys', range=selected_range) }}">Journeys</a>
-    <a href="{{ url_for('main.analytics_export', dataset='acquisition', range=selected_range) }}">Acquisition</a>
-    <a href="{{ url_for('main.analytics_export', dataset='funnel', range=selected_range) }}">Sign-in funnel</a>
+    <a href="{{ url_for('main.analytics_export', dataset='summary', range=selected_range, segment=selected_segment_key) }}">Summary</a>
+    <a href="{{ url_for('main.analytics_export', dataset='pages', range=selected_range, segment=selected_segment_key) }}">Pages</a>
+    <a href="{{ url_for('main.analytics_export', dataset='hours', range=selected_range, segment=selected_segment_key) }}">Hours</a>
+    <a href="{{ url_for('main.analytics_export', dataset='journeys', range=selected_range, segment=selected_segment_key) }}">Journeys</a>
+    <a href="{{ url_for('main.analytics_export', dataset='acquisition', range=selected_range, segment=selected_segment_key) }}">Acquisition</a>
+    <a href="{{ url_for('main.analytics_export', dataset='funnel', range=selected_range, segment=selected_segment_key) }}">Sign-in funnel</a>
     <a href="{{ url_for('main.analytics_export', dataset='previous', range=selected_range) }}">Previous analytics</a>
   </nav>
 

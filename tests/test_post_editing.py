@@ -218,6 +218,10 @@ class PostEditingTestCase(unittest.TestCase):
         self.assertEqual(thread_response.status_code, 200)
         self.assertIn(b'class="post-thread-branch" data-thread-toggle open', thread_response.data)
         self.assertIn(b'An existing reply', thread_response.data)
+        self.assertIn(b'A nested reply', thread_response.data)
+        self.assertIn(b'post-thread-reply-context', thread_response.data)
+        self.assertIn(b'Replying to', thread_response.data)
+        self.assertNotIn(b'style="margin-left: 48px;"', thread_response.data)
 
     def test_reply_can_be_related(self):
         root = Post(body='Root', author=self.owner, post_type='question')

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from app import create_app, db
-from app.main.views import _build_visit_timeline
+from app.main.views import _build_analytics_snapshot, _build_visit_timeline
 from app.models import AuthFunnelAttempt, PageVisit, Post, Role, User
 
 
@@ -254,6 +254,32 @@ class AnalyticsTestCase(unittest.TestCase):
         self.assertIsNone(visit.acquisition_source)
         self.assertEqual(visit.acquisition_medium, "email")
         self.assertIsNone(visit.referrer_domain)
+
+    def test_erstie_lecture_qr_segment_is_separate_from_other_visits(self):
+        self._add_visit(
+            'index', '/', 'erstie-home', 'erstie-session', 3,
+            acquisition_source='lecture_ersties',
+            acquisition_medium='qr',
+            acquisition_campaign='launch_2026_09',
+        )
+        self._add_visit(
+            'onboarding', '/onboarding', 'other-visit', 'other-session', 2,
+            acquisition_source='direct',
+            acquisition_medium='direct',
+        )
+        db.session.commit()
+
+        all_visits = _build_analytics_snapshot('24h')
+        erstie_visits = _build_analytics_snapshot('24h', 'lecture_ersties')
+
+        self.assertEqual(all_visits['visit_timeline']['total_visits'], 2)
+        self.assertEqual(erstie_visits['visit_timeline']['total_visits'], 1)
+        self.assertEqual(erstie_visits['selected_segment']['campaign'], 'launch_2026_09')
+        onboarding = next(
+            item for item in erstie_visits['page_stats']
+            if item['page_key'] == 'onboarding'
+        )
+        self.assertEqual(onboarding['visit_count'], 0)
 
     def test_protected_action_funnel_tracks_completion_without_identifiers(self):
         user = self._create_user('member@ethz.ch', 'member-user')
