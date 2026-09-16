@@ -60,7 +60,8 @@
     <form method="get" action="{{ url_for('main.post') }}">
         <input type="hidden" name="type" value="{{ post_type_filter }}">
         <select class="sort-select post-page-sort" name="sort" onchange="this.form.submit()">
-            <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Most Recent</option>
+            <option value="latest_activity" {% if sort_by == "latest_activity" %}selected{% endif %}>Latest activity (posts &amp; replies)</option>
+            <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Newest posts only</option>
             <option value="most_relatable" {% if sort_by == "most_relatable" %}selected{% endif %}>Most Relatable</option>
             <option value="most_replies" {% if sort_by == "most_replies" %}selected{% endif %}>Most Replies</option>
             <option value="oldest_first" {% if sort_by == "oldest_first" %}selected{% endif %}>Oldest First</option>

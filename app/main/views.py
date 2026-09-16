@@ -8,6 +8,7 @@ from urllib.parse import urlparse
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 from sqlalchemy import func
+from sqlalchemy.orm import aliased
 from flask import Response, abort, render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
 from .forms import PostForm, ReplyForm, EditPostForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
@@ -757,7 +758,9 @@ def post():
     if topic_query:
         matched_topics = [item["name"] for item in match_tags(topic_query, all_tags)]
 
-    sort_by = request.args.get('sort', 'most_recent', type=str)
+    sort_by = request.args.get('sort', 'latest_activity', type=str)
+    if sort_by not in {'latest_activity', 'most_recent', 'most_replies', 'most_relatable', 'oldest_first'}:
+        sort_by = 'latest_activity'
     post_type_filter = request.args.get('type', 'all', type=str).lower()
     if post_type_filter not in {'all', 'relate', 'question'}:
         post_type_filter = 'all'
@@ -768,8 +771,40 @@ def post():
     if matched_topics:
         post_query = post_query.join(User, Post.author).join(User.tags).filter(Tag.name.in_(matched_topics)).distinct()
 
-    if sort_by == 'most_recent':
-        post_query = post_query.order_by(Post.id.desc(), Post.timestamp.desc())
+    if sort_by == 'latest_activity':
+        # Keep the root post and every nested reply in the same sortable thread.
+        post_tree = (
+            db.session.query(
+                Post.id.label('post_id'),
+                Post.id.label('root_post_id'),
+                Post.timestamp.label('activity_at'),
+            )
+            .filter(Post.parent_id.is_(None))
+            .cte('post_tree', recursive=True)
+        )
+        child = aliased(Post)
+        post_tree = post_tree.union_all(
+            db.session.query(
+                child.id,
+                post_tree.c.root_post_id,
+                child.timestamp,
+            ).filter(child.parent_id == post_tree.c.post_id)
+        )
+        latest_activity = (
+            db.session.query(
+                post_tree.c.root_post_id,
+                func.max(post_tree.c.activity_at).label('latest_at'),
+            )
+            .group_by(post_tree.c.root_post_id)
+            .subquery()
+        )
+        post_query = (
+            post_query
+            .join(latest_activity, Post.id == latest_activity.c.root_post_id)
+            .order_by(latest_activity.c.latest_at.desc(), Post.id.desc())
+        )
+    elif sort_by == 'most_recent':
+        post_query = post_query.order_by(Post.timestamp.desc(), Post.id.desc())
     elif sort_by == 'most_replies':
         reply_count_subquery = (
             db.session.query(
@@ -801,10 +836,6 @@ def post():
         )
     elif sort_by == 'oldest_first':
         post_query = post_query.order_by(Post.id.asc(), Post.timestamp.asc())
-    else:
-        sort_by = 'most_recent'
-        post_query = post_query.order_by(Post.id.desc(), Post.timestamp.desc())
-
     pagination = post_query.paginate(
         page=page,
         per_page=current_app.config.get('TALKTO_POSTS_PER_PAGE', 20),
