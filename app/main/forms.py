@@ -22,7 +22,7 @@ class PostForm(FlaskForm):
     )
     post_type = RadioField(
         "What kind of post is this?",
-        choices=[("relate", "Relate"), ("question", "Question")],
+        choices=[("relate", "Relate"), ("question", "Question"), ("confession", "Confession")],
         validators=[DataRequired()],
     )
     submit = SubmitField('Submit')
@@ -37,6 +37,16 @@ class ReplyForm(FlaskForm):
         "Your reply",
         validators=[DataRequired(), Length(1, MAX_POST_BODY_LENGTH)],
         render_kw={"maxlength": MAX_POST_BODY_LENGTH},
+    )
+    reply_type = RadioField(
+        "How would you like to reply?",
+        choices=[
+            ("experience", "Share an experience"),
+            ("tip", "Offer a practical tip"),
+            ("question", "Ask a follow-up"),
+        ],
+        default="experience",
+        validators=[DataRequired()],
     )
     submit = SubmitField('Submit')
 

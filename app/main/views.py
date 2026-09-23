@@ -13,7 +13,18 @@ from flask import Response, abort, render_template, session, redirect, url_for, 
 from . import main
 from .forms import PostForm, ReplyForm, EditPostForm, StarterPostForm, EditProfileForm, EditProfileAdminForm, FeedbackForm
 from .. import db, csrf
-from ..models import AuthFunnelAttempt, User, Post, Role, Tag, Conversation, PageVisit, post_likes
+from ..models import (
+    AuthFunnelAttempt,
+    User,
+    Post,
+    Role,
+    Tag,
+    Conversation,
+    PageVisit,
+    PostThreadSubscription,
+    PostThreadVisit,
+    post_likes,
+)
 from ..tag_matching import match_tags, get_model
 from flask_login import login_required, current_user
 from app.decorators import admin_required, permission_required
@@ -432,6 +443,7 @@ def _build_content_stats():
     root_post_count = len(root_posts)
     relate_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "relate").count()
     question_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "question").count()
+    confession_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "confession").count()
     reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
     replied_post_count = sum(post.replies.count() > 0 for post in root_posts)
     profile_query = (
@@ -449,6 +461,7 @@ def _build_content_stats():
         "total_root_posts": root_post_count,
         "relate_post_count": relate_post_count,
         "question_post_count": question_post_count,
+        "confession_post_count": confession_post_count,
         "replied_post_count": replied_post_count,
         "unreplied_post_count": max(root_post_count - replied_post_count, 0),
         "total_replies": reply_count,
@@ -762,7 +775,7 @@ def post():
     if sort_by not in {'latest_activity', 'most_recent', 'most_replies', 'most_relatable', 'oldest_first'}:
         sort_by = 'latest_activity'
     post_type_filter = request.args.get('type', 'all', type=str).lower()
-    if post_type_filter not in {'all', 'relate', 'question'}:
+    if post_type_filter not in {'all', 'relate', 'question', 'confession'}:
         post_type_filter = 'all'
     page = request.args.get('page', 1, type=int)
     post_query = Post.query.filter(Post.parent_id.is_(None))
@@ -882,25 +895,42 @@ def post_thread(post_id):
 
     form = ReplyForm()
     reply_to_id = request.form.get('reply_to_id', type=int)
-    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
-        parent_post = root_post
-        if reply_to_id:
-            parent_post = Post.query.get_or_404(reply_to_id)
-            ancestor = parent_post
-            while ancestor.parent is not None:
-                ancestor = ancestor.parent
-            if ancestor.id != root_post.id:
-                parent_post = root_post
-        reply = Post(
-            body=form.body.data,
-            author_id=current_user.id,
-            parent=parent_post,
-            post_type=parent_post.post_type,
-            is_starter=False,
-        )
-        db.session.add(reply)
-        db.session.commit()
-        return redirect(url_for('main.post_thread', post_id=root_post.id))
+    failed_reply_to_id = None
+    if request.method == 'POST':
+        if not current_user.can(Permission.WRITE_ARTICLES):
+            abort(403)
+        if form.validate_on_submit():
+            parent_post = root_post
+            if reply_to_id:
+                parent_post = Post.query.get_or_404(reply_to_id)
+                ancestor = parent_post
+                while ancestor.parent is not None:
+                    ancestor = ancestor.parent
+                if ancestor.id != root_post.id:
+                    parent_post = root_post
+            reply = Post(
+                body=form.body.data,
+                author_id=current_user.id,
+                parent=parent_post,
+                post_type=parent_post.post_type,
+                reply_type=form.reply_type.data,
+                is_starter=False,
+            )
+            db.session.add(reply)
+            db.session.commit()
+            flash('Your reply was posted.')
+            return redirect(url_for(
+                'main.post_thread',
+                post_id=root_post.id,
+                _anchor=f'post-{reply.id}',
+            ))
+        failed_reply_to_id = reply_to_id or root_post.id
+
+    previous_visit = PostThreadVisit.query.filter_by(
+        user_id=current_user.id,
+        root_post_id=root_post.id,
+    ).first()
+    previous_visit_at = previous_visit.last_visited_at if previous_visit is not None else None
 
     mark_post_thread_visited(current_user.id, root_post.id)
 
@@ -923,12 +953,128 @@ def post_thread(post_id):
 
     thread_replies.sort(key=reply_sort_key)
 
+    new_reply_ids = set()
+    if previous_visit_at is not None:
+        if previous_visit_at.tzinfo is None:
+            previous_visit_at = previous_visit_at.replace(tzinfo=timezone.utc)
+        new_reply_ids = {
+            reply.id
+            for reply in thread_replies
+            if reply.author_id != current_user.id
+            and reply_sort_key(reply)[0] > previous_visit_at
+        }
+
+    sort_by = request.args.get('sort', 'newest_activity', type=str)
+    if sort_by not in {'newest_activity', 'oldest_first', 'most_related'}:
+        sort_by = 'newest_activity'
+
+    def descendants_for(reply):
+        descendants = []
+        frontier = list(reply.replies.all())
+        seen = set()
+        while frontier:
+            child = frontier.pop()
+            if child.id in seen:
+                continue
+            seen.add(child.id)
+            descendants.append(child)
+            frontier.extend(child.replies.all())
+        descendants.sort(key=reply_sort_key)
+        return descendants
+
+    reply_groups = []
+    for direct_reply in root_post.replies.all():
+        replies = [direct_reply] + descendants_for(direct_reply)
+        latest_at = max(reply_sort_key(reply)[0] for reply in replies)
+        related_count = sum(reply.liked_by.count() for reply in replies)
+        reply_groups.append(SimpleNamespace(
+            replies=replies,
+            latest_at=latest_at,
+            related_count=related_count,
+        ))
+
+    if sort_by == 'newest_activity':
+        reply_groups.sort(key=lambda group: group.latest_at, reverse=True)
+    elif sort_by == 'most_related':
+        reply_groups.sort(
+            key=lambda group: (group.related_count, group.latest_at),
+            reverse=True,
+        )
+    else:
+        reply_groups.sort(key=lambda group: reply_sort_key(group.replies[0]))
+
+    all_thread_posts = [root_post] + thread_replies
+    participant_count = len({
+        thread_post.author_id
+        for thread_post in all_thread_posts
+        if thread_post.author_id is not None
+    })
+    latest_activity_at = max(reply_sort_key(thread_post)[0] for thread_post in all_thread_posts)
+    subscription = PostThreadSubscription.query.filter_by(
+        user_id=current_user.id,
+        root_post_id=root_post.id,
+    ).first()
+
     return render_template(
         'post_thread.html',
         post=root_post,
         form=form,
         thread_replies=thread_replies,
+        reply_groups=reply_groups,
+        sort_by=sort_by,
+        participant_count=participant_count,
+        latest_activity_at=latest_activity_at,
+        new_reply_ids=new_reply_ids,
+        is_following=subscription is not None,
+        failed_reply_to_id=failed_reply_to_id,
+        thread_status_labels={
+            'looking_for_replies': 'Looking for replies',
+            'still_thinking': 'Still thinking about this',
+            'answered': 'Answered',
+        },
     )
+
+
+@main.route('/post/<int:post_id>/follow', methods=['POST'])
+@login_required
+def toggle_post_thread_follow(post_id):
+    root_post = Post.query.get_or_404(post_id)
+    while root_post.parent is not None:
+        root_post = root_post.parent
+    subscription = PostThreadSubscription.query.filter_by(
+        user_id=current_user.id,
+        root_post_id=root_post.id,
+    ).first()
+    if subscription is None:
+        db.session.add(PostThreadSubscription(
+            user_id=current_user.id,
+            root_post_id=root_post.id,
+        ))
+        flash('You will be notified about new replies in this thread.')
+    else:
+        db.session.delete(subscription)
+        flash('Thread notifications are turned off.')
+    db.session.commit()
+    return redirect(url_for('main.post_thread', post_id=root_post.id))
+
+
+@main.route('/post/<int:post_id>/status', methods=['POST'])
+@login_required
+def update_post_thread_status(post_id):
+    root_post = Post.query.get_or_404(post_id)
+    can_manage_status = (
+        root_post.author_id == current_user.id
+        or (root_post.is_starter and current_user.is_administrator())
+    )
+    if root_post.parent_id is not None or not can_manage_status:
+        abort(403)
+    status = request.form.get('thread_status', type=str)
+    if status not in {'looking_for_replies', 'still_thinking', 'answered'}:
+        abort(400)
+    root_post.thread_status = status
+    db.session.commit()
+    flash('Thread status updated.')
+    return redirect(url_for('main.post_thread', post_id=root_post.id))
 
 
 @main.route('/post/<int:post_id>/edit', methods=['GET', 'POST'])
@@ -1442,6 +1588,7 @@ def analytics_export():
             ("profiles", "without optional email", snapshot["profiles_without_contact_email"]),
             ("posts", "relate posts", snapshot["relate_post_count"]),
             ("posts", "question posts", snapshot["question_post_count"]),
+            ("posts", "confession posts", snapshot["confession_post_count"]),
             ("posts", "posts with replies", snapshot["replied_post_count"]),
             ("posts", "replies", snapshot["total_replies"]),
             ("chats", "private chats", snapshot["total_conversations"]),

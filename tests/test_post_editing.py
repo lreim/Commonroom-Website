@@ -216,12 +216,55 @@ class PostEditingTestCase(unittest.TestCase):
 
         thread_response = self.client.get(thread_target)
         self.assertEqual(thread_response.status_code, 200)
-        self.assertIn(b'class="post-thread-branch" data-thread-toggle open', thread_response.data)
+        self.assertIn(b'class="post-thread-conversation"', thread_response.data)
         self.assertIn(b'An existing reply', thread_response.data)
         self.assertIn(b'A nested reply', thread_response.data)
         self.assertIn(b'post-thread-reply-context', thread_response.data)
         self.assertIn(b'Replying to', thread_response.data)
         self.assertNotIn(b'style="margin-left: 48px;"', thread_response.data)
+
+    def test_thread_reply_redirects_to_and_highlights_the_new_reply(self):
+        root = Post(body='A thread root', author=self.owner, post_type='question')
+        db.session.add(root)
+        db.session.commit()
+        self._login('other@ethz.ch', 'OtherPassword1')
+
+        response = self.client.post(
+            f'/post/{root.id}',
+            data={
+                'body': 'A practical answer',
+                'reply_to_id': root.id,
+                'reply_type': 'tip',
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        reply = Post.query.filter_by(body='A practical answer').one()
+        self.assertEqual(reply.reply_type, 'tip')
+        self.assertTrue(response.location.endswith(f'/post/{root.id}#post-{reply.id}'))
+
+        thread_response = self.client.get(response.location)
+        self.assertIn(b'A practical answer', thread_response.data)
+        self.assertIn(b'Practical tip', thread_response.data)
+
+    def test_thread_owner_can_update_status_and_user_can_follow(self):
+        root = Post(body='A thread to follow', author=self.owner, post_type='relate')
+        db.session.add(root)
+        db.session.commit()
+        self._login('owner@ethz.ch', 'OwnerPassword1')
+
+        status_response = self.client.post(
+            f'/post/{root.id}/status',
+            data={'thread_status': 'answered'},
+        )
+        follow_response = self.client.post(f'/post/{root.id}/follow')
+
+        self.assertEqual(status_response.status_code, 302)
+        self.assertEqual(follow_response.status_code, 302)
+        self.assertEqual(db.session.get(Post, root.id).thread_status, 'answered')
+        followed_page = self.client.get(f'/post/{root.id}')
+        self.assertIn(b'Answered', followed_page.data)
+        self.assertIn(b'Following', followed_page.data)
 
     def test_reply_can_be_related(self):
         root = Post(body='Root', author=self.owner, post_type='question')

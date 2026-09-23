@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from app import create_app, db
-from app.models import Post, Role, User
+from app.models import Post, PostThreadSubscription, Role, User
 
 
 class ReplyNotificationTestCase(unittest.TestCase):
@@ -119,6 +119,37 @@ class ReplyNotificationTestCase(unittest.TestCase):
 
         self.assertNotIn(b'replied to your post', response.data)
         self.assertNotIn(b'notification-menu-trigger has-unseen', response.data)
+
+    def test_thread_follower_receives_new_reply_notification(self):
+        now = datetime.now(timezone.utc)
+        root = Post(
+            body='A followed post',
+            author=self.owner,
+            post_type='question',
+            timestamp=now - timedelta(minutes=3),
+        )
+        db.session.add(root)
+        db.session.flush()
+        db.session.add(PostThreadSubscription(
+            user_id=self.participant.id,
+            root_post_id=root.id,
+            created_at=now - timedelta(minutes=2),
+        ))
+        reply = Post(
+            body='New activity in followed thread',
+            author=self.other,
+            parent=root,
+            post_type='question',
+            timestamp=now - timedelta(minutes=1),
+        )
+        db.session.add(reply)
+        db.session.commit()
+        self._login(self.participant, 'ParticipantPassword1')
+
+        response = self.client.get('/')
+
+        self.assertIn(b'new-replier replied in a thread you follow', response.data)
+        self.assertIn(f'/post/{root.id}#post-{reply.id}'.encode(), response.data)
 
     def test_unread_reply_dot_is_private_and_clears_when_thread_is_visited(self):
         now = datetime.now(timezone.utc)

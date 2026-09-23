@@ -381,6 +381,8 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('posts.id'), index=True)
     post_type = db.Column(db.String(16), nullable=False, default='relate', index=True)
+    thread_status = db.Column(db.String(32), nullable=False, default='looking_for_replies')
+    reply_type = db.Column(db.String(32), nullable=True)
     is_starter = db.Column(db.Boolean, nullable=False, default=False)
     liked_by = db.relationship('User', secondary=post_likes, back_populates='liked_posts', lazy='dynamic')
 
@@ -450,6 +452,46 @@ class PostThreadVisit(db.Model):
             'user_id',
             'root_post_id',
             name='uq_post_thread_visit_user_root',
+        ),
+    )
+
+
+class PostThreadSubscription(db.Model):
+    __tablename__ = 'post_thread_subscriptions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    root_post_id = db.Column(
+        db.Integer,
+        db.ForeignKey('posts.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
+    )
+    created_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )
+
+    user = db.relationship(
+        'User',
+        backref=db.backref('post_thread_subscriptions', cascade='all, delete-orphan'),
+    )
+    root_post = db.relationship(
+        'Post',
+        backref=db.backref('thread_subscriptions', cascade='all, delete-orphan'),
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            'user_id',
+            'root_post_id',
+            name='uq_post_thread_subscription_user_root',
         ),
     )
 

@@ -143,7 +143,8 @@ class AnalyticsTestCase(unittest.TestCase):
 
         relate_post = Post(body="Relatable", author=first_user, post_type="relate")
         question_post = Post(body="Question", author=first_user, post_type="question")
-        db.session.add_all([relate_post, question_post])
+        confession_post = Post(body="Confession", author=first_user, post_type="confession")
+        db.session.add_all([relate_post, question_post, confession_post])
         db.session.flush()
         db.session.add(
             Post(
@@ -170,6 +171,7 @@ class AnalyticsTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Relate posts", response.data)
         self.assertIn(b"Question posts", response.data)
+        self.assertIn(b"Confession posts", response.data)
         self.assertIn(b"Replied posts", response.data)
         self.assertIn(b"With email", response.data)
         self.assertIn(b"Without email", response.data)

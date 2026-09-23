@@ -56,6 +56,7 @@
         <a class="{% if post_type_filter == 'all' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='all') }}">All</a>
         <a class="{% if post_type_filter == 'relate' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='relate') }}">Relate</a>
         <a class="{% if post_type_filter == 'question' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='question') }}">Question</a>
+        <a class="{% if post_type_filter == 'confession' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='confession') }}">Confession</a>
     </nav>
     <form method="get" action="{{ url_for('main.post') }}">
         <input type="hidden" name="type" value="{{ post_type_filter }}">
@@ -92,6 +93,7 @@
             {% if post.is_starter %}
             <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
             {% endif %}
+            <span class="post-category-label">{{ post.post_type|capitalize }}</span>
             <div class="post-date">
                 {{ moment(post.timestamp).fromNow() }}
                 {% if post.edited_at %}<span class="post-edited-label">edited</span>{% endif %}

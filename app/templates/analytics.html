@@ -35,7 +35,7 @@
   <section class="analytics-metric-grid" aria-label="Key metrics">
     {{ metric("Visits", visit_timeline.total_visits, selected_segment.label if selected_segment else "all traffic in selected period") }}
     {{ metric("Profiles", total_profiles, "excluding administrators") }}
-    {{ metric("Community posts", total_root_posts, "Relate + Question") }}
+    {{ metric("Community posts", total_root_posts, "Relate + Question + Confession") }}
     {{ metric("Replies", total_replies, reply_rate ~ "% of posts received a reply") }}
     {{ metric("Private chats", total_conversations, "active conversations") }}
   </section>
@@ -145,14 +145,16 @@
     <div class="analytics-content-grid">
       <article class="analytics-breakdown-card">
         <span class="analytics-card-kicker">POST TYPES</span>
-        <h3>Relate or Question?</h3>
+        <h3>Relate, Question or Confession?</h3>
         <div class="analytics-big-numbers">
           <div><strong>{{ relate_post_count }}</strong><span>Relate posts</span></div>
           <div><strong>{{ question_post_count }}</strong><span>Question posts</span></div>
+          <div><strong>{{ confession_post_count }}</strong><span>Confession posts</span></div>
         </div>
         <div class="analytics-stacked-bar">
           <i class="analytics-segment-relate" style="width: {{ (relate_post_count / total_root_posts * 100) if total_root_posts else 0 }}%;"></i>
           <i class="analytics-segment-question" style="width: {{ (question_post_count / total_root_posts * 100) if total_root_posts else 0 }}%;"></i>
+          <i class="analytics-segment-confession" style="width: {{ (confession_post_count / total_root_posts * 100) if total_root_posts else 0 }}%;"></i>
         </div>
       </article>
 

@@ -3,7 +3,14 @@ from datetime import datetime, timezone
 from flask import session, url_for
 
 from . import db
-from .models import ChatRequest, Conversation, Message, Post, PostThreadVisit
+from .models import (
+    ChatRequest,
+    Conversation,
+    Message,
+    Post,
+    PostThreadSubscription,
+    PostThreadVisit,
+)
 
 
 SESSION_KEY = "notifications_last_seen_at"
@@ -49,15 +56,27 @@ def _root_post(post):
 
 def unread_reply_threads_for_user(user):
     participation = Post.query.filter(Post.author_id == user.id).all()
+    participated_root_ids = set()
     roots_by_id = {}
     participation_started_at = {}
     for post in participation:
         root = _root_post(post)
+        participated_root_ids.add(root.id)
         roots_by_id[root.id] = root
         participated_at = _utc_aware(post.timestamp)
         previous = participation_started_at.get(root.id)
         if participated_at is not None and (previous is None or participated_at < previous):
             participation_started_at[root.id] = participated_at
+    subscriptions = PostThreadSubscription.query.filter_by(user_id=user.id).all()
+    for subscription in subscriptions:
+        root = subscription.root_post
+        if root is None:
+            continue
+        roots_by_id[root.id] = root
+        subscribed_at = _utc_aware(subscription.created_at)
+        previous = participation_started_at.get(root.id)
+        if subscribed_at is not None and (previous is None or subscribed_at < previous):
+            participation_started_at[root.id] = subscribed_at
     if not roots_by_id:
         return {}
 
@@ -102,6 +121,8 @@ def unread_reply_threads_for_user(user):
         author_name = reply.author.username if reply.author is not None else 'Admin'
         if root.author_id == user.id:
             text = f'{author_name} replied to your post'
+        elif root.id not in participated_root_ids:
+            text = f'{author_name} replied in a thread you follow'
         else:
             text = f'{author_name} replied to a post you also replied to'
         existing = unread_by_root.get(root.id)

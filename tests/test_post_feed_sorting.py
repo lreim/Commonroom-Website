@@ -16,10 +16,11 @@ class PostFeedSortingTestCase(unittest.TestCase):
         self.client = self.app.test_client()
 
         user = User(
-            email='feed-sort@example.org',
+            email='feed-sort@ethz.ch',
             username='feed-sort-user',
             password='Password123',
             confirmed=True,
+            role=Role.query.filter_by(name='User').one(),
         )
         now = datetime.now(timezone.utc)
         older_root = Post(
@@ -76,6 +77,25 @@ class PostFeedSortingTestCase(unittest.TestCase):
             html.index('Newer root without replies'),
             html.index('Older root with fresh nested reply'),
         )
+
+    def test_confession_can_be_created_and_filtered(self):
+        self.client.post(
+            '/auth/login',
+            data={'email': 'feed-sort@ethz.ch', 'password': 'Password123'},
+        )
+        response = self.client.post(
+            '/post',
+            data={'body': 'A new confession', 'post_type': 'confession'},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        confession = Post.query.filter_by(body='A new confession').one()
+        self.assertEqual(confession.post_type, 'confession')
+
+        filtered = self.client.get('/post?type=confession')
+        self.assertIn(b'A new confession', filtered.data)
+        self.assertNotIn(b'Newer root without replies', filtered.data)
+        self.assertIn(b'>Confession</span>', filtered.data)
 
 
 if __name__ == '__main__':

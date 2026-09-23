@@ -13,8 +13,8 @@
 }|tojson }}
 {%- endmacro %}
 
-{% macro render_post_node(node, form, is_reply=false) -%}
-<li id="post-{{ node.id }}" class="post post-thread-item{% if is_reply %} post-thread-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}">
+{% macro render_post_node(node, form, is_reply=false, is_continuation=false) -%}
+<li id="post-{{ node.id }}" class="post post-thread-item{% if is_reply %} post-thread-reply{% endif %}{% if is_continuation %} post-thread-continuation{% endif %}{% if node.id in new_reply_ids %} is-new-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}">
     <div class="profile-thumbnail">
         {% if node.is_starter %}
         <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
@@ -34,6 +34,7 @@
         {% if node.is_starter %}
         <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
         {% endif %}
+        {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
         <div class="post-date">
             {{ moment(node.timestamp).fromNow() }}
             {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
@@ -45,6 +46,12 @@
             </a>
         </div>
         {% endif %}
+        {% if is_reply and node.reply_type %}
+        <span class="post-reply-type">
+            {% if node.reply_type == 'tip' %}Practical tip{% elif node.reply_type == 'question' %}Follow-up question{% else %}Shared experience{% endif %}
+        </span>
+        {% endif %}
+        {% if node.id in new_reply_ids %}<span class="post-new-label">New</span>{% endif %}
         {% if is_reply and node.parent and node.parent.parent_id is not none %}
         <a class="post-thread-reply-context" href="#post-{{ node.parent.id }}">
             Replying to
@@ -70,12 +77,34 @@
         {% if (not node.is_starter and node.author_id == current_user.id) or (node.is_starter and node.parent_id and current_user.is_administrator()) %}
         <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=node.id, next=request.path) }}">Edit</a>
         {% endif %}
-        <details class="post-reply-box" data-reply-toggle>
+        <details class="post-reply-box" data-reply-toggle{% if failed_reply_to_id == node.id %} open{% endif %}>
             <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
             <form method="post" action="{{ url_for('main.post_thread', post_id=post.id) }}">
                 {{ form.csrf_token }}
                 <input type="hidden" name="reply_to_id" value="{{ node.id }}">
                 {{ form.body(class="form-control", rows="4", placeholder="Write your reply here.", id="reply-body-" ~ node.id) }}
+                <fieldset class="post-reply-type-picker">
+                    <legend>{{ form.reply_type.label.text }}</legend>
+                    {% for value, label in form.reply_type.choices %}
+                    <label for="reply-type-{{ node.id }}-{{ value }}">
+                        <input
+                            id="reply-type-{{ node.id }}-{{ value }}"
+                            type="radio"
+                            name="reply_type"
+                            value="{{ value }}"
+                            {% if form.reply_type.data == value or (not form.reply_type.data and value == 'experience') %}checked{% endif %}
+                        >
+                        {{ label }}
+                    </label>
+                    {% endfor %}
+                </fieldset>
+                {% if failed_reply_to_id == node.id and form.errors %}
+                <div class="post-reply-errors" role="alert">
+                    {% for field_errors in form.errors.values() %}
+                        {% for error in field_errors %}<p>{{ error }}</p>{% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <div class="post-reply-actions">
                     {{ form.submit(class="btn btn-primary", value="Send reply") }}
                 </div>
@@ -89,28 +118,63 @@
 <div class="page-header">
     <p><a class="btn btn-default" href="{{ url_for('main.post') }}">Back to posts</a></p>
     <h1>Post Thread</h1>
-    <h4>Read the full reply thread and answer directly inside the conversation.</h4>
+    <h4>Share an experience, offer something practical, or ask one thoughtful question.</h4>
 </div>
+
+<div class="post-thread-toolbar">
+    <div class="post-thread-overview">
+        <strong>{{ thread_replies|length }} {% if thread_replies|length == 1 %}reply{% else %}replies{% endif %}</strong>
+        <span>· {{ participant_count }} {% if participant_count == 1 %}student{% else %}students{% endif %}</span>
+        <span>· latest activity {{ moment(latest_activity_at).fromNow() }}</span>
+    </div>
+    <div class="post-thread-toolbar-actions">
+        <span class="post-thread-status">{{ thread_status_labels.get(post.thread_status, 'Looking for replies') }}</span>
+        <form method="post" action="{{ url_for('main.toggle_post_thread_follow', post_id=post.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-default post-follow-button" type="submit">{{ 'Following' if is_following else 'Follow thread' }}</button>
+        </form>
+    </div>
+</div>
+
+{% if post.author_id == current_user.id or (post.is_starter and current_user.is_administrator()) %}
+<form class="post-thread-status-form" method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="thread-status">Thread status</label>
+    <select id="thread-status" name="thread_status">
+        {% for value, label in thread_status_labels.items() %}
+        <option value="{{ value }}"{% if post.thread_status == value %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-default" type="submit">Update</button>
+</form>
+{% endif %}
 
 <div class="post-thread-root">
     <ul class="posts post-thread-tree">
         {{ render_post_node(post, form) }}
     </ul>
-    {% if thread_replies %}
-    <details class="post-thread-branch" data-thread-toggle open>
-        <summary
-            class="post-thread-link"
-            data-closed-label="&#8627; {{ thread_replies|length }} {% if thread_replies|length == 1 %}reply{% else %}replies{% endif %}"
-            data-open-label="Hide replies"
-        >
-            &#8627; {{ thread_replies|length }} {% if thread_replies|length == 1 %}reply{% else %}replies{% endif %}
-        </summary>
-        <ul class="posts post-thread-children">
-            {% for reply in thread_replies %}
-                {{ render_post_node(reply, form, true) }}
-            {% endfor %}
-        </ul>
-    </details>
+    {% if reply_groups %}
+    <nav class="post-thread-sort" aria-label="Sort replies">
+        <a class="{% if sort_by == 'newest_activity' %}is-active{% endif %}" href="{{ url_for('main.post_thread', post_id=post.id, sort='newest_activity') }}">Newest activity</a>
+        <a class="{% if sort_by == 'oldest_first' %}is-active{% endif %}" href="{{ url_for('main.post_thread', post_id=post.id, sort='oldest_first') }}">Oldest first</a>
+        <a class="{% if sort_by == 'most_related' %}is-active{% endif %}" href="{{ url_for('main.post_thread', post_id=post.id, sort='most_related') }}">Most related</a>
+    </nav>
+    <div class="post-thread-conversations">
+        {% for group in reply_groups %}
+        <section class="post-thread-conversation">
+            <ul class="posts post-thread-children">
+                {% for reply in group.replies %}
+                    {{ render_post_node(reply, form, true, not loop.first) }}
+                {% endfor %}
+            </ul>
+        </section>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="post-thread-empty">
+        <strong>Be the first to reply.</strong>
+        <p>A short experience, practical idea, or kind follow-up question is enough.</p>
+    </div>
     {% endif %}
 </div>
 {% endblock %}
