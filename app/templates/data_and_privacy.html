@@ -36,7 +36,7 @@
       </article>
     </div>
     <p class="privacy-quick-limit">
-      <strong>Important:</strong> Chats are private between their participants through access controls, but they are stored on the server and are <em class="privacy-not-emphasis">not</em> currently end-to-end encrypted.
+      <strong>Important:</strong> Chat content is encrypted in storage and limited to its participants through access controls, but it is <em class="privacy-not-emphasis">not</em> end-to-end encrypted.
     </p>
   </section>
 
@@ -88,7 +88,7 @@
       </summary>
       <div class="privacy-detail-content">
         <p>You may add any valid email address to receive chat-request notifications. It is separate from SWITCH, remains private, and is <em class="privacy-not-emphasis">never</em> shown to other students. You can remove it again.</p>
-        <p>A chat begins only after the other person accepts a request. Messages are accessible only to the two participating accounts, but they are stored on the CommonRoom server and are <em class="privacy-not-emphasis">not</em> end-to-end encrypted.</p>
+        <p>A chat begins only after the other person accepts a request. Message and request text is encrypted before it is stored in the CommonRoom database. The server decrypts it for the two participating accounts, so it is still <em class="privacy-not-emphasis">not</em> end-to-end encrypted.</p>
         <p>You can block another account. This prevents new requests and further messages between those accounts.</p>
       </div>
     </details>
@@ -120,7 +120,7 @@
       </summary>
       <div class="privacy-detail-content">
         <p>You control what you write publicly and whether you add a private contact email.</p>
-        <p>Chats are stored on the server and are <em class="privacy-not-emphasis">not</em> end-to-end encrypted. Contact emails are <em class="privacy-not-emphasis">not</em> protected by a separate encrypted-at-rest email system. Access controls and secure transport reduce risk, but <em class="privacy-not-emphasis">no</em> online service can promise that stored data could <em class="privacy-not-emphasis">never</em> be exposed in a security incident.</p>
+        <p>Chat content is encrypted in the database, but it is <em class="privacy-not-emphasis">not</em> end-to-end encrypted because the CommonRoom server must decrypt it for participants. Contact emails are <em class="privacy-not-emphasis">not</em> protected by the chat-content encryption. Access controls, protected storage, and secure transport reduce risk, but <em class="privacy-not-emphasis">no</em> online service can promise that stored data could <em class="privacy-not-emphasis">never</em> be exposed in a security incident.</p>
       </div>
     </details>
   </section>

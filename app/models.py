@@ -7,6 +7,7 @@ import hashlib, random
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app, request
 from datetime import datetime, timezone 
+from .chat_crypto import EncryptedChatText
 
 
 #role und user Model anlegen als python classes with attributes that match the columns of a corresponding db table
@@ -527,7 +528,7 @@ class ChatRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     requester_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     requested_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
-    message = db.Column(db.Text, nullable=False)
+    message = db.Column(EncryptedChatText("chat-request"), nullable=False)
     status = db.Column(db.String(20), nullable=False, default=STATUS_PENDING, index=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     responded_at = db.Column(db.DateTime, nullable=True)
@@ -552,7 +553,7 @@ class ChatRequest(db.Model):
         )
 
     @staticmethod
-    def resolve_response_token(token, expected_action=None, max_age=604800):
+    def response_token_data(token, expected_action=None, max_age=604800):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token, max_age=max_age)
@@ -566,10 +567,25 @@ class ChatRequest(db.Model):
         if expected_action is not None and action != expected_action:
             return None
 
-        chat_request = ChatRequest.query.get(request_id)
+        if not isinstance(request_id, int) or not isinstance(requested_id, int):
+            return None
+
+        return data
+
+    @staticmethod
+    def resolve_response_token(token, expected_action=None, max_age=604800):
+        data = ChatRequest.response_token_data(
+            token,
+            expected_action=expected_action,
+            max_age=max_age,
+        )
+        if data is None:
+            return None
+
+        chat_request = db.session.get(ChatRequest, data['chat_request'])
         if chat_request is None:
             return None
-        if chat_request.requested_id != requested_id:
+        if chat_request.requested_id != data['requested_id']:
             return None
         return chat_request
 
@@ -579,7 +595,7 @@ class Message(db.Model):    #einzelne Nachricht
     id = db.Column(db.Integer, primary_key=True)
     conversation_id = db.Column(db.Integer, db.ForeignKey("conversations.id"), nullable=False, index=True)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
-    body = db.Column(db.Text, nullable=False)
+    body = db.Column(EncryptedChatText("message"), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
     author = db.relationship("User")

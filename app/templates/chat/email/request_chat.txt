@@ -8,6 +8,8 @@ Request message:
 If you would like to accept this request, open this link to review and confirm:
 {{ accept_url }}
 
+CommonRoom will ask you to sign in with SWITCH edu-ID before showing or processing the request.
+
 If you would like to reject this request, open this link to review and confirm:
 {{ reject_url }}
 

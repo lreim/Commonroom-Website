@@ -26,7 +26,7 @@
   </form>
 {% elif status == "accepted" %}
   <p>The chat request has been accepted.</p>
-  <p>You can now sign in to CommonRoom and continue there.</p>
+  <p><a class="btn btn-primary" href="{{ url_for('chat.detail', conversation_id=conversation.id) }}">Open conversation</a></p>
 {% elif status == "rejected" %}
   <p>The chat request has been rejected.</p>
 {% elif status == "blocked" %}

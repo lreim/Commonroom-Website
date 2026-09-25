@@ -1,8 +1,22 @@
 import os
 import secrets
+import base64
+import binascii
 from datetime import timedelta
+from urllib.parse import unquote, urlparse
 
 basedir = os.path.abspath(os.path.dirname(__file__)) #nötig für path con database 
+
+
+def validate_chat_encryption_key(encoded_key):
+    if not encoded_key:
+        raise RuntimeError('CHAT_ENCRYPTION_KEY must be configured.')
+    try:
+        key = base64.urlsafe_b64decode(encoded_key.encode('ascii'))
+    except (ValueError, UnicodeEncodeError, binascii.Error) as exc:
+        raise RuntimeError('CHAT_ENCRYPTION_KEY must be URL-safe base64.') from exc
+    if len(key) != 32:
+        raise RuntimeError('CHAT_ENCRYPTION_KEY must decode to exactly 32 bytes.')
 
 #configurations used in all cases  
 class Config:
@@ -12,6 +26,7 @@ class Config:
     OIDC_CLIENT_ID = os.environ.get('OIDC_CLIENT_ID')
     OIDC_CLIENT_SECRET = os.environ.get('OIDC_CLIENT_SECRET')
     OIDC_REDIRECT_URI = os.environ.get('OIDC_REDIRECT_URI')
+    CHAT_ENCRYPTION_KEY = os.environ.get('CHAT_ENCRYPTION_KEY')
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     TALKTO_MAIL_SUBJECT_PREFIX = '[COMMONROOM]'
     TALKTO_MAIL_SENDER = os.environ.get('TALKTO_MAIL_SENDER') or 'CommonRoom <noreply@commonroom.ch>'
@@ -44,21 +59,18 @@ class Config:
         if app.config.get('AUTH_MODE') not in {'legacy', 'oidc'}:
             raise RuntimeError("AUTH_MODE must be either 'legacy' or 'oidc'.")
 
-        if app.config.get('SECRET_KEY'):
-            return
+        if not app.config.get('SECRET_KEY'):
+            if app.config.get('TESTING'):
+                app.config['SECRET_KEY'] = 'testing-secret-key'
+            elif app.config.get('DEBUG'):
+                app.config['SECRET_KEY'] = secrets.token_hex(32)
+                app.logger.warning(
+                    'SECRET_KEY is not set. Generated a temporary development key; set SECRET_KEY before deploying.'
+                )
+            else:
+                raise RuntimeError('SECRET_KEY must be set in the environment for non-development deployments.')
 
-        if app.config.get('TESTING'):
-            app.config['SECRET_KEY'] = 'testing-secret-key'
-            return
-
-        if app.config.get('DEBUG'):
-            app.config['SECRET_KEY'] = secrets.token_hex(32)
-            app.logger.warning(
-                'SECRET_KEY is not set. Generated a temporary development key; set SECRET_KEY before deploying.'
-            )
-            return
-
-        raise RuntimeError('SECRET_KEY must be set in the environment for non-development deployments.')
+        validate_chat_encryption_key(app.config.get('CHAT_ENCRYPTION_KEY'))
 
 #for using flash mail via t-online 
 class DevelopmentConfig(Config):
@@ -76,6 +88,7 @@ class DevelopmentConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True 
+    CHAT_ENCRYPTION_KEY = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL') or \
     'sqlite:///' + os.path.join(basedir, 'data-test.sqlite')
 
@@ -84,6 +97,24 @@ class ProductionConfig(Config):
     'sqlite:///' + os.path.join(basedir, 'data.sqlite')
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
+
+    @staticmethod
+    def init_app(app):
+        Config.init_app(app)
+
+        # Newly created SQLite journal, WAL and backup-adjacent files inherit
+        # owner-only permissions from this process.
+        os.umask(0o077)
+
+        database_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if not database_uri.startswith('sqlite:///'):
+            return
+
+        database_path = unquote(urlparse(database_uri).path)
+        for suffix in ('', '-journal', '-wal', '-shm'):
+            protected_path = database_path + suffix
+            if os.path.exists(protected_path):
+                os.chmod(protected_path, 0o600)
 
 #dictionary for switching cases, these are the classes from above 
 config = {

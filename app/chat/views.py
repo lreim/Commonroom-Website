@@ -76,6 +76,19 @@ def _send_chat_request_email(chat_request, message_stream=None):
 
 
 def _render_request_response_page(token, action):
+    if not current_user.is_authenticated:
+        return redirect(url_for(
+            'auth.login',
+            next=request.path,
+            gate=1,
+        ))
+
+    token_data = ChatRequest.response_token_data(token, expected_action=action)
+    if token_data is None:
+        return render_template("chat/request_response.html", status="invalid", action=action)
+    if token_data['requested_id'] != current_user.id:
+        abort(403)
+
     chat_request = ChatRequest.resolve_response_token(token, expected_action=action)
     if chat_request is None:
         return render_template("chat/request_response.html", status="invalid", action=action)
@@ -95,6 +108,34 @@ def _render_request_response_page(token, action):
         token=token,
         chat_request=chat_request,
     )
+
+
+def _resolve_request_action_for_current_user(token, action):
+    if not current_user.is_authenticated:
+        return None, redirect(url_for(
+            'auth.login',
+            next=request.path,
+            gate=1,
+        ))
+
+    token_data = ChatRequest.response_token_data(token, expected_action=action)
+    if token_data is None:
+        return None, render_template(
+            "chat/request_response.html",
+            status="invalid",
+            action=action,
+        )
+    if token_data['requested_id'] != current_user.id:
+        abort(403)
+
+    chat_request = ChatRequest.resolve_response_token(token, expected_action=action)
+    if chat_request is None:
+        return None, render_template(
+            "chat/request_response.html",
+            status="invalid",
+            action=action,
+        )
+    return chat_request, None
 
 
 def _serialize_chat_candidate(user):
@@ -374,9 +415,9 @@ def accept_request(token):
     if request.method == "GET":
         return _render_request_response_page(token, "accept")
 
-    chat_request = ChatRequest.resolve_response_token(token, expected_action="accept")
-    if chat_request is None:
-        return render_template("chat/request_response.html", status="invalid", action="accept")
+    chat_request, response = _resolve_request_action_for_current_user(token, "accept")
+    if response is not None:
+        return response
     if chat_request.status != ChatRequest.STATUS_PENDING:
         return render_template(
             "chat/request_response.html",
@@ -415,9 +456,9 @@ def reject_request(token):
     if request.method == "GET":
         return _render_request_response_page(token, "reject")
 
-    chat_request = ChatRequest.resolve_response_token(token, expected_action="reject")
-    if chat_request is None:
-        return render_template("chat/request_response.html", status="invalid", action="reject")
+    chat_request, response = _resolve_request_action_for_current_user(token, "reject")
+    if response is not None:
+        return response
     if chat_request.status != ChatRequest.STATUS_PENDING:
         return render_template(
             "chat/request_response.html",
