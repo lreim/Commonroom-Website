@@ -96,6 +96,19 @@ class BasicsTestCase(unittest.TestCase):
         self.assertNotIn(b'Private Chats', response.data)
         self.assertNotIn(b'Back to chats', response.data)
         self.assertIn(b'Write a message...', response.data)
+        self.assertIn(b'id="onboarding-threads"', response.data)
+        self.assertIn(b'Reply to original post', response.data)
+        self.assertIn(b'Follow-up question', response.data)
+        self.assertIn(b'Confession', response.data)
+
+    def test_posts_page_has_dismissible_versioned_thread_update(self):
+        response = self.app.test_client().get('/post')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'data-post-update-banner', response.data)
+        self.assertIn(b'Follow conversations and choose how you want to reply.', response.data)
+        self.assertIn(b'commonroom:update:interactive-threads-v1:dismissed', response.data)
+        self.assertIn(b'window.localStorage.setItem', response.data)
 
     def test_rules_page_groups_overlapping_rules_without_dropping_topics(self):
         response = self.app.test_client().get('/rules')

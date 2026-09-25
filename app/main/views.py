@@ -772,7 +772,15 @@ def post():
         matched_topics = [item["name"] for item in match_tags(topic_query, all_tags)]
 
     sort_by = request.args.get('sort', 'latest_activity', type=str)
-    if sort_by not in {'latest_activity', 'most_recent', 'most_replies', 'most_relatable', 'oldest_first'}:
+    if sort_by not in {
+        'latest_activity',
+        'most_recent',
+        'most_replies',
+        'most_relatable',
+        'oldest_first',
+        'unanswered',
+        'still_thinking',
+    }:
         sort_by = 'latest_activity'
     post_type_filter = request.args.get('type', 'all', type=str).lower()
     if post_type_filter not in {'all', 'relate', 'question', 'confession'}:
@@ -784,7 +792,19 @@ def post():
     if matched_topics:
         post_query = post_query.join(User, Post.author).join(User.tags).filter(Tag.name.in_(matched_topics)).distinct()
 
-    if sort_by == 'latest_activity':
+    if sort_by == 'unanswered':
+        post_query = (
+            post_query
+            .filter(~Post.replies.any())
+            .order_by(Post.timestamp.desc(), Post.id.desc())
+        )
+    elif sort_by == 'still_thinking':
+        post_query = (
+            post_query
+            .filter(Post.thread_status == 'still_thinking')
+            .order_by(Post.timestamp.desc(), Post.id.desc())
+        )
+    elif sort_by == 'latest_activity':
         # Keep the root post and every nested reply in the same sortable thread.
         post_tree = (
             db.session.query(
@@ -964,10 +984,6 @@ def post_thread(post_id):
             and reply_sort_key(reply)[0] > previous_visit_at
         }
 
-    sort_by = request.args.get('sort', 'newest_activity', type=str)
-    if sort_by not in {'newest_activity', 'oldest_first', 'most_related'}:
-        sort_by = 'newest_activity'
-
     def descendants_for(reply):
         descendants = []
         frontier = list(reply.replies.all())
@@ -985,23 +1001,9 @@ def post_thread(post_id):
     reply_groups = []
     for direct_reply in root_post.replies.all():
         replies = [direct_reply] + descendants_for(direct_reply)
-        latest_at = max(reply_sort_key(reply)[0] for reply in replies)
-        related_count = sum(reply.liked_by.count() for reply in replies)
-        reply_groups.append(SimpleNamespace(
-            replies=replies,
-            latest_at=latest_at,
-            related_count=related_count,
-        ))
+        reply_groups.append(SimpleNamespace(replies=replies))
 
-    if sort_by == 'newest_activity':
-        reply_groups.sort(key=lambda group: group.latest_at, reverse=True)
-    elif sort_by == 'most_related':
-        reply_groups.sort(
-            key=lambda group: (group.related_count, group.latest_at),
-            reverse=True,
-        )
-    else:
-        reply_groups.sort(key=lambda group: reply_sort_key(group.replies[0]))
+    reply_groups.sort(key=lambda group: reply_sort_key(group.replies[0]))
 
     all_thread_posts = [root_post] + thread_replies
     participant_count = len({
@@ -1021,14 +1023,13 @@ def post_thread(post_id):
         form=form,
         thread_replies=thread_replies,
         reply_groups=reply_groups,
-        sort_by=sort_by,
         participant_count=participant_count,
         latest_activity_at=latest_activity_at,
         new_reply_ids=new_reply_ids,
         is_following=subscription is not None,
         failed_reply_to_id=failed_reply_to_id,
         thread_status_labels={
-            'looking_for_replies': 'Looking for replies',
+            'looking_for_replies': 'Open / no status shown',
             'still_thinking': 'Still thinking about this',
             'answered': 'Answered',
         },
@@ -1074,6 +1075,9 @@ def update_post_thread_status(post_id):
     root_post.thread_status = status
     db.session.commit()
     flash('Thread status updated.')
+    requested_return_url = request.form.get('next')
+    if is_safe_local_redirect_target(requested_return_url):
+        return redirect(requested_return_url)
     return redirect(url_for('main.post_thread', post_id=root_post.id))
 
 

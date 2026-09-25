@@ -220,7 +220,16 @@ class PostEditingTestCase(unittest.TestCase):
         self.assertIn(b'An existing reply', thread_response.data)
         self.assertIn(b'A nested reply', thread_response.data)
         self.assertIn(b'post-thread-reply-context', thread_response.data)
-        self.assertIn(b'Replying to', thread_response.data)
+        self.assertIn(b'Reply to original post', thread_response.data)
+        self.assertIn(b'Reply to', thread_response.data)
+        self.assertIn(b'post-thread-direct-reply', thread_response.data)
+        self.assertIn(b'post-thread-continuation', thread_response.data)
+        self.assertIn(b'post-thread-original', thread_response.data)
+        self.assertNotIn(b'Newest activity', thread_response.data)
+        self.assertLess(
+            thread_response.data.index(b'An existing reply'),
+            thread_response.data.index(b'A nested reply'),
+        )
         self.assertNotIn(b'style="margin-left: 48px;"', thread_response.data)
 
     def test_thread_reply_redirects_to_and_highlights_the_new_reply(self):
@@ -263,8 +272,41 @@ class PostEditingTestCase(unittest.TestCase):
         self.assertEqual(follow_response.status_code, 302)
         self.assertEqual(db.session.get(Post, root.id).thread_status, 'answered')
         followed_page = self.client.get(f'/post/{root.id}')
+        self.assertIn(b'<span class="post-thread-status">', followed_page.data)
         self.assertIn(b'Answered', followed_page.data)
         self.assertIn(b'Following', followed_page.data)
+
+        feed_page = self.client.get('/post')
+        self.assertIn(b'value="still_thinking"', feed_page.data)
+        self.assertIn(b'value="answered"', feed_page.data)
+        self.assertIn(b'post-feed-status-option is-active', feed_page.data)
+
+    def test_owner_can_update_thread_status_from_feed_and_return_to_feed(self):
+        root = Post(body='Status from feed', author=self.owner, post_type='question')
+        db.session.add(root)
+        db.session.commit()
+        self._login('owner@ethz.ch', 'OwnerPassword1')
+
+        response = self.client.post(
+            f'/post/{root.id}/status',
+            data={'thread_status': 'still_thinking', 'next': '/post?sort=still_thinking'},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.location.endswith('/post?sort=still_thinking'))
+        self.assertEqual(db.session.get(Post, root.id).thread_status, 'still_thinking')
+
+    def test_default_thread_status_is_not_shown_publicly(self):
+        root = Post(body='No visible default status', author=self.owner, post_type='relate')
+        db.session.add(root)
+        db.session.commit()
+        self._login('other@ethz.ch', 'OtherPassword1')
+
+        thread_page = self.client.get(f'/post/{root.id}')
+        feed_page = self.client.get('/post')
+
+        self.assertNotIn(b'<span class="post-thread-status">', thread_page.data)
+        self.assertNotIn(b'<span class="post-thread-status">', feed_page.data)
 
     def test_reply_can_be_related(self):
         root = Post(body='Root', author=self.owner, post_type='question')

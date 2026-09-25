@@ -14,7 +14,7 @@
 {%- endmacro %}
 
 {% macro render_post_node(node, form, is_reply=false, is_continuation=false) -%}
-<li id="post-{{ node.id }}" class="post post-thread-item{% if is_reply %} post-thread-reply{% endif %}{% if is_continuation %} post-thread-continuation{% endif %}{% if node.id in new_reply_ids %} is-new-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}">
+<li id="post-{{ node.id }}" class="post post-thread-item{% if not is_reply %} post-thread-original{% endif %}{% if is_reply %} post-thread-reply{% endif %}{% if is_reply and not is_continuation %} post-thread-direct-reply{% endif %}{% if is_continuation %} post-thread-continuation{% endif %}{% if node.id in new_reply_ids %} is-new-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}">
     <div class="profile-thumbnail">
         {% if node.is_starter %}
         <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
@@ -31,30 +31,34 @@
         {% endif %}
     </div>
     <div class="post-content">
-        {% if node.is_starter %}
-        <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
-        {% endif %}
-        {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
-        <div class="post-date">
-            {{ moment(node.timestamp).fromNow() }}
-            {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
-        </div>
-        {% if not node.is_starter %}
-        <div class="post-author">
+        <div class="post-thread-meta-row">
+            {% if node.is_starter %}
+            <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
+            {% else %}
+            <span class="post-author">
             <a href="{{ url_for('.user', username=node.author.username) }}" data-profile-preview='{{ post_preview_payload(node) }}'>
                 {{ node.author.username }}
             </a>
+            </span>
+            {% endif %}
+            <span class="post-date">
+                {{ moment(node.timestamp).fromNow() }}
+                {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+            </span>
+            {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
+            {% if is_reply and node.reply_type %}
+            <span class="post-reply-type">
+                {% if node.reply_type == 'tip' %}Practical tip{% elif node.reply_type == 'question' %}Follow-up question{% else %}Shared experience{% endif %}
+            </span>
+            {% endif %}
+            {% if node.id in new_reply_ids %}<span class="post-new-label"><span aria-hidden="true"></span><span class="sr-only">New reply</span></span>{% endif %}
         </div>
-        {% endif %}
-        {% if is_reply and node.reply_type %}
-        <span class="post-reply-type">
-            {% if node.reply_type == 'tip' %}Practical tip{% elif node.reply_type == 'question' %}Follow-up question{% else %}Shared experience{% endif %}
-        </span>
-        {% endif %}
-        {% if node.id in new_reply_ids %}<span class="post-new-label">New</span>{% endif %}
-        {% if is_reply and node.parent and node.parent.parent_id is not none %}
+        {% if is_reply and not is_continuation %}
+        <div class="post-thread-relation-label">Reply to original post</div>
+        {% elif is_reply and node.parent %}
         <a class="post-thread-reply-context" href="#post-{{ node.parent.id }}">
-            Replying to
+            <span class="post-thread-reply-arrow" aria-hidden="true">&#8627;</span>
+            Reply to
             {% if node.parent.is_starter %}Admin{% else %}{{ node.parent.author.username }}{% endif %}
             <span>“{{ node.parent.body|truncate(90, True) }}”</span>
         </a>
@@ -76,6 +80,11 @@
     <div class="post-side-actions">
         {% if (not node.is_starter and node.author_id == current_user.id) or (node.is_starter and node.parent_id and current_user.is_administrator()) %}
         <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=node.id, next=request.path) }}">Edit</a>
+        {% endif %}
+        {% if not is_reply and node.thread_status != 'looking_for_replies' %}
+        <span class="post-thread-status">
+            {{ thread_status_labels.get(node.thread_status, '') }}
+        </span>
         {% endif %}
         <details class="post-reply-box" data-reply-toggle{% if failed_reply_to_id == node.id %} open{% endif %}>
             <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
@@ -116,9 +125,9 @@
 
 {% block page_content %}
 <div class="page-header">
-    <p><a class="btn btn-default" href="{{ url_for('main.post') }}">Back to posts</a></p>
-    <h1>Post Thread</h1>
-    <h4>Share an experience, offer something practical, or ask one thoughtful question.</h4>
+    <p><a class="post-thread-back-link" href="{{ url_for('main.post') }}">&larr; Back to posts</a></p>
+    <h1>Post thread</h1>
+    <h4>A conversation between students, kept calm and easy to follow.</h4>
 </div>
 
 <div class="post-thread-toolbar">
@@ -128,7 +137,6 @@
         <span>· latest activity {{ moment(latest_activity_at).fromNow() }}</span>
     </div>
     <div class="post-thread-toolbar-actions">
-        <span class="post-thread-status">{{ thread_status_labels.get(post.thread_status, 'Looking for replies') }}</span>
         <form method="post" action="{{ url_for('main.toggle_post_thread_follow', post_id=post.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-default post-follow-button" type="submit">{{ 'Following' if is_following else 'Follow thread' }}</button>
@@ -154,11 +162,6 @@
         {{ render_post_node(post, form) }}
     </ul>
     {% if reply_groups %}
-    <nav class="post-thread-sort" aria-label="Sort replies">
-        <a class="{% if sort_by == 'newest_activity' %}is-active{% endif %}" href="{{ url_for('main.post_thread', post_id=post.id, sort='newest_activity') }}">Newest activity</a>
-        <a class="{% if sort_by == 'oldest_first' %}is-active{% endif %}" href="{{ url_for('main.post_thread', post_id=post.id, sort='oldest_first') }}">Oldest first</a>
-        <a class="{% if sort_by == 'most_related' %}is-active{% endif %}" href="{{ url_for('main.post_thread', post_id=post.id, sort='most_related') }}">Most related</a>
-    </nav>
     <div class="post-thread-conversations">
         {% for group in reply_groups %}
         <section class="post-thread-conversation">
