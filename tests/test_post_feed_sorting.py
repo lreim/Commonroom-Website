@@ -78,6 +78,27 @@ class PostFeedSortingTestCase(unittest.TestCase):
             html.index('Older root with fresh nested reply'),
         )
 
+    def test_unanswered_view_only_shows_posts_without_replies(self):
+        response = self.client.get('/post?sort=unanswered')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Newer root without replies', response.data)
+        self.assertNotIn(b'Older root with fresh nested reply', response.data)
+        self.assertIn(b'value="unanswered" selected', response.data)
+
+    def test_still_thinking_view_only_shows_matching_status(self):
+        still_thinking = Post.query.filter_by(body='Newer root without replies').one()
+        still_thinking.thread_status = 'still_thinking'
+        db.session.commit()
+
+        response = self.client.get('/post?sort=still_thinking')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Newer root without replies', response.data)
+        self.assertNotIn(b'Older root with fresh nested reply', response.data)
+        self.assertIn(b'value="still_thinking" selected', response.data)
+        self.assertIn(b'Still thinking about this', response.data)
+
     def test_confession_can_be_created_and_filtered(self):
         self.client.post(
             '/auth/login',
