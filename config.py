@@ -1,22 +1,10 @@
 import os
 import secrets
-import base64
-import binascii
 from datetime import timedelta
 from urllib.parse import unquote, urlparse
 
 basedir = os.path.abspath(os.path.dirname(__file__)) #nötig für path con database 
 
-
-def validate_chat_encryption_key(encoded_key):
-    if not encoded_key:
-        raise RuntimeError('CHAT_ENCRYPTION_KEY must be configured.')
-    try:
-        key = base64.urlsafe_b64decode(encoded_key.encode('ascii'))
-    except (ValueError, UnicodeEncodeError, binascii.Error) as exc:
-        raise RuntimeError('CHAT_ENCRYPTION_KEY must be URL-safe base64.') from exc
-    if len(key) != 32:
-        raise RuntimeError('CHAT_ENCRYPTION_KEY must decode to exactly 32 bytes.')
 
 #configurations used in all cases  
 class Config:
@@ -71,8 +59,6 @@ class Config:
                 )
             else:
                 raise RuntimeError('SECRET_KEY must be set in the environment for non-development deployments.')
-
-        validate_chat_encryption_key(app.config.get('CHAT_ENCRYPTION_KEY'))
 
 #for using flash mail via t-online 
 class DevelopmentConfig(Config):

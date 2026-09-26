@@ -7,7 +7,6 @@ import hashlib, random
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from flask import current_app, request
 from datetime import datetime, timezone 
-from .chat_crypto import EncryptedChatText
 
 
 #role und user Model anlegen als python classes with attributes that match the columns of a corresponding db table
@@ -528,7 +527,7 @@ class ChatRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     requester_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     requested_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
-    message = db.Column(EncryptedChatText("chat-request"), nullable=False)
+    message = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), nullable=False, default=STATUS_PENDING, index=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     responded_at = db.Column(db.DateTime, nullable=True)
@@ -595,7 +594,7 @@ class Message(db.Model):    #einzelne Nachricht
     id = db.Column(db.Integer, primary_key=True)
     conversation_id = db.Column(db.Integer, db.ForeignKey("conversations.id"), nullable=False, index=True)
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
-    body = db.Column(EncryptedChatText("message"), nullable=False)
+    body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     edited_at = db.Column(db.DateTime, nullable=True)
 
@@ -720,7 +719,7 @@ class ContentReport(db.Model):
     reporter_username = db.Column(db.String(64), nullable=False)
     author_id = db.Column(db.Integer, nullable=True)
     author_username = db.Column(db.String(64), nullable=False)
-    body = db.Column(EncryptedChatText('report'), nullable=False)
+    body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
     email_sent_at = db.Column(db.DateTime, nullable=True)
     __table_args__ = (

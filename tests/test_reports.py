@@ -61,8 +61,7 @@ class ContentReportsTestCase(unittest.TestCase):
                       f'https://commonroom.ch/admin/reports/{report.id}#reported-content']:
             self.assertIn(value, payload['TextBody'])
         encrypted = db.session.execute(text('SELECT body FROM content_reports')).scalar()
-        self.assertTrue(encrypted.startswith('cr-chat:v1:'))
-        self.assertNotIn('reply', encrypted)
+        self.assertEqual(encrypted, '<script>reply</script>')
         self.assertEqual(self.report().status_code, 200)
         self.assertEqual(ContentReport.query.count(), 1)
         self.mail.assert_called_once()

@@ -3,7 +3,6 @@ import unittest
 from sqlalchemy import text
 
 from app import create_app, db
-from app.chat_crypto import CHAT_CIPHERTEXT_PREFIX
 from app.models import ChatRequest, Conversation, Message, User
 
 
@@ -40,8 +39,8 @@ class ChatEncryptionTestCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_message_body_is_encrypted_at_rest_and_decrypted_for_application(self):
-        plaintext = 'This should not be readable in SQLite.'
+    def test_message_body_is_stored_as_plaintext(self):
+        plaintext = 'This should be readable in SQLite again.'
         message = Message(
             conversation_id=self.conversation.id,
             author_id=self.first_user.id,
@@ -55,12 +54,11 @@ class ChatEncryptionTestCase(unittest.TestCase):
             {'id': message.id},
         ).scalar_one()
 
-        self.assertTrue(stored_value.startswith(CHAT_CIPHERTEXT_PREFIX))
-        self.assertNotIn(plaintext, stored_value)
+        self.assertEqual(stored_value, plaintext)
         db.session.expire_all()
         self.assertEqual(db.session.get(Message, message.id).body, plaintext)
 
-    def test_chat_request_text_is_encrypted_at_rest(self):
+    def test_chat_request_text_is_stored_as_plaintext(self):
         plaintext = 'Could we talk after the lecture?'
         chat_request = ChatRequest(
             requester_id=self.first_user.id,
@@ -75,15 +73,14 @@ class ChatEncryptionTestCase(unittest.TestCase):
             {'id': chat_request.id},
         ).scalar_one()
 
-        self.assertTrue(stored_value.startswith(CHAT_CIPHERTEXT_PREFIX))
-        self.assertNotIn(plaintext, stored_value)
+        self.assertEqual(stored_value, plaintext)
         db.session.expire_all()
         self.assertEqual(
             db.session.get(ChatRequest, chat_request.id).message,
             plaintext,
         )
 
-    def test_equal_messages_use_different_nonces(self):
+    def test_equal_messages_are_stored_identically(self):
         messages = [
             Message(
                 conversation_id=self.conversation.id,
@@ -104,7 +101,7 @@ class ChatEncryptionTestCase(unittest.TestCase):
         ).scalars().all()
 
         self.assertEqual(len(stored_values), 2)
-        self.assertNotEqual(stored_values[0], stored_values[1])
+        self.assertEqual(stored_values[0], stored_values[1])
 
 
 if __name__ == '__main__':
