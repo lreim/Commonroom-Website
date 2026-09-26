@@ -40,7 +40,15 @@ def _transform_rows(table_name, column_name, purpose, transform):
     rows = connection.execute(
         sa.select(table.c.id, table.c[column_name])
     ).all()
-    encoded_key = _configured_key()
+    # Some installations reached this migration before a chat encryption key
+    # was configured. In that case keep existing plaintext unchanged; the
+    # later rollback migration restores the pre-encryption behavior.
+    encoded_key = os.environ.get('CHAT_ENCRYPTION_KEY')
+    if not encoded_key:
+        if any(value and not value.startswith(CHAT_CIPHERTEXT_PREFIX) for _, value in rows):
+            return
+        return
+    validate_chat_encryption_key(encoded_key)
 
     for row_id, stored_value in rows:
         new_value = transform(stored_value, purpose, encoded_key)
