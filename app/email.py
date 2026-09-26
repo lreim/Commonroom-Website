@@ -36,7 +36,7 @@ def send_async_email(app, payload):
             raise RuntimeError(f"Postmark API connection error: {exc}") from exc
 
 
-def send_email(to, subject, template, message_stream=None, reply_to=None, **kwargs):
+def send_email(to, subject, template, message_stream=None, reply_to=None, synchronous=False, **kwargs):
     app = current_app._get_current_object()
 
     payload = {
@@ -49,6 +49,10 @@ def send_email(to, subject, template, message_stream=None, reply_to=None, **kwar
     }
     if reply_to:
         payload["ReplyTo"] = reply_to
+
+    if synchronous:
+        send_async_email(app, payload)
+        return None
 
     thr = Thread(target=send_async_email, args=(app, payload))
     thr.start()

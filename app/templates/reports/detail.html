@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Report #{{ report.id }} · Admin{% endblock %}
+{% block page_content %}
+<main class="report-admin">
+  <a href="{{ url_for('reports.index') }}">← All reports</a>
+  <h1>Report #{{ report.id }}</h1>
+  <p>{{ report.target_type|capitalize }} #{{ report.target_id }} has been reported {{ count }} time{{ '' if count == 1 else 's' }}.</p>
+  <p>Reported by <strong>{{ report.reporter_username }}</strong> (user #{{ report.reporter_id }}).</p>
+  <p>Message author: <strong>{{ report.author_username }}</strong>{% if report.author_id %} (user #{{ report.author_id }}){% endif %}.</p>
+  <p>Reported at {{ report.created_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC.</p>
+  <h2>Message as reported</h2>
+  <div id="reported-content" class="report-body">{{ report.body }}</div>
+  {% if not target %}
+  <p>The original content has been deleted. The reported copy remains available here.</p>
+  {% elif original_url %}
+  <p><a href="{{ original_url }}">Open the original post in its thread →</a></p>
+  {% elif report.target_type == 'message' %}
+  <p>This is the reported private chat message. Other messages in the conversation are not shown.</p>
+  {% endif %}
+  {% if report.email_sent_at %}
+  <p>Email sent at {{ report.email_sent_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC.</p>
+  {% else %}
+  <p>The report is saved, but its email has not been sent.</p>
+  <form method="post" action="{{ url_for('reports.resend', report_id=report.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-default">Retry email</button>
+  </form>
+  {% endif %}
+</main>
+{% endblock %}

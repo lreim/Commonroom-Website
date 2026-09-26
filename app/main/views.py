@@ -875,11 +875,42 @@ def post():
         error_out=False
     )
     posts = pagination.items
+    new_post_ids = set()
+    if current_user.is_authenticated:
+        seen_root_ids = {
+            int(post_id)
+            for post_id in session.get('seen_post_thread_ids', [])
+            if str(post_id).isdigit()
+        }
+        for root_post in posts:
+            if root_post.id not in seen_root_ids:
+                new_post_ids.add(root_post.id)
+            visit = PostThreadVisit.query.filter_by(
+                user_id=current_user.id,
+                root_post_id=root_post.id,
+            ).first()
+            threshold = visit.last_visited_at if visit is not None else None
+            if threshold is not None and threshold.tzinfo is None:
+                threshold = threshold.replace(tzinfo=timezone.utc)
+            frontier = list(root_post.replies.all())
+            latest_reply = None
+            while frontier:
+                reply = frontier.pop()
+                reply_at = reply.timestamp
+                if reply_at.tzinfo is None:
+                    reply_at = reply_at.replace(tzinfo=timezone.utc)
+                if reply.author_id != current_user.id and (threshold is None or reply_at > threshold):
+                    if latest_reply is None or reply_at > latest_reply:
+                        latest_reply = reply_at
+                frontier.extend(reply.replies.all())
+            if latest_reply is not None:
+                new_post_ids.add(root_post.id)
     return render_template(
         'post.html',
         form=form,
         reply_form=reply_form,
         posts=posts,
+        new_post_ids=new_post_ids,
         pagination=pagination,
         all_tags=all_tags,
         selected_topics=', '.join(selected_topics),
@@ -953,6 +984,14 @@ def post_thread(post_id):
     previous_visit_at = previous_visit.last_visited_at if previous_visit is not None else None
 
     mark_post_thread_visited(current_user.id, root_post.id)
+    seen_thread_ids = {
+        int(thread_id)
+        for thread_id in session.get('seen_post_thread_ids', [])
+        if str(thread_id).isdigit()
+    }
+    seen_thread_ids.add(root_post.id)
+    session['seen_post_thread_ids'] = list(seen_thread_ids)
+    session.modified = True
 
     thread_replies = []
     frontier = list(root_post.replies.all())

@@ -597,6 +597,7 @@ class Message(db.Model):    #einzelne Nachricht
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     body = db.Column(EncryptedChatText("message"), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    edited_at = db.Column(db.DateTime, nullable=True)
 
     author = db.relationship("User")
 
@@ -707,3 +708,23 @@ class AuthFunnelAttempt(db.Model):
     authenticated_at = db.Column(db.DateTime, nullable=True)
     profile_required_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True, index=True)
+
+
+class ContentReport(db.Model):
+    """Retain a moderation snapshot even if the original content is edited/deleted."""
+    __tablename__ = 'content_reports'
+    id = db.Column(db.Integer, primary_key=True)
+    target_type = db.Column(db.String(16), nullable=False)
+    target_id = db.Column(db.Integer, nullable=False)
+    reporter_id = db.Column(db.Integer, nullable=False)
+    reporter_username = db.Column(db.String(64), nullable=False)
+    author_id = db.Column(db.Integer, nullable=True)
+    author_username = db.Column(db.String(64), nullable=False)
+    body = db.Column(EncryptedChatText('report'), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+    email_sent_at = db.Column(db.DateTime, nullable=True)
+    __table_args__ = (
+        db.UniqueConstraint('reporter_id', 'target_type', 'target_id', name='uq_content_report_reporter_target'),
+        db.Index('ix_content_report_target', 'target_type', 'target_id'),
+        db.CheckConstraint("target_type IN ('post', 'message')", name='ck_content_report_target_type'),
+    )

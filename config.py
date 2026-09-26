@@ -30,6 +30,8 @@ class Config:
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     TALKTO_MAIL_SUBJECT_PREFIX = '[COMMONROOM]'
     TALKTO_MAIL_SENDER = os.environ.get('TALKTO_MAIL_SENDER') or 'CommonRoom <noreply@commonroom.ch>'
+    TALKTO_REPORT_EMAIL = os.environ.get('TALKTO_REPORT_EMAIL') or 'report-abuse@commonroom.ch'
+    POSTMARK_MESSAGE_STREAM_REPORT = os.environ.get('POSTMARK_MESSAGE_STREAM_REPORT', 'outbound')
     TALKTO_ADMIN = os.environ.get('TALKTO_ADMIN') or 'contact@commonroom.ch'
     TALKTO_SITE_ORIGIN = os.environ.get('TALKTO_SITE_ORIGIN')
     TALKTO_POSTS_PER_PAGE = 20

@@ -1,0 +1,10 @@
+{% if current_user.is_authenticated %}
+<dialog id="content-report-dialog" class="content-report-dialog" aria-labelledby="content-report-title">
+  <button type="button" class="floating-contact-close" data-report-close aria-label="Close report preview">&times;</button>
+  <h2 id="content-report-title">Report this message directly.</h2>
+  <p>The message and your username will be shared with the admin.</p>
+  <p id="content-report-status" role="status" aria-live="polite"></p>
+  <button type="button" class="content-report-button content-report-submit" id="content-report-submit">Report</button>
+</dialog>
+<script src="{{ url_for('static', filename='content_reports.js') }}" defer></script>
+{% endif %}

@@ -73,6 +73,9 @@ def create_app(config_name):
     from .chat import chat as chat_blueprint 
     app.register_blueprint(chat_blueprint, url_prefix='/chat')
 
+    from .reports import reports as reports_blueprint
+    app.register_blueprint(reports_blueprint)
+
     from .chat import events 
 
     @app.context_processor

@@ -1,0 +1,11 @@
+CommonRoom content report #{{ report.id }}
+
+Content: {{ report.target_type }} #{{ report.target_id }}
+Reported by: {{ report.reporter_username }} (user #{{ report.reporter_id }})
+Content author: {{ report.author_username }}{% if report.author_id %} (user #{{ report.author_id }}){% endif %}
+Reported at: {{ report.created_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC
+
+Open the reported message (admin sign-in required):
+{{ report_url }}#reported-content
+
+The reported content is available on the protected admin page.

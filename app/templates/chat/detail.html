@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "reports/button.html" import report_button with context %}
 {% from "_macros.html" import user_link with context %}
 {% block title %}Chat{% endblock %}
 
@@ -48,11 +49,13 @@
             <div class="chat-message-stack">
               <div class="chat-bubble">
                 <div class="chat-meta">
+                  {% if m.author_id != current_user.id %}{{ report_button("message", m.id) }}{% endif %}
                   <a class="chat-author chat-author-link" href="{{ url_for('main.user', username=m.author.username) }}">{{ m.author.username }}</a>
+                  {% if m.author_id == current_user.id %}<button type="button" class="chat-edit-button" data-edit-message="{{ m.id }}">Edit</button>{% endif %}
                 </div>
                 <div class="chat-body">{{ m.body }}</div>
               </div>
-              <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
+              <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}{% if m.edited_at %} <span class="chat-edited-label">edited</span>{% endif %}</span>
             </div>
           </li>
         {% endfor %}
@@ -113,6 +116,24 @@
     body.textContent = msg.body;
 
     meta.appendChild(authorLink);
+    if (msg.author_id === currentUserId) {
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'chat-edit-button';
+      edit.textContent = 'Edit';
+      edit.dataset.editMessage = String(msg.id);
+      meta.appendChild(edit);
+    }
+    if (msg.author_id !== currentUserId) {
+      const report = document.createElement('button');
+      report.type = 'button';
+      report.className = 'content-report-button';
+      report.textContent = 'Report';
+      report.setAttribute('aria-label', 'Report this message');
+      report.setAttribute('aria-haspopup', 'dialog');
+      report.dataset.reportUrl = {{ url_for('reports.create', target_type='message', target_id=0)|tojson }}.replace(/0$/, String(msg.id));
+      meta.appendChild(report);
+    }
     bubble.appendChild(meta);
     bubble.appendChild(body);
     stack.appendChild(bubble);
@@ -150,6 +171,52 @@
     const messageElement = createMessageElement(msg);
     messagesList.appendChild(messageElement);
     scrollMessageIntoBottomSoon(messageElement);
+  });
+
+  socket.on("message_edited", (msg) => {
+    if (msg.conversation_id !== conversationId) return;
+    const messageElement = document.getElementById(`message-${msg.id}`);
+    if (!messageElement) return;
+    let body = messageElement.querySelector('.chat-body');
+    const editor = messageElement.querySelector('.chat-edit-editor');
+    if (!body && editor) {
+      body = document.createElement('div');
+      body.className = 'chat-body';
+      editor.replaceWith(body);
+    }
+    if (!body) return;
+    body.textContent = msg.body;
+    const time = messageElement.querySelector('.chat-time');
+    if (time && !time.querySelector('.chat-edited-label')) {
+      const edited = document.createElement('span');
+      edited.className = 'chat-edited-label';
+      edited.textContent = 'edited';
+      time.append(' ', edited);
+    }
+  });
+
+  messagesList.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-edit-message]');
+    if (!button) return;
+    const messageElement = document.getElementById(`message-${button.dataset.editMessage}`);
+    const body = messageElement.querySelector('.chat-body');
+    const original = body.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.maxLength = 2000;
+    input.className = 'chat-edit-input';
+    input.value = original;
+    const save = document.createElement('button');
+    save.type = 'button'; save.className = 'chat-edit-save'; save.textContent = 'Save';
+    const cancel = document.createElement('button');
+    cancel.type = 'button'; cancel.className = 'chat-edit-cancel'; cancel.textContent = 'Cancel';
+    const editor = document.createElement('div'); editor.className = 'chat-edit-editor';
+    editor.append(input, save, cancel); body.replaceWith(editor); input.focus();
+    cancel.addEventListener('click', () => editor.replaceWith(body));
+    save.addEventListener('click', () => {
+      const value = input.value.trim();
+      if (value) socket.emit('edit_message', { message_id: Number(button.dataset.editMessage), body: value });
+    });
   });
 
   socket.on("chat_error", (payload) => {

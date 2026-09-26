@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "reports/button.html" import report_button with context %}
 {% block title %}User{% endblock %}
 {% block page_content %}
 {% set viewing_admin_demo = force_admin_demo|default(false) %}
@@ -245,6 +246,7 @@
             {% endif %}
             <a class="profile-activity-body" href="{{ thread_url }}{% if post.parent_id %}#post-{{ post.id }}{% endif %}">{{ post.body }}</a>
             <div class="profile-activity-meta">
+              {{ report_button("post", post.id) }}
               {% if post.parent_id %}
               <a href="{{ thread_url }}#post-{{ post.id }}">Open conversation ↗</a>
               {% else %}

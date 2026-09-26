@@ -1,4 +1,5 @@
 {% extends "base.html" %}  <!--greift auf base struktur zu-->
+{% from "reports/button.html" import report_button with context %}
 {% import "bootstrap/wtf.html" as wtf %} <!--um forms zu rendern-->
 {% block title %}Posts{% endblock %}
 
@@ -91,6 +92,11 @@
 <ul class="posts post-page-list">
     {% for post in posts %}
     <li class="post{% if post.is_starter %} post-starter{% endif %}">
+        {% if post.id in new_post_ids %}<span class="post-new-indicator" aria-label="New post"><span aria-hidden="true"></span><span>new</span></span>{% endif %}
+        <div class="post-card-date">
+            {{ moment(post.timestamp).fromNow() }}
+            {% if post.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+        </div>
         <div class="profile-thumbnail">
             {% if post.is_starter %}
             <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
@@ -108,13 +114,31 @@
             {% endif %}
         </div>
         <div class="post-content">
+            <div class="post-category-status-row">
             {% if post.is_starter %}
             <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
             {% endif %}
             <span class="post-category-label">{{ post.post_type|capitalize }}</span>
-            <div class="post-date">
-                {{ moment(post.timestamp).fromNow() }}
-                {% if post.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+            {% if current_user.is_authenticated and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
+            <div class="post-feed-status-controls" aria-label="Thread status">
+                <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="thread_status" value="still_thinking">
+                    <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+                    <button class="post-feed-status-option{% if post.thread_status == 'still_thinking' %} is-active{% endif %}" type="submit">Still thinking</button>
+                </form>
+                <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="thread_status" value="answered">
+                    <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+                    <button class="post-feed-status-option{% if post.thread_status == 'answered' %} is-active{% endif %}" type="submit">Answered</button>
+                </form>
+            </div>
+            {% elif post.thread_status == 'still_thinking' %}
+            <span class="post-thread-status">Still thinking about this</span>
+            {% elif post.thread_status == 'answered' %}
+            <span class="post-thread-status">Answered</span>
+            {% endif %}
             </div>
             {% if not post.is_starter %}
             <div class="post-author">
@@ -165,28 +189,9 @@
             {% endif %}
         </div>
         <div class="post-side-actions">
+            <div class="post-action-stack">
             {% if current_user.is_authenticated and not post.is_starter and post.author_id == current_user.id %}
             <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=post.id, next=request.full_path if request.query_string else request.path) }}">Edit</a>
-            {% endif %}
-            {% if current_user.is_authenticated and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
-            <div class="post-feed-status-controls" aria-label="Thread status">
-                <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="thread_status" value="still_thinking">
-                    <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
-                    <button class="post-feed-status-option{% if post.thread_status == 'still_thinking' %} is-active{% endif %}" type="submit">Still thinking</button>
-                </form>
-                <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="thread_status" value="answered">
-                    <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
-                    <button class="post-feed-status-option{% if post.thread_status == 'answered' %} is-active{% endif %}" type="submit">Answered</button>
-                </form>
-            </div>
-            {% elif post.thread_status == 'still_thinking' %}
-            <span class="post-thread-status">Still thinking about this</span>
-            {% elif post.thread_status == 'answered' %}
-            <span class="post-thread-status">Answered</span>
             {% endif %}
             {% if current_user.is_authenticated %}
             <details class="post-reply-box" data-reply-toggle id="reply-{{ post.id }}"{% if request.args.get('reply_to')|int == post.id %} open{% endif %}>
@@ -203,6 +208,8 @@
             {% else %}
             <a class="post-reply-register" href="{{ url_for('auth.login', next=url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id), intent='reply') }}">Reply</a>
             {% endif %}
+            {{ report_button("post", post.id) }}
+            </div>
         </div>
     </li>
     {% else %}

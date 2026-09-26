@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "reports/button.html" import report_button with context %}
 {% block title %}Post Thread{% endblock %}
 
 {% macro post_preview_payload(post) -%}
@@ -15,6 +16,10 @@
 
 {% macro render_post_node(node, form, is_reply=false, is_continuation=false) -%}
 <li id="post-{{ node.id }}" class="post post-thread-item{% if not is_reply %} post-thread-original{% endif %}{% if is_reply %} post-thread-reply{% endif %}{% if is_reply and not is_continuation %} post-thread-direct-reply{% endif %}{% if is_continuation %} post-thread-continuation{% endif %}{% if node.id in new_reply_ids %} is-new-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}">
+    <div class="post-card-date">
+        {{ moment(node.timestamp).fromNow() }}
+        {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
+    </div>
     <div class="profile-thumbnail">
         {% if node.is_starter %}
         <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
@@ -41,11 +46,10 @@
             </a>
             </span>
             {% endif %}
-            <span class="post-date">
-                {{ moment(node.timestamp).fromNow() }}
-                {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
-            </span>
             {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
+            {% if not is_reply and node.thread_status != 'looking_for_replies' %}
+            <span class="post-thread-status">{{ thread_status_labels.get(node.thread_status, '') }}</span>
+            {% endif %}
             {% if is_reply and node.reply_type %}
             <span class="post-reply-type">
                 {% if node.reply_type == 'tip' %}Practical tip{% elif node.reply_type == 'question' %}Follow-up question{% else %}Shared experience{% endif %}
@@ -78,13 +82,9 @@
         </div>
     </div>
     <div class="post-side-actions">
+        <div class="post-action-stack">
         {% if (not node.is_starter and node.author_id == current_user.id) or (node.is_starter and node.parent_id and current_user.is_administrator()) %}
         <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=node.id, next=request.path) }}">Edit</a>
-        {% endif %}
-        {% if not is_reply and node.thread_status != 'looking_for_replies' %}
-        <span class="post-thread-status">
-            {{ thread_status_labels.get(node.thread_status, '') }}
-        </span>
         {% endif %}
         <details class="post-reply-box" data-reply-toggle{% if failed_reply_to_id == node.id %} open{% endif %}>
             <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
@@ -119,6 +119,8 @@
                 </div>
             </form>
         </details>
+        {{ report_button("post", node.id) }}
+        </div>
     </div>
 </li>
 {%- endmacro %}

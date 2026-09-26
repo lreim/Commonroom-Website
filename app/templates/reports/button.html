@@ -1,0 +1,7 @@
+{% macro report_button(kind, id) -%}
+{% if current_user.is_authenticated %}
+<button type="button" class="content-report-button" data-report-url="{{ url_for('reports.create', target_type=kind, target_id=id) }}" aria-label="Report this {{ 'post' if kind == 'post' else 'message' }}" aria-haspopup="dialog">Report</button>
+{% else %}
+<a class="content-report-button" href="{{ url_for('auth.login', next=request.full_path if request.query_string else request.path) }}" aria-label="Sign in to report this {{ 'post' if kind == 'post' else 'message' }}">Report</a>
+{% endif %}
+{%- endmacro %}

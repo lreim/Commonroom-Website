@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Reports · Admin{% endblock %}
+{% block page_content %}
+<main class="report-admin">
+  <p>ADMIN ONLY</p>
+  <h1>Reports</h1>
+  <p><strong>{{ counts.values()|sum }}</strong> reports in total. {{ counts.get('post', 0) }} post reports and {{ counts.get('message', 0) }} chat message reports.</p>
+  <p>Each user can report a particular message or post once. Counts include original posts and replies separately.</p>
+  {% if pending_count %}<p role="status">{{ pending_count }} report emails have not been sent. Open the report to retry delivery.</p>{% endif %}
+  <h2>Reports per post or message</h2>
+  <p>Content with no reports has a count of zero and is not listed here.</p>
+  <div class="report-table-wrap">
+    <table class="table">
+      <thead><tr><th>Content</th><th>Author</th><th>Reports</th><th>Link</th></tr></thead>
+      <tbody>
+        {% for report, count in totals.items %}
+        <tr><td>{{ report.target_type|capitalize }} #{{ report.target_id }}</td><td>{{ report.author_username }}</td><td>{{ count }}</td><td><a href="{{ url_for('reports.detail', report_id=report.id, _anchor='reported-content') }}">Open message</a></td></tr>
+        {% else %}<tr><td colspan="4">No reports yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <nav aria-label="Reported content pages">
+    {% if totals.has_prev %}<a href="{{ url_for('reports.index', targets_page=totals.prev_num, page=pagination.page) }}">Previous</a>{% endif %}
+    {% if totals.has_next %}<a href="{{ url_for('reports.index', targets_page=totals.next_num, page=pagination.page) }}">Next</a>{% endif %}
+  </nav>
+  <h2>All reports</h2>
+  <div class="report-table-wrap">
+    <table class="table">
+      <thead><tr><th>Reported at (UTC)</th><th>Reported by</th><th>Author</th><th>Content</th><th>Email</th></tr></thead>
+      <tbody>
+        {% for report in pagination.items %}
+        <tr>
+          <td>{{ report.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+          <td>{{ report.reporter_username }} (#{{ report.reporter_id }})</td>
+          <td>{{ report.author_username }}</td>
+          <td><a href="{{ url_for('reports.detail', report_id=report.id, _anchor='reported-content') }}">{{ report.target_type|capitalize }} #{{ report.target_id }}</a></td>
+          <td>{{ 'Sent' if report.email_sent_at else 'Not sent — retry available' }}</td>
+        </tr>
+        {% else %}<tr><td colspan="5">No reports yet.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <nav aria-label="Report pages">
+    {% if pagination.has_prev %}<a href="{{ url_for('reports.index', page=pagination.prev_num, targets_page=totals.page) }}">Previous</a>{% endif %}
+    {% if pagination.has_next %}<a href="{{ url_for('reports.index', page=pagination.next_num, targets_page=totals.page) }}">Next</a>{% endif %}
+  </nav>
+</main>
+{% endblock %}

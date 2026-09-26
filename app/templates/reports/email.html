@@ -1,0 +1,7 @@
+<h1>CommonRoom content report #{{ report.id }}</h1>
+<p>Content: {{ report.target_type }} #{{ report.target_id }}</p>
+<p>Reported by: {{ report.reporter_username }} (user #{{ report.reporter_id }})</p>
+<p>Content author: {{ report.author_username }}{% if report.author_id %} (user #{{ report.author_id }}){% endif %}</p>
+<p>Reported at: {{ report.created_at.strftime('%Y-%m-%d %H:%M:%S') }} UTC</p>
+<p><a href="{{ report_url }}#reported-content">Open the reported message (admin sign-in required)</a></p>
+<p>The reported content is available on the protected admin page.</p>

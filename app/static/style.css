@@ -9898,3 +9898,190 @@ html.dark-mode .post-thread-item .post-like-button.is-liked {
     width: min(460px, calc(100vw - 70px));
   }
 }
+
+
+/* Direct message and post reports. */
+.content-report-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border: 1px solid #ddc8bb;
+  border-radius: 999px;
+  background: #f4e3d8;
+  color: #a62d35;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.content-report-button:hover { background: #efd9cc; color: #88212a; }
+.content-report-button:focus-visible { outline: 2px solid #a62d35; outline-offset: 3px; }
+.content-report-button:disabled { opacity: .65; cursor: wait; }
+.content-report-button[hidden] { display: none; }
+.chat-meta .content-report-button { float: right; margin-left: 12px; }
+.chat-edit-button,
+.chat-edit-save,
+.chat-edit-cancel {
+  border: 0;
+  background: transparent;
+  color: #8a6a57;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 4px;
+}
+.chat-edit-button { margin-left: 8px; }
+.chat-edit-save { color: #49613f; font-weight: 700; }
+.chat-edit-cancel { color: #8a3f61; }
+.chat-edit-editor { display: flex; align-items: center; gap: 6px; }
+.chat-edit-input { min-width: 0; flex: 1; padding: 5px 7px; border: 1px solid #d9c4ce; border-radius: 7px; }
+.chat-edited-label { color: #9a8772; font-size: 9px; font-style: italic; }
+.content-report-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 26px 22px 20px;
+  border: 1px solid #e1c7d3;
+  border-radius: 16px;
+  background: #fff8fb;
+  color: #6b4a57;
+  box-shadow: 0 16px 34px rgba(118, 65, 90, .22);
+}
+.content-report-dialog::backdrop { background: rgba(35, 23, 28, .3); }
+.content-report-dialog h2 { margin: 8px 18px 14px 0; font-size: 19px; color: #7a3354; }
+.content-report-submit { padding: 8px 18px; font-size: 14px; }
+.content-report-dialog .floating-contact-close { position: absolute; right: 12px; top: 10px; border: 0; }
+.report-admin { max-width: 1050px; margin: 32px auto; }
+.report-table-wrap { overflow-x: auto; }
+.report-body { white-space: pre-wrap; overflow-wrap: anywhere; padding: 18px; border: 1px solid #ddc8bb; border-radius: 12px; }
+.report-admin td { overflow-wrap: anywhere; }
+.report-admin nav { display: flex; justify-content: space-between; margin: 16px 0 28px; }
+.post:target, .report-body:target { outline: 2px solid #a62d35; scroll-margin-top: 110px; }
+html.dark-mode .content-report-dialog { background: #30252b; color: #f2dbe6; }
+html.dark-mode .content-report-dialog h2 { color: #f2dbe6; }
+
+
+/* Keep author actions above Reply and the smaller report control below it. */
+.post-action-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  flex: 0 0 auto;
+}
+.content-report-button:not(.content-report-submit) {
+  padding: 2.8px 7px;
+  border-width: 0.7px;
+  font-size: 8.4px;
+  text-decoration: none;
+}
+
+/* Put each post timestamp on its own top line, above the avatar and category. */
+.post-page-list .post,
+.post-thread-item {
+  flex-wrap: wrap;
+}
+
+.post-card-date {
+  flex: 0 0 100%;
+  width: 100%;
+  margin: 0 0 2px;
+  color: #928576;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.post-page-list .post {
+  position: relative;
+}
+
+.post-new-indicator {
+  position: absolute;
+  top: 9px;
+  left: -13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #3f9b58;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: lowercase;
+}
+
+.post-new-indicator > span:first-child {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #43b85d;
+  box-shadow: 0 0 0 2px rgba(67, 184, 93, .15);
+}
+
+html.dark-mode .post-new-indicator { color: #7bd98d; }
+
+html.dark-mode .post-card-date {
+  color: #b9aa9b;
+}
+
+.post-category-status-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  margin-bottom: 5px;
+}
+
+.post-category-status-row .starter-post-badge,
+.post-category-status-row .post-category-label {
+  margin-bottom: 0;
+}
+
+.post-category-status-row .post-feed-status-controls {
+  flex-direction: row;
+  align-items: center;
+}
+
+.post-category-status-row .post-thread-status,
+.post-thread-meta-row .post-thread-status {
+  padding: 3px 7px;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+/* Keep the post actions on the right on phones as they are on desktop. */
+@media (max-width: 767px) {
+  .post-page-list .post-side-actions {
+    width: auto;
+    flex: 0 0 150px;
+    flex-basis: 150px;
+    margin-left: auto;
+    align-self: stretch;
+    align-items: flex-end;
+    justify-content: flex-start;
+  }
+
+  .post-page-list .post-action-stack {
+    align-items: flex-end;
+    width: 100%;
+  }
+
+  .post-page-list .post-reply-box[open] {
+    width: min(280px, calc(100vw - 72px));
+  }
+
+  .post-page-list .post-category-status-row {
+    gap: 4px 7px;
+  }
+
+  .post-page-list .post-feed-status-option {
+    font-size: 9px;
+    padding: 4px 7px;
+  }
+}
