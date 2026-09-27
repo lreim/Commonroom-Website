@@ -10,6 +10,7 @@ from .models import (
     Post,
     PostThreadSubscription,
     PostThreadVisit,
+    NotificationRead,
 )
 
 
@@ -50,14 +51,13 @@ def notification_key(item):
     return f"{item['kind']}|{item['url']}|{_utc_aware(item['timestamp']).isoformat()}"
 
 
-def toggle_notification_read(key):
-    keys = set(session.get(READ_KEYS_SESSION_KEY, []))
-    if key in keys:
-        keys.remove(key)
-    else:
-        keys.add(key)
-    session[READ_KEYS_SESSION_KEY] = list(keys)
-    session.modified = True
+def set_notification_read(user_id, key, is_read):
+    entry = NotificationRead.query.filter_by(user_id=user_id, notification_key=key).first()
+    if is_read and entry is None:
+        db.session.add(NotificationRead(user_id=user_id, notification_key=key))
+    elif not is_read and entry is not None:
+        db.session.delete(entry)
+    db.session.commit()
 
 
 def _root_post(post):
@@ -168,7 +168,7 @@ def mark_post_thread_visited(user_id, root_post_id):
 
 
 def build_notifications_for_user(user, limit=8):
-    read_keys = set(session.get(READ_KEYS_SESSION_KEY, []))
+    read_keys = {entry.notification_key for entry in NotificationRead.query.filter_by(user_id=user.id).all()}
     items = []
 
     items.extend(unread_reply_threads_for_user(user).values())
@@ -248,9 +248,15 @@ def build_notifications_for_user(user, limit=8):
     for item in items:
         item["notification_key"] = notification_key(item)
         item["is_new"] = item["notification_key"] not in read_keys
-    visible_items = [item for item in items if item["is_new"]]
-    visible_items.extend([item for item in items if not item["is_new"]][:4])
-    limited_items = visible_items[:limit]
+    read_items_seen = 0
+    visible_items = []
+    for item in items:
+        if item["is_new"]:
+            visible_items.append(item)
+        elif read_items_seen < 4:
+            visible_items.append(item)
+            read_items_seen += 1
+    limited_items = visible_items
     return {
         "items": limited_items,
         "has_unseen": any(item["is_new"] for item in limited_items),

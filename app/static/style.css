@@ -10289,7 +10289,14 @@ html.dark-mode .post-card-date {
 .homepage-real-post .post-author a { font-weight: 600; }
 
 @media (max-width: 767px) {
-  .post.homepage-example-post.homepage-real-post { align-self: stretch; padding: 20px 22px; }
+  .post.homepage-example-post.homepage-real-post {
+    align-self: flex-start;
+    width: 92%;
+    padding: 20px 22px;
+  }
+  .post.homepage-example-post.homepage-real-post:nth-child(even) {
+    align-self: flex-end;
+  }
   .homepage-real-post .post-side-actions {
     flex: 0 0 150px;
     flex-basis: 150px;

@@ -727,3 +727,12 @@ class ContentReport(db.Model):
         db.Index('ix_content_report_target', 'target_type', 'target_id'),
         db.CheckConstraint("target_type IN ('post', 'message')", name='ck_content_report_target_type'),
     )
+
+
+class NotificationRead(db.Model):
+    __tablename__ = 'notification_reads'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    notification_key = db.Column(db.String(512), nullable=False)
+    read_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    __table_args__ = (db.UniqueConstraint('user_id', 'notification_key', name='uq_notification_read_user_key'),)

@@ -100,7 +100,7 @@
                   <span class="notification-menu-item-text">{{ item.text }}</span>
                   <span class="notification-menu-item-time">{{ moment(item.timestamp).fromNow() }}</span>
                 </a>
-                <button type="button" class="notification-menu-item-more" aria-label="Mark notification as unread" title="Mark as unread">&hellip;</button>
+                <button type="button" class="notification-menu-item-more" aria-label="Mark notification as unread" title="Mark as unread"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span></button>
               </div>
               {% endfor %}
             {% else %}
@@ -411,11 +411,10 @@ document.addEventListener("DOMContentLoaded", function () {
       event.stopPropagation();
       const item = button.closest("[data-notification-key]");
       if (!item) return;
-      const body = new URLSearchParams({ key: item.dataset.notificationKey });
-      fetch("{{ url_for('chat.toggle_notification_read_status') }}", {
+      fetch("{{ url_for('chat.set_notification_read_status') }}", {
         method: "POST",
         headers: { "Accept": "application/json", "X-CSRFToken": csrfToken },
-        body: body
+        body: new URLSearchParams({ key: item.dataset.notificationKey, is_read: "0" })
       }).then(function (response) {
         if (!response.ok) throw new Error("Notification update failed");
         item.classList.toggle("is-new");
@@ -428,11 +427,11 @@ document.addEventListener("DOMContentLoaded", function () {
     link.addEventListener("click", function () {
       const item = link.closest("[data-notification-key]");
       if (!item || !item.classList.contains("is-new")) return;
-      fetch("{{ url_for('chat.toggle_notification_read_status') }}", {
+      fetch("{{ url_for('chat.set_notification_read_status') }}", {
         method: "POST",
         keepalive: true,
         headers: { "Accept": "application/json", "X-CSRFToken": csrfToken, "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ key: item.dataset.notificationKey })
+        body: new URLSearchParams({ key: item.dataset.notificationKey, is_read: "1" })
       }).catch(function () {});
     });
   });

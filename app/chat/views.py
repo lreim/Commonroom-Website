@@ -9,7 +9,7 @@ from . import chat
 from .. import db
 from ..email import send_email
 from ..models import User, Conversation, Message, UserBlock, ChatRequest
-from ..notifications import mark_notifications_seen_now, toggle_notification_read
+from ..notifications import mark_notifications_seen_now, set_notification_read
 from ..security import is_safe_local_redirect_target
 
 CHAT_REQUEST_MESSAGE_MAX_LENGTH = 2000
@@ -257,14 +257,15 @@ def mark_notifications_seen():
     return jsonify({"ok": True})
 
 
-@chat.route("/notifications/toggle-read", methods=["POST"])
+@chat.route("/notifications/set-read", methods=["POST"])
 @login_required
-def toggle_notification_read_status():
+def set_notification_read_status():
     key = request.form.get("key", "")
+    is_read = request.form.get("is_read") == "1"
     if not key:
         return jsonify({"ok": False}), 400
-    toggle_notification_read(key)
-    return jsonify({"ok": True})
+    set_notification_read(current_user.id, key, is_read)
+    return jsonify({"ok": True, "is_read": is_read})
 
 
 @chat.route("/start/<int:user_id>", methods=["POST"])
