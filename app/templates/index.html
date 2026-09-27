@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "reports/button.html" import report_button with context %}
 {% block title %}Home{% endblock %}
 
 {% macro example_profile(username, avatar_url, about_me, tags, profile_labels, funny_fact="") -%}
@@ -77,8 +78,8 @@
 <section id="community-examples" class="homepage-post-showcase" aria-labelledby="homepage-post-showcase-title">
   <div class="homepage-post-showcase-header">
     <div>
-      <h3 id="homepage-post-showcase-title">Things you could talk about</h3>
-      <p>example posts</p>
+      <h3 id="homepage-post-showcase-title">What the community is thinking about</h3>
+      <p>{% if homepage_posts %}from the community{% else %}example posts{% endif %}</p>
     </div>
     <div class="homepage-post-showcase-links">
       <a class="homepage-explore-posts-button" href="{{ url_for('main.post') }}">Explore all posts &rarr;</a>
@@ -86,7 +87,73 @@
     </div>
   </div>
 
-  <div class="homepage-post-wall">
+  <div class="homepage-post-wall post-page-list">
+    {% if homepage_posts %}
+    {% for post in homepage_posts %}
+    <article class="post homepage-example-post homepage-real-post{% if post.is_starter %} post-starter{% endif %}">
+      <div class="post-card-date">{{ moment(post.timestamp).fromNow() }}{% if post.edited_at %} <span class="post-edited-label">edited</span>{% endif %}</div>
+      <div class="profile-thumbnail">
+        {% if post.is_starter %}
+        <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
+          <img src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom">
+        </a>
+        {% else %}
+        <a href="{{ url_for('main.user', username=post.author.username) }}">
+          <img src="{{ post.author.gravatar(size=80) }}" alt="Avatar of {{ post.author.username }}">
+        </a>
+        {% endif %}
+      </div>
+        <div class="post-content">
+        <div class="post-category-status-row">
+          {% if post.is_starter %}<a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>{% endif %}
+          <span class="post-category-label">{{ post.post_type|capitalize }}</span>
+          {% if current_user.is_authenticated and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
+          <div class="post-feed-status-controls" aria-label="Thread status">
+            <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="thread_status" value="still_thinking"><input type="hidden" name="next" value="{{ request.path }}"><button class="post-feed-status-option{% if post.thread_status == 'still_thinking' %} is-active{% endif %}" type="submit">Still thinking</button></form>
+            <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="thread_status" value="answered"><input type="hidden" name="next" value="{{ request.path }}"><button class="post-feed-status-option{% if post.thread_status == 'answered' %} is-active{% endif %}" type="submit">Answered</button></form>
+          </div>
+          {% elif post.thread_status == 'still_thinking' %}<span class="post-thread-status">Still thinking about this</span>{% elif post.thread_status == 'answered' %}<span class="post-thread-status">Answered</span>{% endif %}
+        </div>
+        <div class="post-author">
+          {% if post.is_starter %}
+          <a href="{{ url_for('main.admin_profile') }}">CommonRoom</a>
+          {% else %}
+          <a
+            href="{{ url_for('main.user', username=post.author.username) }}"
+            data-profile-preview='{{ {
+              "username": post.author.username,
+              "name": post.author.name or "",
+              "about_me": (post.author.about_me or "")[:180],
+              "funny_fact": (post.author.funny_fact or "")[:180],
+              "tags": post.author.tags|map(attribute="name")|list|sort,
+              "profile_labels": post.author.profile_label_texts,
+              "avatar_url": post.author.gravatar(size=48)
+            }|tojson }}'
+          >{{ post.author.username }}</a>
+          {% endif %}
+        </div>
+        <div class="post-body">{{ post.body }}</div>
+        <div class="post-meta-actions">
+          {% if current_user.is_authenticated %}
+          <button type="button" class="post-like-button{% if post.is_liked_by(current_user) %} is-liked{% endif %}" data-like-url="{{ url_for('main.toggle_post_like', post_id=post.id) }}" aria-pressed="{{ 'true' if post.is_liked_by(current_user) else 'false' }}">
+            <span class="post-relate-label">{{ 'Related' if post.is_liked_by(current_user) else 'Relate' }}</span><span aria-hidden="true">·</span><span class="post-like-count">{{ post.liked_by.count() }}</span>
+          </button>
+          {% else %}<a class="post-like-button" href="{{ url_for('auth.login', next=request.path, intent='relate') }}">Relate <span aria-hidden="true">·</span> {{ post.liked_by.count() }}</a>{% endif %}
+          {% if post.descendant_reply_count > 0 %}<a class="post-thread-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">&#8627; {{ post.descendant_reply_count }} {% if post.descendant_reply_count == 1 %}reply{% else %}replies{% endif %}</a>{% endif %}
+        </div>
+      </div>
+      <div class="post-side-actions">
+        <div class="post-action-stack">
+          {% if current_user.is_authenticated and not post.is_starter and post.author_id == current_user.id %}<a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=post.id, next=request.path) }}">Edit</a>{% endif %}
+          {% if current_user.is_authenticated %}
+          <details class="post-reply-box" data-reply-toggle><summary>Reply</summary><form method="post" action="{{ url_for('main.post') }}">{{ reply_form.hidden_tag() }}<input type="hidden" name="reply_to_id" value="{{ post.id }}">{{ reply_form.body(class="form-control", rows="4", placeholder="Write your reply here.") }}<div class="post-reply-actions">{{ reply_form.submit(class="btn btn-primary", value="Send reply") }}</div></form></details>
+          {% else %}<a class="post-reply-register" href="{{ url_for('auth.login', next=url_for('main.post', reply_to=post.id), intent='reply') }}">Reply</a>{% endif %}
+          {{ report_button('post', post.id) }}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+    {% else %}
     <article class="post homepage-example-post">
       <div class="profile-thumbnail">
         <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=gentle-nebula-4318&amp;size=80" alt="Avatar of gentle-nebula-4318">
@@ -224,6 +291,7 @@
       </div>
       <div class="post-side-actions"><span class="homepage-post-reply">Reply</span></div>
     </article>
+    {% endif %}
   </div>
 </section>
 
@@ -262,4 +330,21 @@
 {{ super() }}
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
 <script src="{{ url_for('static', filename='landing_scroll_previews.js') }}"></script>
+<script>
+document.querySelectorAll('[data-like-url]').forEach(function (button) {
+  button.addEventListener('click', function () {
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    button.disabled = true;
+    fetch(button.dataset.likeUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf ? csrf.content : '' } })
+      .then(function (response) { if (!response.ok) throw new Error('Relate request failed'); return response.json(); })
+      .then(function (data) {
+        button.classList.toggle('is-liked', data.liked);
+        button.setAttribute('aria-pressed', String(data.liked));
+        button.querySelector('.post-relate-label').textContent = data.liked ? 'Related' : 'Relate';
+        button.querySelector('.post-like-count').textContent = data.count;
+      })
+      .finally(function () { button.disabled = false; });
+  });
+});
+</script>
 {% endblock %}

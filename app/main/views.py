@@ -596,7 +596,23 @@ def _build_analytics_snapshot(selected_range, segment_key=None):
 #given, the view function is registered to handle GET requests only.
 @main.route('/')
 def index():
-    return render_template('index.html', active_page='index', current_time=datetime.now(timezone.utc))
+    form = PostForm()
+    reply_form = ReplyForm()
+    homepage_posts = (
+        Post.query
+        .filter(Post.parent_id.is_(None))
+        .order_by(Post.timestamp.desc(), Post.id.desc())
+        .limit(6)
+        .all()
+    )
+    return render_template(
+        'index.html',
+        active_page='index',
+        current_time=datetime.now(timezone.utc),
+        homepage_posts=homepage_posts,
+        form=form,
+        reply_form=reply_form,
+    )
 
 @main.route('/settings')
 @login_required

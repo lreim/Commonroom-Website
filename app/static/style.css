@@ -1463,6 +1463,76 @@ html.dark-mode .privacy-contact-callout small {
   }
 }
 
+/* Homepage community posts use the same stable card layout as the posts page.
+   The older example wall intentionally staggered its cards, which does not
+   work for the real post content and squeezes the body into a narrow column. */
+.post.homepage-example-post.homepage-real-post,
+.post.homepage-example-post.homepage-real-post:nth-child(1),
+.post.homepage-example-post.homepage-real-post:nth-child(2),
+.post.homepage-example-post.homepage-real-post:nth-child(3),
+.post.homepage-example-post.homepage-real-post:nth-child(4),
+.post.homepage-example-post.homepage-real-post:nth-child(5),
+.post.homepage-example-post.homepage-real-post:nth-child(6) {
+  grid-column: 1 / -1;
+  width: 100%;
+  transform: none;
+}
+
+.post.homepage-example-post.homepage-real-post {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 20px 22px;
+}
+
+.homepage-real-post .post-card-date {
+  flex: 0 0 100%;
+  width: 100%;
+}
+
+.homepage-real-post .post-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.homepage-real-post .post-side-actions {
+  display: flex;
+  flex: 0 0 190px;
+  align-self: stretch;
+  align-items: center;
+  justify-content: flex-end;
+  width: auto;
+  margin-left: 0;
+}
+
+.homepage-real-post .post-action-stack {
+  align-items: flex-end;
+}
+
+@media (max-width: 767px) {
+  .post.homepage-example-post.homepage-real-post {
+    align-self: stretch;
+    padding: 20px 22px;
+  }
+
+  .homepage-real-post .post-side-actions {
+    flex: 0 0 150px;
+    flex-basis: 150px;
+    align-items: flex-end;
+    justify-content: flex-start;
+  }
+
+  .homepage-real-post .post-action-stack {
+    width: 100%;
+  }
+
+  .homepage-real-post .post-reply-box[open] {
+    width: min(280px, calc(100vw - 72px));
+  }
+}
+
 .post-update-banner[hidden] {
   display: none;
 }
@@ -10064,8 +10134,71 @@ html.dark-mode .post-card-date {
   line-height: 1.2;
 }
 
+.onboarding-safety-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 28px auto 34px;
+  max-width: 980px;
+  padding: 18px 20px;
+  border: 2px solid #c97878;
+  border-radius: 16px;
+  background: #fff1ee;
+  box-shadow: 0 8px 20px rgba(130, 72, 57, .1);
+}
+
+.onboarding-safety-callout-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #a62d35;
+  color: #fff8f0;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.onboarding-safety-callout h2 {
+  margin: 0 0 7px;
+  color: #7f2630;
+  font-size: 20px;
+}
+
+.onboarding-safety-callout p {
+  margin: 0 0 7px;
+  color: #6e4540;
+  line-height: 1.45;
+}
+
+.onboarding-safety-callout p:last-child { margin-bottom: 0; }
+.onboarding-report-hint {
+  display: inline-flex;
+  padding: 2px 7px;
+  border: 1px solid #ddc8bb;
+  border-radius: 999px;
+  background: #f4e3d8;
+  color: #a62d35;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .onboarding-safety-callout { margin: 22px 0 28px; padding: 15px; }
+  .onboarding-safety-callout h2 { font-size: 18px; }
+}
+
 /* Keep the post actions on the right on phones as they are on desktop. */
 @media (max-width: 767px) {
+  .post-category-status-row .starter-post-badge,
+  .post-category-status-row .post-category-label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
   .post-page-list .post-side-actions {
     width: auto;
     flex: 0 0 150px;
@@ -10093,4 +10226,66 @@ html.dark-mode .post-card-date {
     font-size: 9px;
     padding: 4px 7px;
   }
+}
+
+/* Real homepage posts must not inherit the staggered example-wall geometry. */
+.post.homepage-example-post.homepage-real-post,
+.post.homepage-example-post.homepage-real-post:nth-child(1),
+.post.homepage-example-post.homepage-real-post:nth-child(2),
+.post.homepage-example-post.homepage-real-post:nth-child(3),
+.post.homepage-example-post.homepage-real-post:nth-child(4),
+.post.homepage-example-post.homepage-real-post:nth-child(5),
+.post.homepage-example-post.homepage-real-post:nth-child(6) {
+  grid-column: 1 / -1;
+  width: 100%;
+  transform: none;
+}
+
+.post.homepage-example-post.homepage-real-post {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0;
+  padding: 20px 22px;
+}
+
+.homepage-real-post .post-card-date { flex: 0 0 100%; width: 100%; }
+.homepage-real-post .post-content {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+}
+.homepage-real-post .post-side-actions {
+  display: flex;
+  flex: 0 0 190px;
+  align-self: stretch;
+  align-items: center;
+  justify-content: flex-end;
+  width: auto;
+  margin-left: 0;
+  order: 3;
+}
+.homepage-real-post .post-action-stack { align-items: flex-end; }
+.homepage-real-post .post-author a { font-weight: 600; }
+
+@media (max-width: 767px) {
+  .post.homepage-example-post.homepage-real-post { align-self: stretch; padding: 20px 22px; }
+  .homepage-real-post .post-side-actions {
+    flex: 0 0 150px;
+    flex-basis: 150px;
+    align-items: flex-end;
+    justify-content: flex-start;
+  }
+  .homepage-real-post .post-action-stack { width: 100%; }
+  .homepage-real-post .post-reply-box[open] { width: min(280px, calc(100vw - 72px)); }
+}
+
+@media (min-width: 768px) {
+  .post.homepage-example-post.homepage-real-post { grid-column: 1 / span 10; }
+  .post.homepage-example-post.homepage-real-post:nth-child(2) { grid-column: 3 / span 10; transform: translateY(8px); }
+  .post.homepage-example-post.homepage-real-post:nth-child(3) { grid-column: 2 / span 10; transform: translateY(4px); }
+  .post.homepage-example-post.homepage-real-post:nth-child(4) { grid-column: 1 / span 10; transform: translateY(8px); }
+  .post.homepage-example-post.homepage-real-post:nth-child(5) { grid-column: 3 / span 10; transform: translateY(4px); }
+  .post.homepage-example-post.homepage-real-post:nth-child(6) { grid-column: 2 / span 10; transform: translateY(8px); }
 }

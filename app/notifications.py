@@ -55,6 +55,7 @@ def _root_post(post):
 
 
 def unread_reply_threads_for_user(user):
+    seen_at = notifications_seen_at()
     participation = Post.query.filter(Post.author_id == user.id).all()
     participated_root_ids = set()
     roots_by_id = {}
@@ -132,7 +133,7 @@ def unread_reply_threads_for_user(user):
                 'root_post': root,
                 'reply': reply,
                 'timestamp': created_at,
-                'is_new': True,
+                'is_new': seen_at is None or created_at > seen_at,
                 'text': text,
                 'url': url_for('main.post_thread', post_id=root.id) + f'#post-{reply.id}',
             }

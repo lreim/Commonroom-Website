@@ -139,8 +139,10 @@
             <span class="post-thread-status">Answered</span>
             {% endif %}
             </div>
-            {% if not post.is_starter %}
             <div class="post-author">
+            {% if post.is_starter %}
+                <a href="{{ url_for('main.admin_profile') }}">CommonRoom</a>
+            {% else %}
                 <a
                     href="{{ url_for('.user', username=post.author.username) }}"
                     data-profile-preview='{{ {
@@ -155,8 +157,8 @@
                 >
                     {{ post.author.username }}
                 </a>
-            </div>
             {% endif %}
+            </div>
             <div class="post-body">{{ post.body }}</div>
             <div class="post-meta-actions">
                 {% if current_user.is_authenticated %}

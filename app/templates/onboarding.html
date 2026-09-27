@@ -38,9 +38,18 @@
       </article>
     </div>
     <p class="privacy-quick-limit">
-      <strong>Clear limit:</strong> Private chat content is encrypted in storage and access-controlled, but it is not end-to-end encrypted because CommonRoom must decrypt it for the participants.
+      <strong>Clear limit:</strong> Private chat content is access-controlled, but it is not end-to-end encrypted because CommonRoom must provide it to the participants.
       <a href="{{ url_for('main.data_and_privacy') }}">See exactly what is and is not stored &rarr;</a>
     </p>
+  </section>
+
+  <section class="onboarding-safety-callout" aria-labelledby="onboarding-safety-title">
+    <div class="onboarding-safety-callout-mark" aria-hidden="true">!</div>
+    <div>
+      <h2 id="onboarding-safety-title">See something that should not be here?</h2>
+      <p><strong>Use the small red “Report” button next to any post or incoming chat message.</strong> It is visible right beside the content, opens a short preview, and sends the report directly to the admin with the message, author, reporter, and time.</p>
+      <p class="onboarding-side-note">A green dot with “New” marks posts or threads that appeared since your last visit to the Posts page.</p>
+    </div>
   </section>
 
   <section class="onboarding-step" aria-labelledby="onboarding-look-around">
@@ -61,9 +70,10 @@
           <div class="post-date">12 minutes ago</div>
           <div class="post-author">steady-orbit-6724</div>
           <div class="post-body">How do people actually manage uni, sports, friends AND sleep?</div>
-          <div class="onboarding-post-meta">
+      <div class="onboarding-post-meta">
             <span class="onboarding-relate-button">Relate · 12</span>
             <span class="post-thread-link">&#8627; 6 replies</span>
+            <span class="onboarding-report-hint">Report</span>
           </div>
         </div>
         <div class="post-side-actions"><span class="onboarding-example-action">Reply</span></div>
@@ -77,6 +87,7 @@
           <div class="onboarding-post-meta">
             <span class="onboarding-relate-button">Relate · 18</span>
             <span class="post-thread-link">&#8627; 4 replies</span>
+            <span class="onboarding-report-hint">Report</span>
           </div>
         </div>
         <div class="post-side-actions"><span class="onboarding-example-action">Reply</span></div>
@@ -356,7 +367,7 @@ What I would like to talk about:
         <ul class="chat-messages">
           <li class="chat-message">
             <div class="chat-message-stack">
-              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">lucid-vector-1842</span></div><div class="chat-body">I saw you've also dealt with exam stress. How did you make a study plan when everything already felt behind?</div></div>
+              <div class="chat-bubble"><div class="chat-meta"><span class="chat-author chat-author-link">lucid-vector-1842</span><span class="onboarding-report-hint">Report</span></div><div class="chat-body">I saw you've also dealt with exam stress. How did you make a study plan when everything already felt behind?</div></div>
               <span class="chat-time">12.09.2026 18:42</span>
             </div>
           </li>
