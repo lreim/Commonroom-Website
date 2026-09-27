@@ -877,34 +877,30 @@ def post():
     posts = pagination.items
     new_post_ids = set()
     if current_user.is_authenticated:
-        seen_root_ids = {
-            int(post_id)
-            for post_id in session.get('seen_post_thread_ids', [])
-            if str(post_id).isdigit()
-        }
+        last_posts_visit = session.get('posts_last_seen_at')
+        try:
+            last_posts_visit = datetime.fromisoformat(last_posts_visit) if last_posts_visit else None
+        except (TypeError, ValueError):
+            last_posts_visit = None
+        if last_posts_visit is not None and last_posts_visit.tzinfo is None:
+            last_posts_visit = last_posts_visit.replace(tzinfo=timezone.utc)
         for root_post in posts:
-            if root_post.id not in seen_root_ids:
+            root_created_at = root_post.timestamp
+            if root_created_at.tzinfo is None:
+                root_created_at = root_created_at.replace(tzinfo=timezone.utc)
+            if last_posts_visit is not None and root_created_at > last_posts_visit:
                 new_post_ids.add(root_post.id)
-            visit = PostThreadVisit.query.filter_by(
-                user_id=current_user.id,
-                root_post_id=root_post.id,
-            ).first()
-            threshold = visit.last_visited_at if visit is not None else None
-            if threshold is not None and threshold.tzinfo is None:
-                threshold = threshold.replace(tzinfo=timezone.utc)
             frontier = list(root_post.replies.all())
-            latest_reply = None
             while frontier:
                 reply = frontier.pop()
                 reply_at = reply.timestamp
                 if reply_at.tzinfo is None:
                     reply_at = reply_at.replace(tzinfo=timezone.utc)
-                if reply.author_id != current_user.id and (threshold is None or reply_at > threshold):
-                    if latest_reply is None or reply_at > latest_reply:
-                        latest_reply = reply_at
+                if last_posts_visit is not None and reply_at > last_posts_visit and reply.author_id != current_user.id:
+                    new_post_ids.add(root_post.id)
                 frontier.extend(reply.replies.all())
-            if latest_reply is not None:
-                new_post_ids.add(root_post.id)
+        session['posts_last_seen_at'] = datetime.now(timezone.utc).isoformat()
+        session.modified = True
     return render_template(
         'post.html',
         form=form,

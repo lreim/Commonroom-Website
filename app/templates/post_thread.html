@@ -15,7 +15,7 @@
 {%- endmacro %}
 
 {% macro render_post_node(node, form, is_reply=false, is_continuation=false) -%}
-<li id="post-{{ node.id }}" class="post post-thread-item{% if not is_reply %} post-thread-original{% endif %}{% if is_reply %} post-thread-reply{% endif %}{% if is_reply and not is_continuation %} post-thread-direct-reply{% endif %}{% if is_continuation %} post-thread-continuation{% endif %}{% if node.id in new_reply_ids %} is-new-reply{% endif %}{% if node.is_starter %} post-starter{% endif %}">
+<li id="post-{{ node.id }}" class="post post-thread-item{% if not is_reply %} post-thread-original{% endif %}{% if is_reply %} post-thread-reply{% endif %}{% if is_reply and not is_continuation %} post-thread-direct-reply{% endif %}{% if is_continuation %} post-thread-continuation{% endif %}{% if node.is_starter %} post-starter{% endif %}">
     <div class="post-card-date">
         {{ moment(node.timestamp).fromNow() }}
         {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
@@ -55,7 +55,6 @@
                 {% if node.reply_type == 'tip' %}Practical tip{% elif node.reply_type == 'question' %}Follow-up question{% else %}Shared experience{% endif %}
             </span>
             {% endif %}
-            {% if node.id in new_reply_ids %}<span class="post-new-label"><span aria-hidden="true"></span><span class="sr-only">New reply</span></span>{% endif %}
         </div>
         {% if is_reply and not is_continuation %}
         <div class="post-thread-relation-label">Reply to original post</div>

@@ -9934,7 +9934,16 @@ html.dark-mode .post-thread-item .post-like-button.is-liked {
 .chat-edit-cancel { color: #8a3f61; }
 .chat-edit-editor { display: flex; align-items: center; gap: 6px; }
 .chat-edit-input { min-width: 0; flex: 1; padding: 5px 7px; border: 1px solid #d9c4ce; border-radius: 7px; }
-.chat-edited-label { color: #9a8772; font-size: 9px; font-style: italic; }
+.chat-bubble { position: relative; padding-bottom: 22px; }
+.chat-edited-label {
+  position: absolute;
+  right: 10px;
+  bottom: 6px;
+  color: #756879;
+  font-size: 8px;
+  font-style: italic;
+  line-height: 1;
+}
 .content-report-dialog {
   position: fixed;
   inset: 0;
