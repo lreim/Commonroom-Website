@@ -124,7 +124,7 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="thread_status" value="still_thinking">
                     <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
-                    <button class="post-feed-status-option{% if post.thread_status == 'still_thinking' %} is-active{% endif %}" type="submit">Still thinking</button>
+                    <button class="post-feed-status-option{% if post.thread_status != 'answered' %} is-active{% endif %}" type="submit">Still thinking</button>
                 </form>
                 <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -133,7 +133,7 @@
                     <button class="post-feed-status-option{% if post.thread_status == 'answered' %} is-active{% endif %}" type="submit">Answered</button>
                 </form>
             </div>
-            {% elif post.thread_status == 'still_thinking' %}
+            {% elif post.thread_status != 'answered' %}
             <span class="post-thread-status">Still thinking about this</span>
             {% elif post.thread_status == 'answered' %}
             <span class="post-thread-status">Answered</span>

@@ -9,9 +9,7 @@
   const bubbleLinks = Array.from(document.querySelectorAll(".welcome-bubble-link"));
   const profileLinks = Array.from(
     document.querySelectorAll(".homepage-profile-preview-trigger[data-profile-preview]")
-  ).filter(function (link, index) {
-    return index % 2 === 1;
-  });
+  );
 
   function observeCentered(elements, show, hide) {
     if (elements.length === 0) return;
@@ -53,6 +51,20 @@
     elements.forEach(function (element) {
       observer.observe(element);
     });
+
+    // Intersection changes alone are not enough on mobile: several bubbles can
+    // remain intersecting while the viewport center moves between them.
+    let ticking = false;
+    function updateOnScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function () {
+        ticking = false;
+        updateActiveElement();
+      });
+    }
+    window.addEventListener("scroll", updateOnScroll, { passive: true });
+    window.addEventListener("resize", updateOnScroll);
   }
 
   observeCentered(

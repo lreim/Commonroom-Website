@@ -47,8 +47,8 @@
             </span>
             {% endif %}
             {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
-            {% if not is_reply and node.thread_status != 'looking_for_replies' %}
-            <span class="post-thread-status">{{ thread_status_labels.get(node.thread_status, '') }}</span>
+            {% if not is_reply %}
+            <span class="post-thread-status">{{ thread_status_labels.get(node.thread_status, 'Still thinking about this') }}</span>
             {% endif %}
             {% if is_reply and node.reply_type %}
             <span class="post-reply-type">

@@ -381,7 +381,7 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('posts.id'), index=True)
     post_type = db.Column(db.String(16), nullable=False, default='relate', index=True)
-    thread_status = db.Column(db.String(32), nullable=False, default='looking_for_replies')
+    thread_status = db.Column(db.String(32), nullable=False, default='still_thinking')
     reply_type = db.Column(db.String(32), nullable=True)
     is_starter = db.Column(db.Boolean, nullable=False, default=False)
     liked_by = db.relationship('User', secondary=post_likes, back_populates='liked_posts', lazy='dynamic')
