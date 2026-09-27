@@ -14,6 +14,7 @@ from .models import (
 
 
 SESSION_KEY = "notifications_last_seen_at"
+READ_KEYS_SESSION_KEY = "notifications_read_keys"
 
 
 def _parse_seen_at(raw_value):
@@ -42,6 +43,20 @@ def notifications_seen_at():
 
 def mark_notifications_seen_now():
     session[SESSION_KEY] = datetime.now(timezone.utc).isoformat()
+    session.modified = True
+
+
+def notification_key(item):
+    return f"{item['kind']}|{item['url']}|{_utc_aware(item['timestamp']).isoformat()}"
+
+
+def toggle_notification_read(key):
+    keys = set(session.get(READ_KEYS_SESSION_KEY, []))
+    if key in keys:
+        keys.remove(key)
+    else:
+        keys.add(key)
+    session[READ_KEYS_SESSION_KEY] = list(keys)
     session.modified = True
 
 
@@ -153,7 +168,7 @@ def mark_post_thread_visited(user_id, root_post_id):
 
 
 def build_notifications_for_user(user, limit=8):
-    seen_at = notifications_seen_at()
+    read_keys = set(session.get(READ_KEYS_SESSION_KEY, []))
     items = []
 
     items.extend(unread_reply_threads_for_user(user).values())
@@ -168,7 +183,7 @@ def build_notifications_for_user(user, limit=8):
             {
                 "kind": "incoming_request",
                 "timestamp": created_at,
-                "is_new": seen_at is None or created_at > seen_at,
+                "is_new": True,
                 "text": f"New chat request from {chat_request.requester.username}",
                 "url": url_for("chat.index") + "#requested-chats",
             }
@@ -194,7 +209,7 @@ def build_notifications_for_user(user, limit=8):
             {
                 "kind": "request_response",
                 "timestamp": responded_at,
-                "is_new": seen_at is None or responded_at > seen_at,
+                "is_new": True,
                 "text": f"{chat_request.requested.username} {response_word} your chat request",
                 "url": (
                     url_for("chat.detail", conversation_id=conversation.id)
@@ -223,14 +238,19 @@ def build_notifications_for_user(user, limit=8):
             {
                 "kind": "message",
                 "timestamp": created_at,
-                "is_new": seen_at is None or created_at > seen_at,
+                "is_new": True,
                 "text": f"New message from {other.username}",
                 "url": url_for("chat.detail", conversation_id=conversation.id) + f"#message-{last_msg.id}",
             }
         )
 
     items.sort(key=lambda item: item["timestamp"], reverse=True)
-    limited_items = items[:limit]
+    for item in items:
+        item["notification_key"] = notification_key(item)
+        item["is_new"] = item["notification_key"] not in read_keys
+    visible_items = [item for item in items if item["is_new"]]
+    visible_items.extend([item for item in items if not item["is_new"]][:4])
+    limited_items = visible_items[:limit]
     return {
         "items": limited_items,
         "has_unseen": any(item["is_new"] for item in limited_items),

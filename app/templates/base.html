@@ -95,13 +95,13 @@
             <div class="notification-menu-title">Notifications</div>
             {% if notification_items %}
               {% for item in notification_items %}
-              <a
-                href="{{ item.url }}"
-                class="notification-menu-item{% if item.is_new %} is-new{% endif %}"
-              >
-                <span class="notification-menu-item-text">{{ item.text }}</span>
-                <span class="notification-menu-item-time">{{ moment(item.timestamp).fromNow() }}</span>
-              </a>
+              <div class="notification-menu-item{% if item.is_new %} is-new{% endif %}" data-notification-key="{{ item.notification_key }}">
+                <a href="{{ item.url }}" class="notification-menu-item-link">
+                  <span class="notification-menu-item-text">{{ item.text }}</span>
+                  <span class="notification-menu-item-time">{{ moment(item.timestamp).fromNow() }}</span>
+                </a>
+                <button type="button" class="notification-menu-item-more" aria-label="Mark notification as unread" title="Mark as unread">&hellip;</button>
+              </div>
               {% endfor %}
             {% else %}
               <div class="notification-menu-empty">No new activity right now.</div>
@@ -360,8 +360,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  let hasMarkedSeen = false;
-
   function positionNotificationDropdown() {
     if (!window.matchMedia("(max-width: 1380px)").matches) {
       dropdown.style.top = "";
@@ -394,17 +392,6 @@ document.addEventListener("DOMContentLoaded", function () {
     trigger.setAttribute("aria-expanded", "true");
     dropdown.classList.add("is-open");
     positionNotificationDropdown();
-    if (!hasMarkedSeen) {
-      hasMarkedSeen = true;
-      trigger.classList.remove("has-unseen");
-      fetch(trigger.dataset.markSeenUrl, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "X-CSRFToken": csrfToken
-        }
-      }).catch(function () {});
-    }
     syncMobileNavbarExpansion();
   }
 
@@ -416,6 +403,38 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       openMenu();
     }
+  });
+
+  dropdown.querySelectorAll(".notification-menu-item-more").forEach(function (button) {
+    button.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      const item = button.closest("[data-notification-key]");
+      if (!item) return;
+      const body = new URLSearchParams({ key: item.dataset.notificationKey });
+      fetch("{{ url_for('chat.toggle_notification_read_status') }}", {
+        method: "POST",
+        headers: { "Accept": "application/json", "X-CSRFToken": csrfToken },
+        body: body
+      }).then(function (response) {
+        if (!response.ok) throw new Error("Notification update failed");
+        item.classList.toggle("is-new");
+        button.setAttribute("aria-label", item.classList.contains("is-new") ? "Mark notification as read" : "Mark notification as unread");
+      }).catch(function () {});
+    });
+  });
+
+  dropdown.querySelectorAll(".notification-menu-item-link").forEach(function (link) {
+    link.addEventListener("click", function () {
+      const item = link.closest("[data-notification-key]");
+      if (!item || !item.classList.contains("is-new")) return;
+      fetch("{{ url_for('chat.toggle_notification_read_status') }}", {
+        method: "POST",
+        keepalive: true,
+        headers: { "Accept": "application/json", "X-CSRFToken": csrfToken, "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ key: item.dataset.notificationKey })
+      }).catch(function () {});
+    });
   });
 
   document.addEventListener("click", function (event) {
