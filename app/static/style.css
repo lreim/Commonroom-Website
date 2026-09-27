@@ -10294,7 +10294,7 @@ html.dark-mode .post-card-date {
     width: 92%;
     padding: 20px 22px;
   }
-  .post.homepage-example-post.homepage-real-post:nth-child(even) {
+  .post.homepage-example-post.homepage-real-post:nth-of-type(even) {
     align-self: flex-end;
   }
   .homepage-real-post .post-side-actions {
