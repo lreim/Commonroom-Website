@@ -127,13 +127,6 @@ def unread_reply_threads_for_user(user):
         if created_at is None:
             continue
         root = _root_post(reply)
-        threshold = participation_started_at.get(root.id)
-        last_visited_at = visits.get(root.id)
-        if last_visited_at is not None and (threshold is None or last_visited_at > threshold):
-            threshold = last_visited_at
-        if threshold is not None and created_at <= threshold:
-            continue
-
         author_name = reply.author.username if reply.author is not None else 'Admin'
         if root.author_id == user.id:
             text = f'{author_name} replied to your post'
