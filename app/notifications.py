@@ -128,6 +128,11 @@ def unread_reply_threads_for_user(user):
             continue
         root = _root_post(reply)
         author_name = reply.author.username if reply.author is not None else 'Admin'
+        threshold = participation_started_at.get(root.id)
+        last_visited_at = visits.get(root.id)
+        if last_visited_at is not None and (threshold is None or last_visited_at > threshold):
+            threshold = last_visited_at
+        was_seen = threshold is not None and created_at <= threshold
         if root.author_id == user.id:
             text = f'{author_name} replied to your post'
         elif root.id not in participated_root_ids:
@@ -176,7 +181,7 @@ def build_notifications_for_user(user, limit=8):
             {
                 "kind": "incoming_request",
                 "timestamp": created_at,
-                "is_new": True,
+                "is_new": not was_seen,
                 "text": f"New chat request from {chat_request.requester.username}",
                 "url": url_for("chat.index") + "#requested-chats",
             }
@@ -240,7 +245,7 @@ def build_notifications_for_user(user, limit=8):
     items.sort(key=lambda item: item["timestamp"], reverse=True)
     for item in items:
         item["notification_key"] = notification_key(item)
-        item["is_new"] = item["notification_key"] not in read_keys
+        item["is_new"] = item["notification_key"] not in read_keys and item.get("is_new", True)
     read_items_seen = 0
     visible_items = []
     for item in items:
