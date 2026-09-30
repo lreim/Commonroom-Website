@@ -436,6 +436,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  dropdown.querySelectorAll(".notification-menu-item[data-notification-key]").forEach(function (item) {
+    item.addEventListener("click", function (event) {
+      if (event.target.closest(".notification-menu-item-more") || event.target.closest("a")) {
+        return;
+      }
+      const link = item.querySelector(".notification-menu-item-link");
+      if (link) link.click();
+    });
+  });
+
   document.addEventListener("click", function (event) {
     if (!dropdown.contains(event.target) && !trigger.contains(event.target)) {
       closeMenu();

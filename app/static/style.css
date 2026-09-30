@@ -4105,6 +4105,7 @@ html.dark-mode .floating-abuse-hint span {
 .notification-menu-item {
   display: flex;
   align-items: center;
+  cursor: pointer;
   margin-bottom: 8px;
   padding: 10px 12px;
   border: 1px solid #efe2d6;
@@ -8443,6 +8444,42 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
   text-transform: uppercase;
 }
 
+/* An opened reply form spans the card below the post content. */
+.post-page-list .post:has(.post-reply-box[open]),
+.homepage-real-post:has(.post-reply-box[open]) {
+  padding-bottom: 270px;
+}
+
+.post-page-list .post-reply-box[open],
+.homepage-real-post .post-reply-box[open] {
+  position: absolute;
+  right: 22px;
+  bottom: 20px;
+  left: 22px;
+  width: auto;
+  z-index: 2;
+}
+
+.post-page-list .post-reply-box[open] form,
+.homepage-real-post .post-reply-box[open] form {
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .post-page-list .post:has(.post-reply-box[open]),
+  .homepage-real-post:has(.post-reply-box[open]) {
+    padding-bottom: 390px;
+  }
+
+  .post-page-list .post-reply-box[open],
+  .homepage-real-post .post-reply-box[open] {
+    right: 14px;
+    bottom: 14px;
+    left: 14px;
+    width: auto;
+  }
+}
+
 .starter-post-badge:hover,
 .starter-post-badge:focus {
   color: #5f4932;
@@ -10293,6 +10330,17 @@ html.dark-mode .post-card-date {
 }
 .homepage-real-post .post-action-stack { align-items: flex-end; }
 .homepage-real-post .post-author a { font-weight: 600; }
+
+/* Compact category labels in the feed and on the homepage. */
+.post-category-label {
+  font-size: 8px;
+  letter-spacing: 0.03em;
+}
+.starter-post-badge {
+  padding: 1px 5px;
+  font-size: 7px;
+  letter-spacing: 0.06em;
+}
 
 @media (max-width: 767px) {
   .post.homepage-example-post.homepage-real-post {

@@ -201,6 +201,15 @@
                     {{ reply_form.hidden_tag() }}
                     <input type="hidden" name="reply_to_id" value="{{ post.id }}">
                     {{ reply_form.body(class="form-control", rows="4", placeholder="Write your reply here.") }}
+                    <fieldset class="post-reply-type-picker">
+                        <legend>{{ reply_form.reply_type.label.text }}</legend>
+                        {% for value, label in reply_form.reply_type.choices %}
+                        <label for="reply-type-{{ post.id }}-{{ value }}">
+                            <input id="reply-type-{{ post.id }}-{{ value }}" type="radio" name="reply_type" value="{{ value }}"{% if value == 'experience' %} checked{% endif %}>
+                            {{ label }}
+                        </label>
+                        {% endfor %}
+                    </fieldset>
                     <div class="post-reply-actions">
                         {{ reply_form.submit(class="btn btn-primary", value="Send reply") }}
                     </div>
