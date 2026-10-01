@@ -10331,6 +10331,28 @@ html.dark-mode .post-card-date {
 .homepage-real-post .post-action-stack { align-items: flex-end; }
 .homepage-real-post .post-author a { font-weight: 600; }
 
+.chat-reply-button {
+  border: 0;
+  background: transparent;
+  color: #7c4a3f;
+  font-size: 11px;
+  cursor: pointer;
+}
+.chat-reply-button:hover { text-decoration: underline; }
+.chat-reply-preview,
+.chat-replying-to {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 5px 0;
+  padding: 5px 8px;
+  border-left: 3px solid #b86b61;
+  background: rgba(184, 107, 97, .1);
+  font-size: 11px;
+}
+.chat-reply-preview span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-replying-to { margin: 0 0 6px; }
+
 /* Compact category labels in the feed and on the homepage. */
 .post-category-label {
   font-size: 8px;

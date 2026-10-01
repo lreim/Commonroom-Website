@@ -597,8 +597,10 @@ class Message(db.Model):    #einzelne Nachricht
     body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     edited_at = db.Column(db.DateTime, nullable=True)
+    reply_to_id = db.Column(db.Integer, db.ForeignKey("messages.id"), nullable=True, index=True)
 
     author = db.relationship("User")
+    reply_to = db.relationship("Message", remote_side=[id], backref="replies")
 
 
 class Tag(db.Model):

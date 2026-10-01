@@ -52,7 +52,9 @@
                   {% if m.author_id != current_user.id %}{{ report_button("message", m.id) }}{% endif %}
                   <a class="chat-author chat-author-link" href="{{ url_for('main.user', username=m.author.username) }}">{{ m.author.username }}</a>
                   {% if m.author_id == current_user.id %}<button type="button" class="chat-edit-button" data-edit-message="{{ m.id }}">Edit</button>{% endif %}
+                  <button type="button" class="chat-reply-button" data-reply-message="{{ m.id }}">Reply</button>
                 </div>
+                {% if m.reply_to %}<div class="chat-reply-preview"><strong>{{ m.reply_to.author.username }}</strong><span>{{ m.reply_to.body }}</span></div>{% endif %}
                 <div class="chat-body">{{ m.body }}</div>
                 {% if m.edited_at %}<span class="chat-edited-label">edited</span>{% endif %}
               </div>
@@ -63,6 +65,7 @@
       </ul>
 
       <form id="chat-form" class="chat-form"{% if is_blocked %} style="display:none;"{% endif %}>
+        <div id="chat-replying-to" class="chat-replying-to" hidden></div>
         <input id="chat-input" type="text" autocomplete="off" maxlength="2000" placeholder="Write a message..." />
         <button type="submit">Send</button>
       </form>
@@ -77,6 +80,8 @@
   const currentUserId = Number("{{ current_user.id }}");
   const socket = io();
   const messagesList = document.getElementById("messages");
+  const replyingTo = document.getElementById("chat-replying-to");
+  let replyToMessageId = null;
 
   function formatTimestamp(isoString) {
     const date = new Date(isoString);
@@ -116,6 +121,17 @@
     body.className = "chat-body";
     body.textContent = msg.body;
 
+    if (msg.reply_to) {
+      const quote = document.createElement('div');
+      quote.className = 'chat-reply-preview';
+      const author = document.createElement('strong');
+      author.textContent = msg.reply_to.author_username;
+      const quotedBody = document.createElement('span');
+      quotedBody.textContent = msg.reply_to.body;
+      quote.append(author, quotedBody);
+      bubble.appendChild(quote);
+    }
+
     meta.appendChild(authorLink);
     if (msg.author_id === currentUserId) {
       const edit = document.createElement('button');
@@ -135,6 +151,12 @@
       report.dataset.reportUrl = {{ url_for('reports.create', target_type='message', target_id=0)|tojson }}.replace(/0$/, String(msg.id));
       meta.appendChild(report);
     }
+    const reply = document.createElement('button');
+    reply.type = 'button';
+    reply.className = 'chat-reply-button';
+    reply.textContent = 'Reply';
+    reply.dataset.replyMessage = String(msg.id);
+    meta.appendChild(reply);
     bubble.appendChild(meta);
     bubble.appendChild(body);
     if (msg.edited_at) {
@@ -203,6 +225,17 @@
   });
 
   messagesList.addEventListener('click', (event) => {
+    const replyButton = event.target.closest('[data-reply-message]');
+    if (replyButton) {
+      const target = document.getElementById(`message-${replyButton.dataset.replyMessage}`);
+      const targetBody = target?.querySelector('.chat-body')?.textContent || '';
+      const targetAuthor = target?.querySelector('.chat-author')?.textContent || 'message';
+      replyToMessageId = Number(replyButton.dataset.replyMessage);
+      replyingTo.hidden = false;
+      replyingTo.textContent = `Replying to ${targetAuthor}: ${targetBody}`;
+      document.getElementById('chat-input').focus();
+      return;
+    }
     const button = event.target.closest('[data-edit-message]');
     if (!button) return;
     const messageElement = document.getElementById(`message-${button.dataset.editMessage}`);
@@ -236,7 +269,10 @@
     const input = document.getElementById("chat-input");
     const body = input.value.trim();
     if (!body) return;
-    socket.emit("send_message", { conversation_id: conversationId, body });
+    socket.emit("send_message", { conversation_id: conversationId, body, reply_to_id: replyToMessageId });
+    replyToMessageId = null;
+    replyingTo.hidden = true;
+    replyingTo.textContent = '';
     input.value = "";
   });
 

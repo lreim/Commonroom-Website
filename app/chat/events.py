@@ -36,6 +36,7 @@ def send_message(data):
 
     conversation_id = int(data.get("conversation_id"))
     body = (data.get("body") or "").strip()
+    reply_to_id = data.get("reply_to_id")
     if not body:
         emit("chat_error", {"message": "Empty message"})
         return
@@ -48,12 +49,19 @@ def send_message(data):
         emit("chat_error", {"message": "No access"})
         return
 
+    reply_to = None
+    if reply_to_id:
+        reply_to = Message.query.get(int(reply_to_id))
+        if reply_to is None or reply_to.conversation_id != conversation_id:
+            emit("chat_error", {"message": "The message you are replying to is no longer available."})
+            return
+
     other = conversation.other_user(current_user.id)
     if current_user.has_block_relationship(other):
         emit("chat_error", {"message": "You cannot send messages in this chat."})
         return
 
-    msg = Message(conversation_id=conversation_id, author_id=current_user.id, body=body)
+    msg = Message(conversation_id=conversation_id, author_id=current_user.id, body=body, reply_to_id=reply_to.id if reply_to else None)
     db.session.add(msg)
     db.session.commit()
 
@@ -67,6 +75,11 @@ def send_message(data):
             "author_profile_url": url_for("main.user", username=current_user.username),
             "body": msg.body,
             "created_at": msg.created_at.isoformat(),
+            "reply_to": {
+                "id": reply_to.id,
+                "author_username": reply_to.author.username,
+                "body": reply_to.body,
+            } if reply_to else None,
         },
         to=_room_name(conversation_id),
     )
