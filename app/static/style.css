@@ -10045,6 +10045,12 @@ html.dark-mode .post-thread-item .post-like-button.is-liked {
 .content-report-button:disabled { opacity: .65; cursor: wait; }
 .content-report-button[hidden] { display: none; }
 .chat-meta .content-report-button { float: right; margin-left: 12px; }
+.chat-meta { width: 100%; }
+.chat-meta .chat-author { order: 1; margin-right: auto; }
+.chat-meta .content-report-button,
+.chat-meta .chat-edit-button,
+.chat-meta .chat-reply-button { order: 2; margin-left: 8px; }
+.chat-meta .content-report-button { float: none; }
 .chat-edit-button,
 .chat-edit-save,
 .chat-edit-cancel {
