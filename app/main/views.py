@@ -614,6 +614,24 @@ def index():
         reply_form=reply_form,
     )
 
+
+REMINDER_REDIRECTS = {
+    '1': 'reminder_Physik1',
+    '2': 'reminder_Physik2',
+    '3': 'reminder_Physik3',
+}
+
+
+@main.route('/1')
+@main.route('/2')
+@main.route('/3')
+def reminder_redirect():
+    reminder_code = request.path.lstrip('/').lower()
+    campaign_source = REMINDER_REDIRECTS[reminder_code]
+    session['reminder_campaign_source'] = campaign_source
+    session['reminder_campaign'] = 'launch_2026_10'
+    session.modified = True
+    return redirect(url_for('main.index'), code=302)
 @main.route('/settings')
 @login_required
 def settings():
