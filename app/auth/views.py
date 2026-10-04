@@ -8,7 +8,7 @@ from flask import current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from sqlalchemy.exc import IntegrityError
 from . import auth     #importiert auth object aus __init__.py
-from ..models import User
+from ..models import User, WeeklyCheckInResponse
 from .forms import LoginForm, OIDCLinkAccountForm, OIDCProfileForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
 from .. import db, oauth
 from ..email import send_email
@@ -30,9 +30,30 @@ OAUTH_ERROR_CODE_MAX_LENGTH = 64
 
 def _login_with_demo_mode(user, remember=False):
     login_user(user, remember)
+    _claim_anonymous_checkins(user)
     session.permanent = True
     activate_admin_demo_mode(user)
     complete_auth_funnel(user)
+
+
+def _claim_anonymous_checkins(user):
+    token = session.get('checkin_visitor_token')
+    if not token:
+        return
+    anonymous_rows = WeeklyCheckInResponse.query.filter_by(visitor_token=token).all()
+    if not anonymous_rows:
+        return
+    for row in anonymous_rows:
+        existing = WeeklyCheckInResponse.query.filter_by(
+            week_key=row.week_key, user_id=user.id
+        ).first()
+        if existing is not None:
+            db.session.delete(row)
+        else:
+            row.user_id = user.id
+            row.visitor_token = None
+    db.session.commit()
+    session.pop('checkin_visitor_token', None)
 
 
 def _login_name(user):
