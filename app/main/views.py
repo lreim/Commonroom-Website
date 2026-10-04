@@ -23,6 +23,7 @@ from ..models import (
     PageVisit,
     PostThreadSubscription,
     PostThreadVisit,
+    WeeklyCheckInResponse,
     post_likes,
 )
 from ..tag_matching import match_tags, get_model
@@ -587,6 +588,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None):
         "previous_analytics": previous_analytics,
     }
     snapshot.update(_build_content_stats())
+    snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats()
     return snapshot
 
 #routes (view functions sind die index() etc.) for every page I have: @login_required before route to make it safe
@@ -612,7 +614,53 @@ def index():
         homepage_posts=homepage_posts,
         form=form,
         reply_form=reply_form,
+        checkin=_weekly_checkin_context(),
     )
+
+
+CHECKIN_CHOICES = [('calm', 'Calm'), ('overwhelmed', 'A bit overwhelmed'), ('motivated', 'Motivated'), ('lonely', 'Lonely'), ('unsure', 'Not sure yet')]
+
+def _weekly_checkin_context():
+    week_key = datetime.now(timezone.utc).strftime('%G-W%V')
+    rows = WeeklyCheckInResponse.query.filter_by(week_key=week_key).all()
+    counts = {key: 0 for key, _ in CHECKIN_CHOICES}
+    for row in rows:
+        if row.choice in counts: counts[row.choice] += 1
+    token = session.get('checkin_visitor_token')
+    if not token:
+        session['checkin_visitor_token'] = uuid4().hex
+        token = session['checkin_visitor_token']
+    answered = WeeklyCheckInResponse.query.filter_by(week_key=week_key, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token).first() is not None
+    total = sum(counts.values())
+    return {'week_key': week_key, 'choices': CHECKIN_CHOICES, 'counts': counts, 'total': total, 'answered': answered}
+
+
+def _build_weekly_checkin_admin_stats():
+    rows = WeeklyCheckInResponse.query.order_by(WeeklyCheckInResponse.week_key.desc()).all()
+    grouped = {}
+    for row in rows:
+        week = grouped.setdefault(row.week_key, {'week_key': row.week_key, 'total': 0, 'logged_in': 0, 'visitors': 0, 'counts': {value: 0 for value, _ in CHECKIN_CHOICES}})
+        week['total'] += 1
+        week['logged_in' if row.user_id is not None else 'visitors'] += 1
+        week['counts'][row.choice] = week['counts'].get(row.choice, 0) + 1
+    weeks = list(grouped.values())[:12]
+    return {'choices': CHECKIN_CHOICES, 'weeks': weeks, 'latest': weeks[0] if weeks else None}
+
+@main.route('/weekly-checkin', methods=['POST'])
+def weekly_checkin():
+    choice = request.form.get('choice')
+    if choice not in dict(CHECKIN_CHOICES): abort(400)
+    week_key = datetime.now(timezone.utc).strftime('%G-W%V')
+    token = session.setdefault('checkin_visitor_token', uuid4().hex)
+    query = {'week_key': week_key, 'choice': choice}
+    if current_user.is_authenticated:
+        existing = WeeklyCheckInResponse.query.filter_by(week_key=week_key, user_id=current_user.id).first()
+    else:
+        existing = WeeklyCheckInResponse.query.filter_by(week_key=week_key, visitor_token=token).first()
+    if existing: existing.choice = choice
+    else: db.session.add(WeeklyCheckInResponse(**query, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token))
+    db.session.commit()
+    return redirect(request.form.get('next') or url_for('main.index'))
 
 
 REMINDER_REDIRECTS = {
@@ -945,6 +993,7 @@ def post():
         all_tags=all_tags,
         selected_topics=', '.join(selected_topics),
         matched_topics=matched_topics,
+        checkin=_weekly_checkin_context(),
         sort_by=sort_by,
         post_type_filter=post_type_filter,
         active_page='post',

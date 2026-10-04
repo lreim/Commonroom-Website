@@ -738,3 +738,13 @@ class NotificationRead(db.Model):
     notification_key = db.Column(db.String(512), nullable=False)
     read_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     __table_args__ = (db.UniqueConstraint('user_id', 'notification_key', name='uq_notification_read_user_key'),)
+
+
+class WeeklyCheckInResponse(db.Model):
+    __tablename__ = 'weekly_checkin_responses'
+    id = db.Column(db.Integer, primary_key=True)
+    week_key = db.Column(db.String(16), nullable=False, index=True)
+    choice = db.Column(db.String(32), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    visitor_token = db.Column(db.String(64), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))

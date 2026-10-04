@@ -53,6 +53,7 @@
 
   <div class="analytics-view-tabs" role="tablist" aria-label="Analytics views">
     <button type="button" class="is-active" role="tab" aria-selected="true" aria-controls="analytics-overview" data-analytics-tab="overview">Overview</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-checkin" data-analytics-tab="checkin">Weekly check-ins</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-content" data-analytics-tab="content">Content &amp; profiles</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-traffic" data-analytics-tab="traffic">Visits &amp; time</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-journeys" data-analytics-tab="journeys">Journeys</button>
@@ -464,6 +465,17 @@
         </tbody>
       </table>
     </div>
+  </section>
+  <section id="analytics-checkin" class="analytics-view-panel" role="tabpanel" data-analytics-panel="checkin" hidden>
+    <div class="analytics-section-heading"><div><span>WEEKLY CHECK-IN</span><h2>How is the community arriving?</h2></div><p>Anonymous totals, split between logged-in profiles and visitors.</p></div>
+    {% if weekly_checkin_stats.latest %}
+    {% set latest = weekly_checkin_stats.latest %}
+    <div class="analytics-split-grid">
+      <article class="analytics-breakdown-card"><span class="analytics-card-kicker">{{ latest.week_key }}</span><h3>All responses</h3><div class="analytics-big-numbers"><div><strong>{{ latest.total }}</strong><span>Total</span></div><div><strong>{{ latest.logged_in }}</strong><span>Logged in</span></div><div><strong>{{ latest.visitors }}</strong><span>Visitors</span></div></div></article>
+      <article class="analytics-breakdown-card"><span class="analytics-card-kicker">LATEST WEEK</span><h3>Answers by mood</h3>{% for value, label in weekly_checkin_stats.choices %}<div class="analytics-ranking-row"><span>{{ label }}</span><div><i style="width: {{ (latest.counts[value] / latest.total * 100) if latest.total else 0 }}%;"></i></div><strong>{{ latest.counts[value] }}</strong></div>{% endfor %}</article>
+    </div>
+    <div class="analytics-ranking analytics-checkin-history">{% for week in weekly_checkin_stats.weeks %}<div class="analytics-ranking-row"><span>{{ week.week_key }} · {{ week.logged_in }} logged in / {{ week.visitors }} visitors</span><div><i style="width: {{ (week.total / latest.total * 100) if latest.total else 0 }}%;"></i></div><strong>{{ week.total }}</strong></div>{% endfor %}</div>
+    {% else %}<p class="analytics-card-note">There are no check-in responses yet.</p>{% endif %}
   </section>
 </main>
 {% endblock %}
