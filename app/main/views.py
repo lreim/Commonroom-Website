@@ -591,7 +591,14 @@ def _build_analytics_snapshot(selected_range, segment_key=None):
     }
     snapshot.update(_build_content_stats())
     snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats()
-    event_counts = Counter(event.event_type for event in ProfileNudgeEvent.query.all())
+    event_counts = Counter(
+        event.event_type
+        for event in ProfileNudgeEvent.query
+        .join(User, ProfileNudgeEvent.user_id == User.id)
+        .outerjoin(Role, User.role_id == Role.id)
+        .filter((Role.name.is_(None)) | (Role.name != 'Administrator'))
+        .all()
+    )
     snapshot['profile_nudge_stats'] = {
         'shown': event_counts.get('shown', 0),
         'clicked': event_counts.get('clicked', 0),
