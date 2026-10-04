@@ -683,9 +683,9 @@ def reminder_redirect():
 
 
 SUNDAY_CHECKIN_REDIRECTS = {
-    '1': 'weekly_checkin_Physik1',
-    '2': 'weekly_checkin_Physik2',
-    '3': 'weekly_checkin_Physik3',
+    '1': 'sunday_checkin_Physik1',
+    '2': 'sunday_checkin_Physik2',
+    '3': 'sunday_checkin_Physik3',
 }
 
 
