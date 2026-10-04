@@ -1212,6 +1212,10 @@ def post_thread(post_id):
         user_id=current_user.id,
         root_post_id=root_post.id,
     ).first()
+    sunday_poll_stats = {}
+    if root_post.is_starter and root_post.body.startswith('Sunday Check-in'):
+        for row in SundayCheckInResponse.query.filter_by(post_id=root_post.id).all():
+            sunday_poll_stats.setdefault(row.question, {})[row.choice] = sunday_poll_stats.setdefault(row.question, {}).get(row.choice, 0) + 1
 
     return render_template(
         'post_thread.html',
@@ -1224,6 +1228,7 @@ def post_thread(post_id):
         new_reply_ids=new_reply_ids,
         is_following=subscription is not None,
         failed_reply_to_id=failed_reply_to_id,
+        sunday_poll_stats={root_post.id: sunday_poll_stats},
         thread_status_labels={
             'looking_for_replies': 'Open / no status shown',
             'still_thinking': 'Still thinking about this',
