@@ -680,6 +680,26 @@ def reminder_redirect():
     session['reminder_campaign'] = 'launch_2026_10'
     session.modified = True
     return redirect(url_for('main.index'), code=302)
+
+
+SUNDAY_CHECKIN_REDIRECTS = {
+    '1': 'weekly_checkin_Physik1',
+    '2': 'weekly_checkin_Physik2',
+    '3': 'weekly_checkin_Physik3',
+}
+
+
+@main.route('/sunday_checkin/<code>')
+def sunday_checkin_redirect(code):
+    campaign_source = SUNDAY_CHECKIN_REDIRECTS.get(code.lower())
+    if campaign_source is None:
+        abort(404)
+    session['reminder_campaign_source'] = campaign_source
+    session['reminder_campaign'] = 'launch_2026_10'
+    session.modified = True
+    return redirect(url_for('main.index'), code=302)
+
+
 @main.route('/settings')
 @login_required
 def settings():
