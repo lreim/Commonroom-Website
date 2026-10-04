@@ -755,6 +755,14 @@ def settings():
     return render_template('settings.html', active_page='settings', user=user)
 
 
+@main.route('/profile-nudge/dismiss', methods=['POST'])
+@login_required
+def dismiss_profile_nudge():
+    session['profile_nudge_dismissed'] = True
+    session.modified = True
+    return redirect(request.form.get('next') or url_for('main.index'))
+
+
 @main.route('/about')
 def about():
     return render_template('about.html', active_page='about')

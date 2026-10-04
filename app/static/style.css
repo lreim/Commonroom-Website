@@ -10385,6 +10385,15 @@ html.dark-mode .post-card-date {
 .sunday-question-results i { height:6px; border-radius:8px; background:#f0ddd5; overflow:hidden; }
 .sunday-question-results b { display:block; height:100%; background:#c98f82; }
 .sunday-post-reply-hint { margin:10px 0 0; color:#8d665d; font-size:12px; font-style:italic; }
+.profile-completion-nudge { position:relative; display:flex; align-items:center; justify-content:space-between; gap:16px; max-width:900px; margin:14px auto 0; padding:12px 40px 12px 16px; border:1px solid #e2c5b9; border-radius:14px; background:#fff8f1; color:#765047; }
+.profile-completion-nudge div { display:grid; gap:3px; }
+.profile-completion-nudge strong { font-size:14px; }
+.profile-completion-nudge span { font-size:12px; }
+.profile-completion-nudge a { flex:0 0 auto; padding:7px 12px; border-radius:999px; background:#765047; color:#fff8f1; font-weight:700; }
+.profile-completion-nudge-actions { display:flex; align-items:center; gap:8px; }
+.profile-completion-nudge-actions form { margin:0; }
+.profile-completion-nudge-actions button { position:absolute; top:7px; right:9px; border:0; background:transparent; color:#8d665d; font-size:22px; line-height:1; cursor:pointer; }
+@media (max-width:767px) { .profile-completion-nudge { align-items:flex-start; flex-direction:column; } }
 .sunday-post-poll form { margin:0; }
 .sunday-post-poll button { padding:6px 10px; border:1px solid #e2c5b9; border-radius:999px; background:#fff8f1; color:#765047; font-size:12px; cursor:pointer; }
 .sunday-post-poll button:hover { background:#f3ddd3; }
