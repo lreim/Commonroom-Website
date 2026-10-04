@@ -168,7 +168,7 @@
                 {% endfor %}
             </div>
             {% endif %}
-            {% if post.is_starter and post.body.startswith('Sunday Check-in') %}<p class="sunday-post-reply-hint">Want to share more? Add a longer answer below as a reply.</p>{% endif %}
+            {% if post.is_starter and post.body.startswith('Sunday Check-in') %}<p class="sunday-post-reply-hint">You can change your answers anytime. Want to share more? Add a longer answer below as a reply.</p>{% endif %}
             <div class="post-meta-actions">
                 {% if current_user.is_authenticated %}
                 <button

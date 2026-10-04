@@ -634,7 +634,19 @@ def _weekly_checkin_context():
         token = session['checkin_visitor_token']
     answered = WeeklyCheckInResponse.query.filter_by(week_key=week_key, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token).first() is not None
     total = sum(counts.values())
-    return {'week_key': week_key, 'choices': CHECKIN_CHOICES, 'counts': counts, 'total': total, 'answered': answered}
+    sunday_post = Post.query.filter(
+        Post.is_starter.is_(True),
+        Post.parent_id.is_(None),
+        Post.body.startswith('Sunday Check-in'),
+    ).order_by(Post.timestamp.desc(), Post.id.desc()).first()
+    return {
+        'week_key': week_key,
+        'choices': CHECKIN_CHOICES,
+        'counts': counts,
+        'total': total,
+        'answered': answered,
+        'post_url': url_for('main.post_thread', post_id=sunday_post.id) if sunday_post else None,
+    }
 
 
 def _build_weekly_checkin_admin_stats():

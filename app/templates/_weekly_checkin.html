@@ -4,5 +4,5 @@
     {% for value, label in checkin.choices %}<form method="post" action="{{ url_for('main.weekly_checkin') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="choice" value="{{ value }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit"{% if checkin.answered %} disabled{% endif %}>{{ label }}</button></form>{% endfor %}
   </div>
   {% if checkin.total %}<div class="weekly-checkin-results">{% for value, label in checkin.choices %}<div><span>{{ label }}</span><i><b style="width: {{ (checkin.counts[value] / checkin.total * 100) if checkin.total else 0 }}%;"></b></i><small>{{ checkin.counts[value] }}</small></div>{% endfor %}</div>{% endif %}
-  <a href="{{ url_for('main.post') }}">Want to say more? Join the conversation &rarr;</a>
+  <a href="{{ checkin.post_url or url_for('main.post') }}">Want to say more? Join the conversation &rarr;</a>
 </section>
