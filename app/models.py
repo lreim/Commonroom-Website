@@ -760,3 +760,11 @@ class SundayCheckInResponse(db.Model):
     visitor_token = db.Column(db.String(64), nullable=True, index=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     __table_args__ = (db.UniqueConstraint('post_id', 'question', 'user_id', name='uq_sunday_checkin_post_question_user'),)
+
+
+class ProfileNudgeEvent(db.Model):
+    __tablename__ = 'profile_nudge_events'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    event_type = db.Column(db.String(24), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)

@@ -658,8 +658,9 @@ document.addEventListener("DOMContentLoaded", function () {
   {% if current_user.is_authenticated and not session.get('profile_nudge_dismissed') and ((not admin_demo_mode and (not current_user.about_me or not current_user.tags or not current_user.profile_label_values)) or (admin_demo_mode and current_user.is_administrator())) %}
   <aside class="profile-completion-nudge" aria-label="Complete your profile">
     <div><strong>Make your profile feel a little more like you.</strong><span>Add a short description, a few tags, or a profile label so people know how to start a conversation.</span></div>
-    <div class="profile-completion-nudge-actions"><a href="{{ url_for('main.edit_profile') }}">Complete profile</a><form method="post" action="{{ url_for('main.dismiss_profile_nudge') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit" aria-label="Dismiss profile reminder">&times;</button></form></div>
+    <div class="profile-completion-nudge-actions"><a href="{{ url_for('main.edit_profile') }}" data-profile-nudge-click>Complete profile</a><form method="post" action="{{ url_for('main.dismiss_profile_nudge') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit" aria-label="Dismiss profile reminder">&times;</button></form></div>
   </aside>
+  <script>fetch("{{ url_for('main.profile_nudge_event') }}", {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'event_type=shown&csrf_token={{ csrf_token() }}'}); document.querySelector('[data-profile-nudge-click]')?.addEventListener('click', function(){ navigator.sendBeacon("{{ url_for('main.profile_nudge_event') }}", 'event_type=clicked&csrf_token={{ csrf_token() }}'); });</script>
   {% endif %}
   
   {% block page_content %}{% endblock %}

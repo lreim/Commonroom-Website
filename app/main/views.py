@@ -25,6 +25,7 @@ from ..models import (
     PostThreadVisit,
     WeeklyCheckInResponse,
     SundayCheckInResponse,
+    ProfileNudgeEvent,
     post_likes,
 )
 from ..tag_matching import match_tags, get_model
@@ -758,9 +759,22 @@ def settings():
 @main.route('/profile-nudge/dismiss', methods=['POST'])
 @login_required
 def dismiss_profile_nudge():
+    db.session.add(ProfileNudgeEvent(user_id=current_user.id, event_type='dismissed'))
+    db.session.commit()
     session['profile_nudge_dismissed'] = True
     session.modified = True
     return redirect(request.form.get('next') or url_for('main.index'))
+
+
+@main.route('/profile-nudge/event', methods=['POST'])
+@login_required
+def profile_nudge_event():
+    event_type = request.form.get('event_type')
+    if event_type not in {'shown', 'clicked'}:
+        abort(400)
+    db.session.add(ProfileNudgeEvent(user_id=current_user.id, event_type=event_type))
+    db.session.commit()
+    return ('', 204)
 
 
 @main.route('/about')
@@ -1526,6 +1540,8 @@ def edit_profile():
             )
             return render_template('edit_profile.html', form=form, all_tags=all_tags, is_admin_edit=False)
         db.session.add(current_user)
+        db.session.commit()
+        db.session.add(ProfileNudgeEvent(user_id=current_user.id, event_type='completed'))
         db.session.commit()
         flash('Your profile has been updated.')
         return redirect(url_for('main.settings', username=current_user.username))
