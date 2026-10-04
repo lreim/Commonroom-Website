@@ -675,6 +675,13 @@ SUNDAY_CHECKIN_QUESTIONS = {
 
 @main.route('/sunday-checkin/<int:post_id>/vote', methods=['POST'])
 def sunday_checkin_vote(post_id):
+    if not current_user.is_authenticated:
+        next_url = request.form.get('next') or url_for('main.post')
+        return redirect(url_for(
+            'auth.login',
+            next=next_url,
+            intent='reply',
+        ))
     question = request.form.get('question')
     choice = request.form.get('choice')
     if question not in SUNDAY_CHECKIN_QUESTIONS or choice not in dict(SUNDAY_CHECKIN_QUESTIONS[question][1]):
