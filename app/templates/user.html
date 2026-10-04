@@ -93,6 +93,7 @@
     <button type="submit" class="btn btn-primary">Show my personal profile</button>
   </form>
   <a class="btn btn-default" href="{{ url_for('main.starter_posts_admin') }}">Write a starter post</a>
+  <a class="btn btn-default" href="{{ url_for('main.sunday_checkins_admin') }}">Write Sunday Check-in</a>
   {% elif current_user.is_authenticated and user == current_user %}
   <a class="btn btn-primary" href="{{ url_for('.edit_profile') }}">Edit profile</a>
   <a class="btn btn-default" href="{{ url_for('main.user', username=user.username, recommend=1) }}">Show suitable profiles</a>

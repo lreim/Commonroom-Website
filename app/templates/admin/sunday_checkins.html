@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}CommonRoom - Sunday Check-ins{% endblock %}
+{% block page_content %}
+<main class="starter-post-admin">
+  <header class="starter-post-admin-header">
+    <div class="starter-post-admin-kicker">ADMIN ONLY</div>
+    <h1>Sunday Check-in posts</h1>
+    <p>Prepare and publish an open weekly check-in as a CommonRoom starter post.</p>
+  </header>
+  <section class="starter-post-editor" aria-labelledby="sunday-checkin-editor-title">
+    <h2 id="sunday-checkin-editor-title">Write this Sunday’s check-in</h2>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="form-group">{{ form.body.label(class="control-label") }}{{ form.body(class="form-control", rows="9") }}</div>
+      <input type="hidden" name="post_type" value="question">
+      <div class="starter-post-editor-actions">{{ form.submit(class="btn btn-primary", value="Publish Sunday Check-in") }}<a class="btn btn-default" href="{{ url_for('main.starter_posts_admin') }}">Starter posts</a></div>
+    </form>
+  </section>
+  <section class="starter-post-list" aria-labelledby="published-sunday-checkins-title">
+    <h2 id="published-sunday-checkins-title">Published Sunday Check-ins</h2>
+    {% for post in checkins %}<article class="starter-post-admin-card"><div class="starter-post-admin-card-meta"><span>Question</span><span>{{ moment(post.timestamp).fromNow() }}</span></div><p>{{ post.body }}</p></article>{% else %}<p class="starter-post-empty">No Sunday Check-ins have been published yet.</p>{% endfor %}
+  </section>
+</main>
+{% endblock %}

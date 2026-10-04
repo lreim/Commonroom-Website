@@ -81,7 +81,7 @@ def unread_reply_threads_for_user(user):
         roots_by_id[root.id] = root
         participated_at = _utc_aware(post.timestamp)
         previous = participation_started_at.get(root.id)
-        if participated_at is not None and (previous is None or participated_at < previous):
+        if participated_at is not None and (previous is None or participated_at > previous):
             participation_started_at[root.id] = participated_at
     subscriptions = PostThreadSubscription.query.filter_by(user_id=user.id).all()
     for subscription in subscriptions:
@@ -91,7 +91,7 @@ def unread_reply_threads_for_user(user):
         roots_by_id[root.id] = root
         subscribed_at = _utc_aware(subscription.created_at)
         previous = participation_started_at.get(root.id)
-        if subscribed_at is not None and (previous is None or subscribed_at < previous):
+        if subscribed_at is not None and (previous is None or subscribed_at > previous):
             participation_started_at[root.id] = subscribed_at
     if not roots_by_id:
         return {}

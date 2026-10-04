@@ -106,14 +106,14 @@
       </div>
         <div class="post-content">
         <div class="post-category-status-row">
-          {% if post.is_starter %}<a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>{% endif %}
+          {% if post.is_starter %}<a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">{% if post.body.startswith('Sunday Check-in') %}Sunday Check-in{% else %}Starter post{% endif %}</a>{% endif %}
           <span class="post-category-label">{{ post.post_type|capitalize }}</span>
-          {% if current_user.is_authenticated and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
+          {% if current_user.is_authenticated and not (post.is_starter and post.body.startswith('Sunday Check-in')) and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
           <div class="post-feed-status-controls" aria-label="Thread status">
             <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="thread_status" value="still_thinking"><input type="hidden" name="next" value="{{ request.path }}"><button class="post-feed-status-option{% if post.thread_status != 'answered' %} is-active{% endif %}" type="submit">Still thinking</button></form>
             <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="thread_status" value="answered"><input type="hidden" name="next" value="{{ request.path }}"><button class="post-feed-status-option{% if post.thread_status == 'answered' %} is-active{% endif %}" type="submit">Answered</button></form>
           </div>
-          {% elif post.thread_status != 'answered' %}<span class="post-thread-status">Still thinking about this</span>{% else %}<span class="post-thread-status">Answered</span>{% endif %}
+          {% elif not (post.is_starter and post.body.startswith('Sunday Check-in')) and post.thread_status != 'answered' %}<span class="post-thread-status">Still thinking about this</span>{% elif not (post.is_starter and post.body.startswith('Sunday Check-in')) %}<span class="post-thread-status">Answered</span>{% endif %}
         </div>
         <div class="post-author">
           {% if post.is_starter %}
@@ -133,7 +133,7 @@
           >{{ post.author.username }}</a>
           {% endif %}
         </div>
-        <div class="post-body">{{ post.body }}</div>
+        <div class="post-body">{% if post.is_starter and post.body.startswith('Sunday Check-in') %}Sunday Check-in 🌿<br><br>Choose one question or answer more than one. Short answers are very welcome.{% else %}{{ post.body }}{% endif %}</div>
         <div class="post-meta-actions">
           {% if current_user.is_authenticated %}
           <button type="button" class="post-like-button{% if post.is_liked_by(current_user) %} is-liked{% endif %}" data-like-url="{{ url_for('main.toggle_post_like', post_id=post.id) }}" aria-pressed="{{ 'true' if post.is_liked_by(current_user) else 'false' }}">

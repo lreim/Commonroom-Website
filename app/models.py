@@ -748,3 +748,15 @@ class WeeklyCheckInResponse(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
     visitor_token = db.Column(db.String(64), nullable=True, index=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+
+class SundayCheckInResponse(db.Model):
+    __tablename__ = 'sunday_checkin_responses'
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False, index=True)
+    question = db.Column(db.String(32), nullable=False)
+    choice = db.Column(db.String(32), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    visitor_token = db.Column(db.String(64), nullable=True, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    __table_args__ = (db.UniqueConstraint('post_id', 'question', 'user_id', name='uq_sunday_checkin_post_question_user'),)

@@ -10376,6 +10376,19 @@ html.dark-mode .post-card-date {
 .weekly-checkin-results i { height:8px; border-radius:9px; background:#f0ddd5; overflow:hidden; }
 .weekly-checkin-results b { display:block; height:100%; background:#c98f82; }
 .weekly-checkin > a { display:inline-block; margin-top:12px; color:#8d5960; font-weight:700; }
+.sunday-post-poll { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0 8px; }
+.sunday-question-block { padding:12px; border:1px solid #e2c5b9; border-radius:14px; background:#fff8f1; }
+.sunday-question-block strong { display:block; margin-bottom:8px; color:#765047; font-size:13px; }
+.sunday-question-block > div { display:flex; flex-wrap:wrap; gap:5px; }
+.sunday-question-results { display:grid !important; gap:4px !important; margin-top:10px; }
+.sunday-question-results > div { display:grid; grid-template-columns:105px 1fr 16px; gap:5px; align-items:center; font-size:10px; }
+.sunday-question-results i { height:6px; border-radius:8px; background:#f0ddd5; overflow:hidden; }
+.sunday-question-results b { display:block; height:100%; background:#c98f82; }
+.sunday-post-reply-hint { margin:10px 0 0; color:#8d665d; font-size:12px; font-style:italic; }
+.sunday-post-poll form { margin:0; }
+.sunday-post-poll button { padding:6px 10px; border:1px solid #e2c5b9; border-radius:999px; background:#fff8f1; color:#765047; font-size:12px; cursor:pointer; }
+.sunday-post-poll button:hover { background:#f3ddd3; }
+@media (max-width:767px) { .sunday-post-poll { grid-template-columns:1fr; } }
 @media (max-width:767px) { .weekly-checkin { padding:18px; } .weekly-checkin-heading { gap:10px; } .weekly-checkin-heading img { width:44px; height:44px; flex-basis:44px; } .weekly-checkin h2 { font-size:20px; } }
 
 /* Compact category labels in the feed and on the homepage. */

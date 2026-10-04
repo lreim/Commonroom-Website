@@ -24,6 +24,7 @@ from ..models import (
     PostThreadSubscription,
     PostThreadVisit,
     WeeklyCheckInResponse,
+    SundayCheckInResponse,
     post_likes,
 )
 from ..tag_matching import match_tags, get_model
@@ -620,6 +621,7 @@ def index():
 
 CHECKIN_CHOICES = [('calm', 'Calm'), ('overwhelmed', 'A bit overwhelmed'), ('motivated', 'Motivated'), ('lonely', 'Lonely'), ('unsure', 'Not sure yet')]
 
+
 def _weekly_checkin_context():
     week_key = datetime.now(timezone.utc).strftime('%G-W%V')
     rows = WeeklyCheckInResponse.query.filter_by(week_key=week_key).all()
@@ -661,6 +663,33 @@ def weekly_checkin():
     else: db.session.add(WeeklyCheckInResponse(**query, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token))
     db.session.commit()
     return redirect(request.form.get('next') or url_for('main.index'))
+
+
+SUNDAY_CHECKIN_QUESTIONS = {
+    'moment': ('What was a small moment that stayed with you this week?', [('win', 'A win'), ('connection', 'A nice interaction'), ('surprise', 'Something unexpected'), ('none', 'Nothing specific')]),
+    'proud': ('What are you proud of, even if it feels small?', [('study', 'Studying or work'), ('care', 'Taking care of myself'), ('reach', 'Reaching out'), ('through', 'Getting through a hard day')]),
+    'easier': ('What would make next week easier?', [('rest', 'More rest'), ('structure', 'More structure'), ('support', 'More support'), ('time', 'More time for myself')]),
+    'carry': ('What do you want to carry into the new week?', [('lesson', 'A lesson'), ('feeling', 'A good feeling'), ('decision', 'A decision'), ('intention', 'A new intention')]),
+}
+
+
+@main.route('/sunday-checkin/<int:post_id>/vote', methods=['POST'])
+def sunday_checkin_vote(post_id):
+    question = request.form.get('question')
+    choice = request.form.get('choice')
+    if question not in SUNDAY_CHECKIN_QUESTIONS or choice not in dict(SUNDAY_CHECKIN_QUESTIONS[question][1]):
+        abort(400)
+    token = session.setdefault('checkin_visitor_token', uuid4().hex)
+    if current_user.is_authenticated:
+        existing = SundayCheckInResponse.query.filter_by(post_id=post_id, question=question, user_id=current_user.id).first()
+    else:
+        existing = SundayCheckInResponse.query.filter_by(post_id=post_id, question=question, visitor_token=token).first()
+    if existing:
+        existing.choice = choice
+    else:
+        db.session.add(SundayCheckInResponse(post_id=post_id, question=question, choice=choice, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token))
+    db.session.commit()
+    return redirect(request.form.get('next') or url_for('main.post'))
 
 
 REMINDER_REDIRECTS = {
@@ -1003,12 +1032,22 @@ def post():
                 frontier.extend(reply.replies.all())
         session['posts_last_seen_at'] = datetime.now(timezone.utc).isoformat()
         session.modified = True
+    sunday_poll_stats = {}
+    sunday_posts = [item for item in posts if item.is_starter and item.body.startswith('Sunday Check-in')]
+    if sunday_posts:
+        for item in sunday_posts:
+            rows = SundayCheckInResponse.query.filter_by(post_id=item.id).all()
+            sunday_poll_stats[item.id] = {}
+            for row in rows:
+                sunday_poll_stats[item.id][row.question] = sunday_poll_stats[item.id].get(row.question, {})
+                sunday_poll_stats[item.id][row.question][row.choice] = sunday_poll_stats[item.id][row.question].get(row.choice, 0) + 1
     return render_template(
         'post.html',
         form=form,
         reply_form=reply_form,
         posts=posts,
         new_post_ids=new_post_ids,
+        sunday_poll_stats=sunday_poll_stats,
         pagination=pagination,
         all_tags=all_tags,
         selected_topics=', '.join(selected_topics),
@@ -1662,6 +1701,26 @@ def starter_posts_admin():
     )
 
 
+@main.route('/admin/sunday-checkins', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def sunday_checkins_admin():
+    form = StarterPostForm()
+    if request.method == 'GET':
+        form.body.data = ('Sunday Check-in 🌿\n\nChoose one question or answer more than one:\n\n'
+                          '– What was a small moment that stayed with you this week?\n'
+                          '– What is something you are proud of, even if it feels small?\n'
+                          '– What would make next week a little easier?\n'
+                          '– What do you want to carry into the new week?\n\n'
+                          'Short answers are very welcome, and you can write as openly as you like.')
+        form.post_type.data = 'question'
+    if form.validate_on_submit():
+        db.session.add(Post(body=form.body.data, author_id=None, post_type='question', is_starter=True))
+        db.session.commit()
+        flash('Sunday Check-in published as CommonRoom platform content.')
+        return redirect(url_for('main.sunday_checkins_admin'))
+    checkins = Post.query.filter(Post.is_starter.is_(True), Post.body.ilike('%Sunday Check-in%')).order_by(Post.timestamp.desc()).all()
+    return render_template('admin/sunday_checkins.html', form=form, checkins=checkins, active_page=None)
 @main.route('/admin/starter-posts/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required

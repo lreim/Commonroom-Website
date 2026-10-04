@@ -116,10 +116,10 @@
         <div class="post-content">
             <div class="post-category-status-row">
             {% if post.is_starter %}
-            <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">Starter post</a>
+            <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">{% if post.body.startswith('Sunday Check-in') %}Sunday Check-in{% else %}Starter post{% endif %}</a>
             {% endif %}
             <span class="post-category-label">{{ post.post_type|capitalize }}</span>
-            {% if current_user.is_authenticated and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
+            {% if current_user.is_authenticated and not (post.is_starter and post.body.startswith('Sunday Check-in')) and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
             <div class="post-feed-status-controls" aria-label="Thread status">
                 <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -134,9 +134,9 @@
                     <button class="post-feed-status-option{% if post.thread_status == 'answered' %} is-active{% endif %}" type="submit">Answered</button>
                 </form>
             </div>
-            {% elif post.thread_status != 'answered' %}
+            {% elif not (post.is_starter and post.body.startswith('Sunday Check-in')) and post.thread_status != 'answered' %}
             <span class="post-thread-status">Still thinking about this</span>
-            {% elif post.thread_status == 'answered' %}
+            {% elif not (post.is_starter and post.body.startswith('Sunday Check-in')) and post.thread_status == 'answered' %}
             <span class="post-thread-status">Answered</span>
             {% endif %}
             </div>
@@ -160,7 +160,15 @@
                 </a>
             {% endif %}
             </div>
-            <div class="post-body">{{ post.body }}</div>
+            <div class="post-body">{% if post.is_starter and post.body.startswith('Sunday Check-in') %}Sunday Check-in 🌿{% else %}{{ post.body }}{% endif %}</div>
+            {% if post.is_starter and post.body.startswith('Sunday Check-in') %}
+            <div class="sunday-post-poll" aria-label="Sunday Check-in response options">
+                {% for question, prompt, choices in [('moment', 'What was a small moment that stayed with you this week?', [('win','A win'),('connection','A nice interaction'),('surprise','Something unexpected'),('none','Nothing specific')]), ('proud', 'What are you proud of, even if it feels small?', [('study','Studying or work'),('care','Taking care of myself'),('reach','Reaching out'),('through','Getting through a hard day')]), ('easier', 'What would make next week easier?', [('rest','More rest'),('structure','More structure'),('support','More support'),('time','More time for myself')]), ('carry', 'What do you want to carry into the new week?', [('lesson','A lesson'),('feeling','A good feeling'),('decision','A decision'),('intention','A new intention')])] %}
+                <div class="sunday-question-block"><strong>{{ prompt }}</strong><div>{% for value, label in choices %}<form method="post" action="{{ url_for('main.sunday_checkin_vote', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="question" value="{{ question }}"><input type="hidden" name="choice" value="{{ value }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit">{{ label }}</button></form>{% endfor %}</div>{% set poll_stats = sunday_poll_stats|default({}) %}{% set question_stats = poll_stats.get(post.id, {}).get(question, {}) %}{% set ns = namespace(total=0) %}{% for value, label in choices %}{% set ns.total = ns.total + question_stats.get(value, 0) %}{% endfor %}{% if ns.total %}<div class="sunday-question-results">{% for value, label in choices %}<div><span>{{ label }}</span><i><b style="width: {{ (question_stats.get(value, 0) / ns.total * 100) if ns.total else 0 }}%;"></b></i><small>{{ question_stats.get(value, 0) }}</small></div>{% endfor %}</div>{% endif %}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if post.is_starter and post.body.startswith('Sunday Check-in') %}<p class="sunday-post-reply-hint">Want to share more? Add a longer answer below as a reply.</p>{% endif %}
             <div class="post-meta-actions">
                 {% if current_user.is_authenticated %}
                 <button
