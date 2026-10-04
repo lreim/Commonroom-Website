@@ -39,6 +39,16 @@
     {{ metric("Replies", total_replies, reply_rate ~ "% of posts received a reply") }}
     {{ metric("Private chats", total_conversations, "active conversations") }}
   </section>
+  <section class="analytics-breakdown-card" aria-labelledby="profile-nudge-statistics-title">
+    <span class="analytics-card-kicker">PROFILE COMPLETION</span>
+    <h3 id="profile-nudge-statistics-title">Profile reminder funnel</h3>
+    <div class="analytics-big-numbers">
+      <div><strong>{{ profile_nudge_stats.shown }}</strong><span>Banner shown</span></div>
+      <div><strong>{{ profile_nudge_stats.clicked }}</strong><span>Opened editor</span></div>
+      <div><strong>{{ profile_nudge_stats.completed }}</strong><span>Completed</span></div>
+      <div><strong>{{ profile_nudge_stats.dismissed }}</strong><span>Dismissed</span></div>
+    </div>
+  </section>
 
   <nav class="analytics-export-bar" aria-label="Export analytics data">
     <span>Export aggregated CSV:</span>

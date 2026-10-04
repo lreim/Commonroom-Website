@@ -591,6 +591,13 @@ def _build_analytics_snapshot(selected_range, segment_key=None):
     }
     snapshot.update(_build_content_stats())
     snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats()
+    event_counts = Counter(event.event_type for event in ProfileNudgeEvent.query.all())
+    snapshot['profile_nudge_stats'] = {
+        'shown': event_counts.get('shown', 0),
+        'clicked': event_counts.get('clicked', 0),
+        'dismissed': event_counts.get('dismissed', 0),
+        'completed': event_counts.get('completed', 0),
+    }
     return snapshot
 
 #routes (view functions sind die index() etc.) for every page I have: @login_required before route to make it safe
