@@ -779,7 +779,12 @@ def profile_nudge_event():
     event_type = request.form.get('event_type')
     if event_type not in {'shown', 'clicked'}:
         abort(400)
+    if event_type == 'shown' and session.get('profile_nudge_shown'):
+        return ('', 204)
     db.session.add(ProfileNudgeEvent(user_id=current_user.id, event_type=event_type))
+    if event_type == 'shown':
+        session['profile_nudge_shown'] = True
+        session.modified = True
     db.session.commit()
     return ('', 204)
 

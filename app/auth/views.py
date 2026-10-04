@@ -31,6 +31,7 @@ OAUTH_ERROR_CODE_MAX_LENGTH = 64
 def _login_with_demo_mode(user, remember=False):
     login_user(user, remember)
     session.pop('profile_nudge_dismissed', None)
+    session.pop('profile_nudge_shown', None)
     _claim_anonymous_checkins(user)
     session.permanent = True
     activate_admin_demo_mode(user)
