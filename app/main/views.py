@@ -645,7 +645,7 @@ def _weekly_checkin_context():
         'counts': counts,
         'total': total,
         'answered': answered,
-        'post_url': url_for('main.post_thread', post_id=sunday_post.id) if sunday_post else None,
+        'post_url': (url_for('main.post') + f'#post-{sunday_post.id}') if sunday_post else None,
     }
 
 

@@ -47,7 +47,7 @@
             </span>
             {% endif %}
             {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
-            {% if not is_reply %}
+            {% if not is_reply and not (node.is_starter and node.body.startswith('Sunday Check-in')) %}
             <span class="post-thread-status">{{ thread_status_labels.get(node.thread_status, 'Still thinking about this') }}</span>
             {% endif %}
             {% if is_reply and node.reply_type %}
@@ -66,7 +66,14 @@
             <span>“{{ node.parent.body|truncate(90, True) }}”</span>
         </a>
         {% endif %}
-        <div class="post-body">{% if node.is_starter and node.body.startswith('Sunday Check-in') %}Sunday Check-in 🌿<br><br>Choose one question or answer more than one. Short answers are very welcome.{% else %}{{ node.body }}{% endif %}</div>
+        <div class="post-body">{% if node.is_starter and node.body.startswith('Sunday Check-in') %}Sunday Check-in 🌿{% else %}{{ node.body }}{% endif %}</div>
+        {% if node.is_starter and node.body.startswith('Sunday Check-in') %}
+        <div class="sunday-post-poll" aria-label="Sunday Check-in response options">
+          {% for question, prompt, choices in [('moment', 'What was a small moment that stayed with you this week?', [('win','A win'),('connection','A nice interaction'),('surprise','Something unexpected'),('none','Nothing specific')]), ('proud', 'What are you proud of, even if it feels small?', [('study','Studying or work'),('care','Taking care of myself'),('reach','Reaching out'),('through','Getting through a hard day')]), ('easier', 'What would make next week easier?', [('rest','More rest'),('structure','More structure'),('support','More support'),('time','More time for myself')]), ('carry', 'What do you want to carry into the new week?', [('lesson','A lesson'),('feeling','A good feeling'),('decision','A decision'),('intention','A new intention')])] %}
+          <div class="sunday-question-block"><strong>{{ prompt }}</strong><div>{% for value, label in choices %}<form method="post" action="{{ url_for('main.sunday_checkin_vote', post_id=node.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="question" value="{{ question }}"><input type="hidden" name="choice" value="{{ value }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit">{{ label }}</button></form>{% endfor %}</div></div>
+          {% endfor %}
+        </div><p class="sunday-post-reply-hint">Want to share more? Add a longer answer below as a reply.</p>
+        {% endif %}
         <div class="post-meta-actions">
             <button
                 type="button"
@@ -144,7 +151,7 @@
     </div>
 </div>
 
-{% if post.author_id == current_user.id or (post.is_starter and current_user.is_administrator()) %}
+{% if not (post.is_starter and post.body.startswith('Sunday Check-in')) and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
 <form class="post-thread-status-form" method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="thread-status">Thread status</label>
