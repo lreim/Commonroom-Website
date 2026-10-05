@@ -644,9 +644,18 @@ def _weekly_checkin_week_key(now=None):
     return f'sunday-{sunday.isoformat()}'
 
 
+def _weekly_checkin_week_keys(now=None):
+    """Include the legacy ISO key so responses recorded before the Sunday reset remain visible."""
+    now = now or datetime.now(timezone.utc)
+    sunday_key = _weekly_checkin_week_key(now)
+    legacy_key = now.strftime('%G-W%V')
+    return (sunday_key, legacy_key) if sunday_key != legacy_key else (sunday_key,)
+
+
 def _weekly_checkin_context():
     week_key = _weekly_checkin_week_key()
-    rows = WeeklyCheckInResponse.query.filter_by(week_key=week_key).all()
+    week_keys = _weekly_checkin_week_keys()
+    rows = WeeklyCheckInResponse.query.filter(WeeklyCheckInResponse.week_key.in_(week_keys)).all()
     counts = {key: 0 for key, _ in CHECKIN_CHOICES}
     for row in rows:
         if row.choice in counts: counts[row.choice] += 1
@@ -654,7 +663,11 @@ def _weekly_checkin_context():
     if not token:
         session['checkin_visitor_token'] = uuid4().hex
         token = session['checkin_visitor_token']
-    answered = WeeklyCheckInResponse.query.filter_by(week_key=week_key, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token).first() is not None
+    answered = WeeklyCheckInResponse.query.filter(
+        WeeklyCheckInResponse.week_key.in_(week_keys),
+        WeeklyCheckInResponse.user_id == (current_user.id if current_user.is_authenticated else None),
+        WeeklyCheckInResponse.visitor_token == (None if current_user.is_authenticated else token),
+    ).first() is not None
     total = sum(counts.values())
     sunday_post = Post.query.filter(
         Post.is_starter.is_(True),
@@ -687,12 +700,19 @@ def weekly_checkin():
     choice = request.form.get('choice')
     if choice not in dict(CHECKIN_CHOICES): abort(400)
     week_key = _weekly_checkin_week_key()
+    week_keys = _weekly_checkin_week_keys()
     token = session.setdefault('checkin_visitor_token', uuid4().hex)
     query = {'week_key': week_key, 'choice': choice}
     if current_user.is_authenticated:
-        existing = WeeklyCheckInResponse.query.filter_by(week_key=week_key, user_id=current_user.id).first()
+        existing = WeeklyCheckInResponse.query.filter(
+            WeeklyCheckInResponse.week_key.in_(week_keys),
+            WeeklyCheckInResponse.user_id == current_user.id,
+        ).first()
     else:
-        existing = WeeklyCheckInResponse.query.filter_by(week_key=week_key, visitor_token=token).first()
+        existing = WeeklyCheckInResponse.query.filter(
+            WeeklyCheckInResponse.week_key.in_(week_keys),
+            WeeklyCheckInResponse.visitor_token == token,
+        ).first()
     if existing: existing.choice = choice
     else: db.session.add(WeeklyCheckInResponse(**query, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token))
     db.session.commit()
