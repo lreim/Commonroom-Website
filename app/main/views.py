@@ -637,8 +637,15 @@ def index():
 CHECKIN_CHOICES = [('calm', 'Calm'), ('overwhelmed', 'A bit overwhelmed'), ('motivated', 'Motivated'), ('lonely', 'Lonely'), ('unsure', 'Not sure yet')]
 
 
+def _weekly_checkin_week_key(now=None):
+    """Return the Sunday-starting week used by the public check-in poll."""
+    now = now or datetime.now(timezone.utc)
+    sunday = now.date() - timedelta(days=(now.weekday() + 1) % 7)
+    return f'sunday-{sunday.isoformat()}'
+
+
 def _weekly_checkin_context():
-    week_key = datetime.now(timezone.utc).strftime('%G-W%V')
+    week_key = _weekly_checkin_week_key()
     rows = WeeklyCheckInResponse.query.filter_by(week_key=week_key).all()
     counts = {key: 0 for key, _ in CHECKIN_CHOICES}
     for row in rows:
@@ -679,7 +686,7 @@ def _build_weekly_checkin_admin_stats():
 def weekly_checkin():
     choice = request.form.get('choice')
     if choice not in dict(CHECKIN_CHOICES): abort(400)
-    week_key = datetime.now(timezone.utc).strftime('%G-W%V')
+    week_key = _weekly_checkin_week_key()
     token = session.setdefault('checkin_visitor_token', uuid4().hex)
     query = {'week_key': week_key, 'choice': choice}
     if current_user.is_authenticated:
