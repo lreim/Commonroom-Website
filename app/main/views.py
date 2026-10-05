@@ -647,9 +647,11 @@ def _weekly_checkin_week_key(now=None):
 def _weekly_checkin_week_keys(now=None):
     """Include the legacy ISO key so responses recorded before the Sunday reset remain visible."""
     now = now or datetime.now(timezone.utc)
+    sunday_date = now.date() - timedelta(days=(now.weekday() + 1) % 7)
+    sunday_datetime = datetime.combine(sunday_date, datetime.min.time(), tzinfo=timezone.utc)
     sunday_key = _weekly_checkin_week_key(now)
-    legacy_key = now.strftime('%G-W%V')
-    return (sunday_key, legacy_key) if sunday_key != legacy_key else (sunday_key,)
+    legacy_keys = {now.strftime('%G-W%V'), sunday_datetime.strftime('%G-W%V')}
+    return tuple(dict.fromkeys((sunday_key, *legacy_keys)))
 
 
 def _weekly_checkin_context():
