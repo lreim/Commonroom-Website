@@ -1097,7 +1097,10 @@ def post():
     posts = pagination.items
     new_post_ids = set()
     if current_user.is_authenticated:
-        last_posts_visit = session.get('posts_last_seen_at')
+        # This timestamp is intentionally updated only on the posts overview.
+        # Visiting a thread from a notification must not clear the overview's
+        # new-post markers.
+        last_posts_visit = session.get('posts_index_last_seen_at')
         try:
             last_posts_visit = datetime.fromisoformat(last_posts_visit) if last_posts_visit else None
         except (TypeError, ValueError):
@@ -1119,7 +1122,7 @@ def post():
                 if last_posts_visit is not None and reply_at > last_posts_visit and reply.author_id != current_user.id:
                     new_post_ids.add(root_post.id)
                 frontier.extend(reply.replies.all())
-        session['posts_last_seen_at'] = datetime.now(timezone.utc).isoformat()
+        session['posts_index_last_seen_at'] = datetime.now(timezone.utc).isoformat()
         session.modified = True
     sunday_poll_stats = {}
     sunday_posts = [item for item in posts if item.is_starter and item.body.startswith('Sunday Check-in')]
