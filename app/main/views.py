@@ -1242,11 +1242,13 @@ def post_thread(post_id):
                     parent_post = root_post
             reply = Post(
                 body=form.body.data,
-                author_id=current_user.id,
+                # Admin demo mode publishes with the public CommonRoom Admin
+                # identity; the personal account remains private.
+                author_id=None if is_admin_demo_mode() else current_user.id,
                 parent=parent_post,
                 post_type=parent_post.post_type,
                 reply_type=form.reply_type.data,
-                is_starter=False,
+                is_starter=is_admin_demo_mode(),
             )
             db.session.add(reply)
             db.session.commit()

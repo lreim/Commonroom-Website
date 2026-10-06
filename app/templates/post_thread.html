@@ -21,13 +21,17 @@
         {% if node.edited_at %}<span class="post-edited-label">edited</span>{% endif %}
     </div>
     <div class="profile-thumbnail">
-        {% if node.is_starter %}
+        {% if node.is_starter and not node.parent_id %}
         <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
             <img
                 class="img-rounded profile-thumbnail starter-post-logo"
                 src="{{ url_for('static', filename='Logo_Website_small.jpg') }}"
                 alt="CommonRoom"
             >
+        </a>
+        {% elif node.is_starter %}
+        <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
+            <img class="img-rounded profile-thumbnail starter-post-logo" src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom Admin">
         </a>
         {% else %}
         <a href="{{ url_for('.user', username=node.author.username) }}">
@@ -37,8 +41,10 @@
     </div>
     <div class="post-content">
         <div class="post-thread-meta-row">
-            {% if node.is_starter %}
+            {% if node.is_starter and not node.parent_id %}
             <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">{% if node.body.startswith('Sunday Check-in') %}Sunday Check-in{% else %}Starter post{% endif %}</a>
+            {% elif node.is_starter %}
+            <a class="post-author" href="{{ url_for('main.admin_profile') }}">CommonRoom Admin</a>
             {% else %}
             <span class="post-author">
             <a href="{{ url_for('.user', username=node.author.username) }}" data-profile-preview='{{ post_preview_payload(node) }}'>
@@ -67,7 +73,7 @@
         </a>
         {% endif %}
         <div class="post-body">{% if node.is_starter and node.body.startswith('Sunday Check-in') %}Sunday Check-in 🌿{% else %}{{ node.body }}{% endif %}</div>
-        {% if node.is_starter and node.body.startswith('Sunday Check-in') %}
+        {% if node.is_starter and not node.parent_id and node.body.startswith('Sunday Check-in') %}
         <div class="sunday-post-poll" aria-label="Sunday Check-in response options">
           {% for question, prompt, choices in [('moment', 'What was a small moment that stayed with you this week?', [('win','A win'),('connection','A nice interaction'),('surprise','Something unexpected'),('none','Nothing specific')]), ('proud', 'What are you proud of, even if it feels small?', [('study','Studying or work'),('care','Taking care of myself'),('reach','Reaching out'),('through','Getting through a hard day')]), ('easier', 'What would make next week easier?', [('rest','More rest'),('structure','More structure'),('support','More support'),('time','More time for myself')]), ('carry', 'What do you want to carry into the new week?', [('lesson','A lesson'),('feeling','A good feeling'),('decision','A decision'),('intention','A new intention')])] %}
           <div class="sunday-question-block"><strong>{{ prompt }}</strong><div>{% for value, label in choices %}<form method="post" action="{{ url_for('main.sunday_checkin_vote', post_id=node.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="question" value="{{ question }}"><input type="hidden" name="choice" value="{{ value }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit">{{ label }}</button></form>{% endfor %}</div>{% set question_stats = sunday_poll_stats.get(node.id, {}).get(question, {}) %}{% set ns = namespace(total=0) %}{% for value, label in choices %}{% set ns.total = ns.total + question_stats.get(value, 0) %}{% endfor %}{% if ns.total %}<div class="sunday-question-results">{% for value, label in choices %}<div><span>{{ label }}</span><i><b style="width: {{ (question_stats.get(value, 0) / ns.total * 100) if ns.total else 0 }}%;"></b></i><small>{{ question_stats.get(value, 0) }}</small></div>{% endfor %}</div>{% endif %}</div>
