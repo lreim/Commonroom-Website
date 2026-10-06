@@ -90,7 +90,7 @@
           </select>
         </form>
       </div>
-      {% if visit_timeline.stacked_acquisition %}<div class="analytics-legend analytics-funnel-legend">{% for label in visit_timeline.funnel_labels %}<span><i class="analytics-funnel-swatch-{{ loop.index0 }}"></i>{{ label }}</span>{% endfor %}</div>{% endif %}
+      {% if visit_timeline.stacked_acquisition %}<div class="analytics-legend analytics-funnel-legend">{% for label in visit_timeline.funnel_labels %}<span><i class="analytics-funnel-swatch-{{ loop.index0 }}" style="background:hsl({{ (loop.index0 * 67 + 12) % 360 }} 38% 56%);"></i>{{ label }}</span>{% endfor %}</div>{% endif %}
     </div>
 
     <div class="analytics-chart-card">
@@ -101,7 +101,7 @@
           <div class="analytics-column{% if visit_timeline.stacked_acquisition %} analytics-column-stacked{% endif %}" title="{{ point.label }}: {{ point.count }} visits">
             <span>{{ point.count }}</span>
             {% if visit_timeline.stacked_acquisition %}
-            <i class="analytics-stacked-column" style="height: {{ height }}px;">{% for item in point.segments %}<b class="analytics-funnel-segment-{{ item.index }}" style="height: {{ (item.count / point.count * height) if point.count else 0 }}px;" title="{{ item.label }}: {{ item.count }}"></b>{% endfor %}</i>
+            <i class="analytics-stacked-column" style="height: {{ height }}px;">{% for item in point.segments %}<b class="analytics-funnel-segment-{{ item.index }}" style="height: {{ (item.count / point.count * height) if point.count else 0 }}px; background:hsl({{ (item.index * 67 + 12) % 360 }} 38% 56%);" title="{{ item.label }}: {{ item.count }}"></b>{% endfor %}</i>
             {% else %}<i style="height: {{ height }}px;"></i>{% endif %}
             <small>{{ point.label }}</small>
           </div>

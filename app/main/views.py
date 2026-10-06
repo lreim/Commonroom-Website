@@ -207,8 +207,16 @@ def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=Fals
     )
 
     counts_by_index = {index: 0 for index in range(bucket_count)}
-    funnel_labels = [segment["label"] for segment in ANALYTICS_TRAFFIC_SEGMENTS.values()]
-    funnel_labels.append("Other")
+    # In the stacked view, keep every observed UTM source separate. This makes
+    # campaign links (for example reminder_Physik1 and sunday_checkin_Physik1)
+    # visible instead of collapsing them into one catch-all segment.
+    observed_sources = set()
+    for visit in visits:
+        source = (visit.acquisition_source or "").strip()
+        observed_sources.add(source or "Direct / none")
+    funnel_labels = sorted(observed_sources, key=lambda value: (value == "Direct / none", value.lower()))
+    if not funnel_labels:
+        funnel_labels = ["Direct / none"]
     segment_counts_by_index = {
         index: {label: 0 for label in funnel_labels}
         for index in range(bucket_count)
@@ -221,15 +229,7 @@ def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=Fals
         index = int(delta.total_seconds() // bucket_size.total_seconds())
         if 0 <= index < bucket_count:
             counts_by_index[index] += 1
-            matched_label = "Other"
-            for segment in ANALYTICS_TRAFFIC_SEGMENTS.values():
-                if (
-                    visit.acquisition_source == segment["source"]
-                    and visit.acquisition_medium == segment["medium"]
-                    and visit.acquisition_campaign == segment["campaign"]
-                ):
-                    matched_label = segment["label"]
-                    break
+            matched_label = (visit.acquisition_source or "").strip() or "Direct / none"
             segment_counts_by_index[index][matched_label] += 1
 
     points = []
