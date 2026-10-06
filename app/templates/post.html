@@ -74,6 +74,7 @@
         <a class="{% if post_type_filter == 'relate' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='relate') }}">Relate</a>
         <a class="{% if post_type_filter == 'question' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='question') }}">Question</a>
         <a class="{% if post_type_filter == 'confession' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='confession') }}">Confession</a>
+        <a class="post-checkin-jump" href="{{ checkin.post_url or url_for('main.post') }}">Jump to Sunday's Check-in Post</a>
     </nav>
     <form method="get" action="{{ url_for('main.post') }}">
         <input type="hidden" name="type" value="{{ post_type_filter }}">

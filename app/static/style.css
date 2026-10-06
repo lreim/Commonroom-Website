@@ -10464,3 +10464,8 @@ html.dark-mode .post-card-date {
 
 
 .whats-new-inline-link { color:#80684c; text-decoration:underline; font-weight:700; }
+
+.whats-new-date { margin:0 0 8px; color:#80684c; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+
+.post-checkin-jump { color:#80684c; font-size:12px; font-weight:700; white-space:nowrap; }
+.post-checkin-jump:hover,.post-checkin-jump:focus { color:#5f4d38; text-decoration:underline; }
