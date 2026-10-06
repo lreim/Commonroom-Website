@@ -1,4 +1,4 @@
-<section class="weekly-checkin" aria-labelledby="weekly-checkin-title">
+<section id="weekly-checkin" class="weekly-checkin" aria-labelledby="weekly-checkin-title">
   <div class="weekly-checkin-heading"><img src="https://api.dicebear.com/9.x/thumbs/svg?seed=weekly-check-in&amp;size=64" alt="Anonymous check-in avatar"><div><span class="weekly-checkin-kicker">SUNDAY CHECK-IN</span><h2 id="weekly-checkin-title">Hey buddy, how are you arriving this week?</h2><p>Answer anonymously in a few seconds.</p></div></div>
   <div class="weekly-checkin-choices">
     {% for value, label in checkin.choices %}<form method="post" action="{{ url_for('main.weekly_checkin') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="choice" value="{{ value }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit">{{ label }}</button></form>{% endfor %}

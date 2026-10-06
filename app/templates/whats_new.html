@@ -3,7 +3,7 @@
 {% block page_content %}
 <section class="whats-new-page">
   <p class="whats-new-kicker">WHAT'S NEW</p>
-  <h1>Small updates for a more connected CommonRoom.</h1>
+  <h1>Small updates for CommonRoom</h1>
   <div class="whats-new-card">
     <h2>New profile tags</h2>
     <p>You can now add <strong>vegan</strong> or <strong>neurodivergent</strong> to your profile so people can find shared experiences more easily.</p>
@@ -11,7 +11,8 @@
   </div>
   <div class="whats-new-card">
     <h2>Weekly Sunday Check-in</h2>
-    <p>Answer a quick anonymous check-in and see how the community is arriving this week.</p>
+    <p>The public <a class="whats-new-inline-link" href="{{ url_for('main.index') }}#weekly-checkin">one-question check-in</a> stays open all week, until the next Sunday, so you can answer whenever it suits you.</p>
+    <p>Every Sunday, a new <a class="whats-new-inline-link" href="{{ checkin.post_url or url_for('main.post') }}">check-in post</a> appears with four poll questions. It remains open for the same week, and you can answer or change your choices during that time.</p>
   </div>
 </section>
 {% endblock %}

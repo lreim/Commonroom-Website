@@ -831,7 +831,7 @@ def about():
 
 @main.route('/whats-new')
 def whats_new():
-    return render_template('whats_new.html', active_page=None)
+    return render_template('whats_new.html', active_page=None, checkin=_weekly_checkin_context())
 
 @main.route('/whats-new/dismiss', methods=['POST'])
 def dismiss_whats_new():
@@ -1206,7 +1206,7 @@ def post_thread(post_id):
     reply_to_id = request.form.get('reply_to_id', type=int)
     failed_reply_to_id = None
     if request.method == 'POST':
-        if not current_user.can(Permission.WRITE_ARTICLES):
+        if not current_user.can(Permission.WRITE_ARTICLES) and not current_user.is_administrator():
             abort(403)
         if form.validate_on_submit():
             parent_post = root_post

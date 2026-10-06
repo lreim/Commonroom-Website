@@ -68,6 +68,7 @@
         {%else%}
         <li><a href="{{url_for('main.get_help_now')}}">Get Help Now</a></li>
         <li><a href="{{url_for('main.data_and_privacy')}}">Data and Privacy</a></li>
+        <li><a href="{{ url_for('main.whats_new') }}">What's new?</a></li>
         {% set login_return_path = request.full_path if request.query_string else request.path %}
         <li><a href="{{ url_for('auth.login', next=login_return_path) if request.endpoint != 'auth.login' else url_for('auth.login') }}">Sign In</a></li>
         {%endif%}
@@ -108,8 +109,8 @@
             {% endif %}
           </div>
         </div>
-        <div class="profile-top-time">
-          <div class="profile-top-time-label">Local date and time</div>
+        <div class="profile-top-time profile-top-date-only">
+          <div class="profile-top-time-label">Your profile</div>
           <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
         </div>
         <div class="profile-menu">
@@ -130,6 +131,7 @@
             {% endif %}
             <a href="{{ url_for('main.admin_profile') if admin_demo_mode else url_for('main.user', username=current_user.username) }}">Profile Info</a>
             <a href="{{ url_for('main.settings') }}">Settings</a>
+            <a href="{{ url_for('main.whats_new') }}">What's new?</a>
             {% if current_user.is_administrator() %}<a href="{{ url_for('reports.index') }}">Reports</a>{% endif %}
             {% if current_user.is_administrator() and admin_demo_mode %}
             <a href="{{ url_for('main.starter_posts_admin') }}">Starter Posts</a>
@@ -665,7 +667,7 @@ document.addEventListener("DOMContentLoaded", function () {
   {% if not session.get('whats_new_dismissed') and request.endpoint != 'main.whats_new' %}
   <aside class="whats-new-nudge" aria-label="What's new">
     <div><strong>New profile tags are here.</strong><span>Add <b>vegan</b> or <b>neurodivergent</b> to help people find shared experiences.</span></div>
-    <div class="whats-new-nudge-actions"><a href="{{ url_for('main.whats_new') }}">See what's new →</a><form method="post" action="{{ url_for('main.dismiss_whats_new') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit" aria-label="Dismiss what's new">&times;</button></form></div>
+    <div class="whats-new-nudge-actions"><a href="{{ url_for('main.whats_new') }}">What's new →</a><form method="post" action="{{ url_for('main.dismiss_whats_new') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit" aria-label="Dismiss what's new">&times;</button></form></div>
   </aside>
   {% endif %}
   
