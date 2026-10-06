@@ -78,7 +78,19 @@
         <span>SELECTED PERIOD · LOCAL TIME · EUROPE/ZURICH</span>
         <h2>What happened over time?</h2>
       </div>
-      <p>{{ visit_timeline.total_visits }} tracked visits · highest bucket {{ visit_timeline.max_count }}</p>
+      <div class="analytics-chart-controls">
+        <p>{{ visit_timeline.total_visits }} tracked visits · highest bucket {{ visit_timeline.max_count }}</p>
+        <form method="get" action="{{ url_for('main.analytics') }}">
+          <input type="hidden" name="range" value="{{ selected_range }}">
+          {% if selected_segment_key %}<input type="hidden" name="segment" value="{{ selected_segment_key }}">{% endif %}
+          <label for="analytics-funnel-view">Bar view</label>
+          <select id="analytics-funnel-view" name="stacked" onchange="this.form.submit()">
+            <option value="0" {% if not visit_timeline.stacked_acquisition %}selected{% endif %}>Total visits</option>
+            <option value="1" {% if visit_timeline.stacked_acquisition %}selected{% endif %}>Stack acquisition funnels</option>
+          </select>
+        </form>
+      </div>
+      {% if visit_timeline.stacked_acquisition %}<div class="analytics-legend analytics-funnel-legend">{% for label in visit_timeline.funnel_labels %}<span><i class="analytics-funnel-swatch-{{ loop.index0 }}"></i>{{ label }}</span>{% endfor %}</div>{% endif %}
     </div>
 
     <div class="analytics-chart-card">
@@ -86,9 +98,11 @@
         <div class="analytics-column-chart analytics-timeline-chart analytics-columns-{{ visit_timeline.points|length }}">
           {% for point in visit_timeline.points %}
           {% set height = 5 if visit_timeline.max_count == 0 else (point.count / visit_timeline.max_count * 180)|round(0, 'ceil')|int %}
-          <div class="analytics-column" title="{{ point.label }}: {{ point.count }} visits">
+          <div class="analytics-column{% if visit_timeline.stacked_acquisition %} analytics-column-stacked{% endif %}" title="{{ point.label }}: {{ point.count }} visits">
             <span>{{ point.count }}</span>
-            <i style="height: {{ height }}px;"></i>
+            {% if visit_timeline.stacked_acquisition %}
+            <i class="analytics-stacked-column" style="height: {{ height }}px;">{% for item in point.segments %}<b class="analytics-funnel-segment-{{ item.index }}" style="height: {{ (item.count / point.count * height) if point.count else 0 }}px;" title="{{ item.label }}: {{ item.count }}"></b>{% endfor %}</i>
+            {% else %}<i style="height: {{ height }}px;"></i>{% endif %}
             <small>{{ point.label }}</small>
           </div>
           {% endfor %}

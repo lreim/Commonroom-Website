@@ -178,7 +178,7 @@ def _validated_analytics_session_token(value):
     return token
 
 
-def _build_visit_timeline(range_key, visits_query=None):
+def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=False):
     now = datetime.now(timezone.utc)
     local_timezone = ZoneInfo("Europe/Zurich")
     if range_key == "24h":
@@ -207,6 +207,12 @@ def _build_visit_timeline(range_key, visits_query=None):
     )
 
     counts_by_index = {index: 0 for index in range(bucket_count)}
+    funnel_labels = [segment["label"] for segment in ANALYTICS_TRAFFIC_SEGMENTS.values()]
+    funnel_labels.append("Other")
+    segment_counts_by_index = {
+        index: {label: 0 for label in funnel_labels}
+        for index in range(bucket_count)
+    }
     for visit in visits:
         started_at = visit.started_at
         if started_at.tzinfo is None:
@@ -215,6 +221,16 @@ def _build_visit_timeline(range_key, visits_query=None):
         index = int(delta.total_seconds() // bucket_size.total_seconds())
         if 0 <= index < bucket_count:
             counts_by_index[index] += 1
+            matched_label = "Other"
+            for segment in ANALYTICS_TRAFFIC_SEGMENTS.values():
+                if (
+                    visit.acquisition_source == segment["source"]
+                    and visit.acquisition_medium == segment["medium"]
+                    and visit.acquisition_campaign == segment["campaign"]
+                ):
+                    matched_label = segment["label"]
+                    break
+            segment_counts_by_index[index][matched_label] += 1
 
     points = []
     max_count = max(counts_by_index.values()) if counts_by_index else 0
@@ -224,6 +240,11 @@ def _build_visit_timeline(range_key, visits_query=None):
             {
                 "label": bucket_start.astimezone(local_timezone).strftime(label_format),
                 "count": counts_by_index[index],
+                "segments": [
+                    {"label": label, "count": segment_counts_by_index[index][label], "index": label_index}
+                    for label_index, label in enumerate(funnel_labels)
+                    if segment_counts_by_index[index][label]
+                ],
             }
         )
 
@@ -234,6 +255,8 @@ def _build_visit_timeline(range_key, visits_query=None):
         "total_visits": sum(point["count"] for point in points),
         "first_bucket_start": first_bucket_start,
         "timezone": "Europe/Zurich",
+        "stacked_acquisition": stacked_acquisition,
+        "funnel_labels": funnel_labels,
     }
 
 
@@ -542,7 +565,7 @@ def _build_auth_funnel_stats(first_bucket_start):
     return totals
 
 
-def _build_analytics_snapshot(selected_range, segment_key=None):
+def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisition=False):
     selected_segment = ANALYTICS_TRAFFIC_SEGMENTS.get(segment_key)
     current_query = _tracked_page_visits_query().filter(
         PageVisit.tracking_version == CURRENT_ANALYTICS_VERSION
@@ -553,7 +576,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None):
             PageVisit.acquisition_medium == selected_segment["medium"],
             PageVisit.acquisition_campaign == selected_segment["campaign"],
         )
-    visit_timeline = _build_visit_timeline(selected_range, current_query)
+    visit_timeline = _build_visit_timeline(selected_range, current_query, stacked_acquisition)
     selected_range = visit_timeline["range_key"]
     visits_in_range_query = current_query.filter(
         PageVisit.started_at >= visit_timeline["first_bucket_start"]
@@ -1889,6 +1912,7 @@ def analytics():
     snapshot = _build_analytics_snapshot(
         request.args.get("range", "1w", type=str),
         request.args.get("segment", type=str),
+        request.args.get("stacked", "0", type=str) == "1",
     )
     return render_template('analytics.html', active_page=None, **snapshot)
 

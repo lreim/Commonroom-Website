@@ -6,19 +6,10 @@
   <h1>Small updates for CommonRoom</h1>
 
   <div class="whats-new-card">
-    <p class="whats-new-date"><time datetime="2026-09-15">September 15, 2026</time></p>
-    <h2>More ways to join a conversation</h2>
-    <p>Posts now include a <strong>Confession</strong> category, replies can be edited, and you can follow a post thread to hear when the conversation continues.</p>
-  </div>
-  <div class="whats-new-card">
-    <p class="whats-new-date"><time datetime="2026-09-26">September 26, 2026</time></p>
-    <h2>Safer, clearer conversations</h2>
-    <p>Small <strong>Report</strong> buttons are available next to posts and messages. <strong>Green “New” markers</strong> make new posts and replies easier to spot, and notifications stay available after you open them.</p>
-  </div>
-  <div class="whats-new-card">
-    <p class="whats-new-date"><time datetime="2026-10-01">October 1, 2026</time></p>
-    <h2>Reply directly in chats</h2>
-    <p>You can now reply to a specific private-chat message and edit your own chat messages.</p>
+    <p class="whats-new-date"><time datetime="2026-10-06">October 6, 2026</time></p>
+    <h2>New profile tags</h2>
+    <p>You can now add <strong>vegan</strong> or <strong>neurodivergent</strong> to your profile so people can find shared experiences more easily.</p>
+    <a class="whats-new-link" href="{{ url_for('main.edit_profile') if current_user.is_authenticated else url_for('auth.login', next=url_for('main.edit_profile')) }}">Update your profile →</a>
   </div>
   <div class="whats-new-card">
     <p class="whats-new-date"><time datetime="2026-10-04">October 4, 2026</time></p>
@@ -27,10 +18,39 @@
     <p>Every Sunday, a new <a class="whats-new-inline-link" href="{{ checkin.post_url or url_for('main.post') }}">check-in post</a> appears with four poll questions. It remains open for the same week, and you can answer or change your choices during that time.</p>
   </div>
   <div class="whats-new-card">
-    <p class="whats-new-date"><time datetime="2026-10-06">October 6, 2026</time></p>
-    <h2>New profile tags</h2>
-    <p>You can now add <strong>vegan</strong> or <strong>neurodivergent</strong> to your profile so people can find shared experiences more easily.</p>
-    <a class="whats-new-link" href="{{ url_for('main.edit_profile') if current_user.is_authenticated else url_for('auth.login', next=url_for('main.edit_profile')) }}">Update your profile →</a>
+    <p class="whats-new-date"><time datetime="2026-10-01">October 1, 2026</time></p>
+    <h2>Reply directly in chats</h2>
+    <p>You can now reply to a specific private-chat message and edit your own chat messages.</p>
+  </div>
+  <div class="whats-new-card">
+    <p class="whats-new-date"><time datetime="2026-09-27">September 27, 2026</time></p>
+    <h2>More control over notifications</h2>
+    <p>The bell keeps notifications visible after you open them. New notifications stay until you read them; up to four read notifications remain in the list before the oldest read entries are removed. Use the envelope icon to mark a notification unread again.</p>
+  </div>
+  <div class="whats-new-card">
+    <p class="whats-new-date"><time datetime="2026-09-26">September 26, 2026</time></p>
+    <h2>New activity markers</h2>
+    <p>Green “New” markers make new posts and replies easier to spot, while notifications stay available after you open them.</p>
+  </div>
+  <div class="whats-new-card">
+    <p class="whats-new-date"><time datetime="2026-09-26">September 26, 2026</time></p>
+    <h2>Report posts and messages</h2>
+    <p>Small <strong>Report</strong> buttons are available next to posts and incoming chat messages.</p>
+  </div>
+  <div class="whats-new-card">
+    <p class="whats-new-date"><time datetime="2026-09-23">September 23, 2026</time></p>
+    <h2>Follow post threads</h2>
+    <p>Follow a post thread to hear when the conversation continues.</p>
+  </div>
+  <div class="whats-new-card">
+    <p class="whats-new-date"><time datetime="2026-09-23">September 23, 2026</time></p>
+    <h2>Confession posts</h2>
+    <p>Posts now include a <strong>Confession</strong> category for more personal thoughts.</p>
+  </div>
+  <div class="whats-new-card">
+    <p class="whats-new-date"><time datetime="2026-09-13">September 13, 2026</time></p>
+    <h2>Edit your replies</h2>
+    <p>You can edit your own replies after posting them.</p>
   </div>
 </section>
 {% endblock %}

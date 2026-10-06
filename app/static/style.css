@@ -10469,3 +10469,17 @@ html.dark-mode .post-card-date {
 
 .post-checkin-jump { color:#80684c; font-size:12px; font-weight:700; white-space:nowrap; }
 .post-checkin-jump:hover,.post-checkin-jump:focus { color:#5f4d38; text-decoration:underline; }
+.analytics-chart-controls { display:flex; align-items:flex-end; gap:14px; }
+.analytics-chart-controls form { display:flex; align-items:center; gap:7px; }
+.analytics-chart-controls label { font-size:11px; color:#80684c; }
+.analytics-chart-controls select { border:1px solid #dfcfb5; border-radius:8px; background:#f7efdf; color:#4b3925; padding:5px 8px; }
+.analytics-stacked-column { display:flex !important; flex-direction:column-reverse; width:100%; overflow:hidden; background:transparent !important; }
+.analytics-stacked-column b { display:block; width:100%; min-height:0; }
+.analytics-funnel-segment-0, .analytics-funnel-swatch-0 { background:#9c6b5d; }
+.analytics-funnel-segment-1, .analytics-funnel-swatch-1 { background:#7896a8; }
+.analytics-funnel-segment-2, .analytics-funnel-swatch-2 { background:#8a9d72; }
+.analytics-funnel-segment-3, .analytics-funnel-swatch-3 { background:#c8a66a; }
+.analytics-funnel-legend { display:flex; flex-wrap:wrap; gap:10px 16px; margin-top:12px; }
+.analytics-funnel-legend span { display:inline-flex; align-items:center; gap:5px; font-size:11px; }
+.analytics-funnel-legend i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+@media (max-width:767px) { .analytics-chart-controls { align-items:flex-start; flex-direction:column; gap:8px; } }
