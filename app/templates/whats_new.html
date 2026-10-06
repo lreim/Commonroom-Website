@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}What's new?{% endblock %}
+{% block page_content %}
+<section class="whats-new-page">
+  <p class="whats-new-kicker">WHAT'S NEW</p>
+  <h1>Small updates for a more connected CommonRoom.</h1>
+  <div class="whats-new-card">
+    <h2>New profile tags</h2>
+    <p>You can now add <strong>vegan</strong> or <strong>neurodivergent</strong> to your profile so people can find shared experiences more easily.</p>
+    <a class="whats-new-link" href="{{ url_for('main.edit_profile') if current_user.is_authenticated else url_for('auth.login', next=url_for('main.edit_profile')) }}">Update your profile →</a>
+  </div>
+  <div class="whats-new-card">
+    <h2>Weekly Sunday Check-in</h2>
+    <p>Answer a quick anonymous check-in and see how the community is arriving this week.</p>
+  </div>
+</section>
+{% endblock %}

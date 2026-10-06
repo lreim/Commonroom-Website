@@ -325,5 +325,20 @@ document.querySelectorAll('[data-like-url]').forEach(function (likeButton) {
       });
   });
 });
+
+{% if current_user.is_authenticated %}
+var postsIndexSeen = false;
+window.addEventListener('pagehide', function () {
+  if (postsIndexSeen) return;
+  postsIndexSeen = true;
+  var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  if (!csrfMeta) return;
+  fetch('{{ url_for("main.mark_posts_index_seen") }}', {
+    method: 'POST',
+    keepalive: true,
+    headers: { 'X-CSRFToken': csrfMeta.getAttribute('content') }
+  });
+});
+{% endif %}
 </script>
 {% endblock %}

@@ -10393,6 +10393,21 @@ html.dark-mode .post-card-date {
 .profile-completion-nudge-actions { display:flex; align-items:center; gap:8px; }
 .profile-completion-nudge-actions form { margin:0; }
 .profile-completion-nudge-actions button { position:absolute; top:7px; right:9px; border:0; background:transparent; color:#8d665d; font-size:22px; line-height:1; cursor:pointer; }
+.whats-new-nudge { position:relative; display:flex; align-items:center; justify-content:space-between; gap:16px; max-width:900px; margin:14px auto 0; padding:12px 40px 12px 16px; border:1px solid #d9b8b0; border-radius:14px; background:#fff1ed; color:#765047; }
+.whats-new-nudge > div:first-child { display:grid; gap:3px; }
+.whats-new-nudge strong { font-size:14px; }
+.whats-new-nudge span { font-size:12px; }
+.whats-new-nudge a { flex:0 0 auto; padding:7px 12px; border-radius:999px; background:#765047; color:#fff8f1; font-weight:700; }
+.whats-new-nudge-actions { display:flex; align-items:center; gap:8px; }
+.whats-new-nudge-actions form { margin:0; }
+.whats-new-nudge-actions button { position:absolute; top:7px; right:9px; border:0; background:transparent; color:#8d665d; font-size:22px; line-height:1; cursor:pointer; }
+.whats-new-page { max-width:900px; margin:70px auto 100px; }
+.whats-new-kicker { color:#9d625e; letter-spacing:.16em; font-size:12px; font-weight:700; }
+.whats-new-page h1 { max-width:700px; margin:0 0 32px; }
+.whats-new-card { margin:18px 0; padding:26px 30px; border:1px solid #e2c5b9; border-radius:18px; background:#fff8f1; }
+.whats-new-card h2 { margin-top:0; }
+.whats-new-link { color:#8b4c4d; font-weight:700; }
+@media (max-width:767px) { .whats-new-nudge { align-items:flex-start; flex-direction:column; } .whats-new-page { margin:35px 16px 70px; } .whats-new-card { padding:20px; } }
 @media (max-width:767px) { .profile-completion-nudge { align-items:flex-start; flex-direction:column; } }
 .sunday-post-poll form { margin:0; }
 .sunday-post-poll button { padding:6px 10px; border:1px solid #e2c5b9; border-radius:999px; background:#fff8f1; color:#765047; font-size:12px; cursor:pointer; }

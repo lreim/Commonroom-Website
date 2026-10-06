@@ -829,6 +829,16 @@ def profile_nudge_event():
 def about():
     return render_template('about.html', active_page='about')
 
+@main.route('/whats-new')
+def whats_new():
+    return render_template('whats_new.html', active_page=None)
+
+@main.route('/whats-new/dismiss', methods=['POST'])
+def dismiss_whats_new():
+    session['whats_new_dismissed'] = True
+    session.modified = True
+    return redirect(request.form.get('next') or url_for('main.index'))
+
 @main.route('/onboarding')
 def onboarding():
     return render_template('onboarding.html', active_page='onboarding')
@@ -1128,9 +1138,9 @@ def post():
                 if last_posts_visit is not None and reply_at > last_posts_visit and reply.author_id != current_user.id:
                     new_post_ids.add(root_post.id)
                 frontier.extend(reply.replies.all())
-        session['posts_index_last_seen_at'] = datetime.now(timezone.utc).isoformat()
-        current_user.posts_index_last_seen_at = datetime.now(timezone.utc)
-        db.session.commit()
+        # The visit is recorded by the page's pagehide handler. Keeping the
+        # previous value here allows the New marker to survive a reload while
+        # the overview is still the active page.
         session.modified = True
     sunday_poll_stats = {}
     sunday_posts = [item for item in posts if item.is_starter and item.body.startswith('Sunday Check-in')]
@@ -1157,6 +1167,16 @@ def post():
         post_type_filter=post_type_filter,
         active_page='post',
     )
+
+
+@main.route('/post/mark-index-seen', methods=['POST'])
+@login_required
+def mark_posts_index_seen():
+    seen_at = datetime.now(timezone.utc)
+    session['posts_index_last_seen_at'] = seen_at.isoformat()
+    current_user.posts_index_last_seen_at = seen_at
+    db.session.commit()
+    return ('', 204)
 
 
 @main.route('/post/<int:post_id>/like', methods=['POST'])

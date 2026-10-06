@@ -662,6 +662,12 @@ document.addEventListener("DOMContentLoaded", function () {
   </aside>
   <script>(function(){if(!sessionStorage.getItem('profileNudgeShown')){sessionStorage.setItem('profileNudgeShown','1');fetch("{{ url_for('main.profile_nudge_event') }}", {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'event_type=shown&csrf_token={{ csrf_token() }}'});} document.querySelector('[data-profile-nudge-click]')?.addEventListener('click', function(){ navigator.sendBeacon("{{ url_for('main.profile_nudge_event') }}", 'event_type=clicked&csrf_token={{ csrf_token() }}'); });})();</script>
   {% endif %}
+  {% if not session.get('whats_new_dismissed') and request.endpoint != 'main.whats_new' %}
+  <aside class="whats-new-nudge" aria-label="What's new">
+    <div><strong>New profile tags are here.</strong><span>Add <b>vegan</b> or <b>neurodivergent</b> to help people find shared experiences.</span></div>
+    <div class="whats-new-nudge-actions"><a href="{{ url_for('main.whats_new') }}">See what's new →</a><form method="post" action="{{ url_for('main.dismiss_whats_new') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit" aria-label="Dismiss what's new">&times;</button></form></div>
+  </aside>
+  {% endif %}
   
   {% block page_content %}{% endblock %}
 </div>
