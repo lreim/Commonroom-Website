@@ -10483,3 +10483,17 @@ html.dark-mode .post-card-date {
 .analytics-funnel-legend span { display:inline-flex; align-items:center; gap:5px; font-size:11px; }
 .analytics-funnel-legend i { width:10px; height:10px; border-radius:2px; display:inline-block; }
 @media (max-width:767px) { .analytics-chart-controls { align-items:flex-start; flex-direction:column; gap:8px; } }
+
+/* Keep the stacked acquisition view visibly segmented despite the base bar styles. */
+.analytics-column > i.analytics-stacked-column {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.analytics-stacked-column b.analytics-funnel-segment-0,
+.analytics-funnel-legend span > i.analytics-funnel-swatch-0 { background:#9c6b5d !important; }
+.analytics-stacked-column b.analytics-funnel-segment-1,
+.analytics-funnel-legend span > i.analytics-funnel-swatch-1 { background:#7896a8 !important; }
+.analytics-stacked-column b.analytics-funnel-segment-2,
+.analytics-funnel-legend span > i.analytics-funnel-swatch-2 { background:#8a9d72 !important; }
+.analytics-stacked-column b.analytics-funnel-segment-3,
+.analytics-funnel-legend span > i.analytics-funnel-swatch-3 { background:#c8a66a !important; }
