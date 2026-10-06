@@ -31,7 +31,7 @@
         </a>
         {% elif node.is_starter %}
         <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
-            <img class="img-rounded profile-thumbnail starter-post-logo" src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom Admin">
+            <img class="img-rounded profile-thumbnail starter-post-logo" src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom">
         </a>
         {% else %}
         <a href="{{ url_for('.user', username=node.author.username) }}">
@@ -44,7 +44,7 @@
             {% if node.is_starter and not node.parent_id %}
             <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">{% if node.body.startswith('Sunday Check-in') %}Sunday Check-in{% else %}Starter post{% endif %}</a>
             {% elif node.is_starter %}
-            <a class="post-author" href="{{ url_for('main.admin_profile') }}">CommonRoom Admin</a>
+            <a class="post-author" href="{{ url_for('main.admin_profile') }}">CommonRoom</a>
             {% else %}
             <span class="post-author">
             <a href="{{ url_for('.user', username=node.author.username) }}" data-profile-preview='{{ post_preview_payload(node) }}'>
