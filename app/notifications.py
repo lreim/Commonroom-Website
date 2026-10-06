@@ -146,7 +146,7 @@ def unread_reply_threads_for_user(user):
                 'root_post': root,
                 'reply': reply,
                 'timestamp': created_at,
-                'is_new': seen_at is None or created_at > seen_at,
+                'is_new': not was_seen,
                 'text': text,
                 'url': url_for('main.post_thread', post_id=root.id) + f'#post-{reply.id}',
             }
@@ -181,7 +181,7 @@ def build_notifications_for_user(user, limit=8):
             {
                 "kind": "incoming_request",
                 "timestamp": created_at,
-                "is_new": not was_seen,
+                "is_new": True,
                 "text": f"New chat request from {chat_request.requester.username}",
                 "url": url_for("chat.index") + "#requested-chats",
             }
