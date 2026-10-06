@@ -10407,7 +10407,7 @@ html.dark-mode .post-card-date {
 .whats-new-page h1, .whats-new-page h2, .whats-new-page p, .whats-new-page a { font-family:inherit; }
 .whats-new-page h1 { max-width:700px; margin:0 0 32px; }
 .whats-new-card { margin:18px 0; padding:26px 30px; border:1px solid #dfcfb5; border-radius:18px; background:#f7efdf; }
-.whats-new-card h2 { margin-top:0; }
+.whats-new-card h2 { margin-top:0; font-size:22px; }
 .whats-new-link { color:#80684c; font-weight:700; }
 @media (max-width:767px) { .whats-new-nudge { top:76px; right:4px; width:220px; } .whats-new-page { margin:35px 16px 70px; } .whats-new-card { padding:20px; } }
 @media (max-width:767px) { .profile-completion-nudge { align-items:flex-start; flex-direction:column; } }
