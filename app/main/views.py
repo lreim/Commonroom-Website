@@ -1101,6 +1101,12 @@ def post():
         # Visiting a thread from a notification must not clear the overview's
         # new-post markers.
         last_posts_visit = session.get('posts_index_last_seen_at')
+        if last_posts_visit is None and current_user.posts_index_last_seen_at is not None:
+            last_posts_visit = current_user.posts_index_last_seen_at.isoformat()
+        if last_posts_visit is None:
+            # Migrate the in-session marker from older versions. This value was
+            # written by the posts overview, not by a thread visit.
+            last_posts_visit = session.get('posts_last_seen_at')
         try:
             last_posts_visit = datetime.fromisoformat(last_posts_visit) if last_posts_visit else None
         except (TypeError, ValueError):
@@ -1123,6 +1129,8 @@ def post():
                     new_post_ids.add(root_post.id)
                 frontier.extend(reply.replies.all())
         session['posts_index_last_seen_at'] = datetime.now(timezone.utc).isoformat()
+        current_user.posts_index_last_seen_at = datetime.now(timezone.utc)
+        db.session.commit()
         session.modified = True
     sunday_poll_stats = {}
     sunday_posts = [item for item in posts if item.is_starter and item.body.startswith('Sunday Check-in')]

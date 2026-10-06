@@ -97,6 +97,7 @@ class User(UserMixin, db.Model):
     funny_fact = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+    posts_index_last_seen_at = db.Column(db.DateTime(), nullable=True, index=True)
     failed_login_attempts = db.Column(db.Integer, nullable=False, default=0)
     login_locked_until = db.Column(db.DateTime(), nullable=True, index=True)
     login_lockout_count = db.Column(db.Integer, nullable=False, default=0)
@@ -638,7 +639,7 @@ class Tag(db.Model):
         'living in zurich',
 
         # Health & Energy
-        'exercise', 'low energy', 'rest and recovery', 'body image',
+        'exercise', 'low energy', 'rest and recovery', 'body image', 'vegan', 'neurodivergent',
 
         # Good Stuff :)
         'small wins', 'proud of myself', 'good day', 'bad day', 'finally passed',
