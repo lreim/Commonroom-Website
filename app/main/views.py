@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from urllib.parse import urlparse
 from uuid import uuid4
 from zoneinfo import ZoneInfo
-from sqlalchemy import func
+from sqlalchemy import func, case
 from sqlalchemy.orm import aliased
 from flask import Response, abort, render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
@@ -1064,6 +1064,8 @@ def post():
         post_query = post_query.filter(Post.post_type == post_type_filter)
     if matched_topics:
         post_query = post_query.join(User, Post.author).join(User.tags).filter(Tag.name.in_(matched_topics)).distinct()
+    # Keep the current, non-archived Sunday Check-in at the top of the feed.
+    post_query = post_query.order_by(case((Post.is_starter.is_(True) & Post.body.startswith('Sunday Check-in'), 0), else_=1))
 
     if sort_by == 'unanswered':
         post_query = (

@@ -10469,6 +10469,11 @@ html.dark-mode .post-card-date {
 
 .post-checkin-jump { color:#b45f78; font-size:12px; font-weight:700; white-space:nowrap; }
 .post-checkin-jump:hover,.post-checkin-jump:focus { color:#8f405b; text-decoration:underline; }
+.sunday-post-collapsible { margin-top:12px; }
+.sunday-post-collapsible > summary { width:max-content; cursor:pointer; color:#b45f78; font-size:12px; font-weight:700; list-style:none; }
+.sunday-post-collapsible > summary::-webkit-details-marker { display:none; }
+.sunday-post-collapsible > summary span { display:inline-block; margin-left:5px; transition:transform .15s ease; }
+.sunday-post-collapsible[open] > summary span { transform:rotate(180deg); }
 .analytics-chart-controls { display:flex; align-items:flex-end; gap:14px; }
 .analytics-chart-controls form { display:flex; align-items:center; gap:7px; }
 .analytics-chart-controls label { font-size:11px; color:#80684c; }
