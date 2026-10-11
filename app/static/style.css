@@ -10496,6 +10496,29 @@ html.dark-mode .post-card-date {
 .analytics-funnel-legend i { width:10px; height:10px; border-radius:2px; display:inline-block; }
 @media (max-width:767px) { .analytics-chart-controls { align-items:flex-start; flex-direction:column; gap:8px; } }
 
+/* Keep the light check-in card readable when the surrounding page is dark. */
+html.dark-mode .weekly-checkin {
+  color: #3d2925;
+  border-color: #9f7168;
+  background: linear-gradient(135deg, #fff8f1 0%, #f8e9e0 58%, #f4e1e2 100%);
+}
+html.dark-mode .weekly-checkin h2,
+html.dark-mode .weekly-checkin p,
+html.dark-mode .weekly-checkin-results > div,
+html.dark-mode .weekly-checkin > a { color: #3d2925 !important; }
+html.dark-mode .weekly-checkin-kicker { color: #8d5960 !important; }
+html.dark-mode .weekly-checkin-choices button {
+  border-color: #d5aaa0;
+  background: #fff8f1;
+  color: #765047 !important;
+}
+html.dark-mode .weekly-checkin-choices button:hover { background: #f3ddd3; }
+html.dark-mode .weekly-checkin-results i,
+html.dark-mode .sunday-question-results i { background: #ead2ca; }
+html.dark-mode .weekly-checkin-results b,
+html.dark-mode .sunday-question-results b { background: #c98f82; }
+html.dark-mode .sunday-question-results > div { color: #3d2925 !important; }
+
 /* Keep the stacked acquisition view visibly segmented despite the base bar styles. */
 .analytics-column > i.analytics-stacked-column {
   background: transparent !important;
