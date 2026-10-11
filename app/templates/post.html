@@ -83,7 +83,7 @@
             <option value="most_relatable" {% if sort_by == "most_relatable" %}selected{% endif %}>Most Relatable</option>
             <option value="most_replies" {% if sort_by == "most_replies" %}selected{% endif %}>Most Replies</option>
             <option value="unanswered" {% if sort_by == "unanswered" %}selected{% endif %}>Not answered at all</option>
-            <option value="still_thinking" {% if sort_by == "still_thinking" %}selected{% endif %}>Still thinking</option>
+            <option value="still_thinking" {% if sort_by == "still_thinking" %}selected{% endif %}>Still thinking about this</option>
             <option value="oldest_first" {% if sort_by == "oldest_first" %}selected{% endif %}>Oldest First</option>
         </select>
     </form>
@@ -141,7 +141,7 @@
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="thread_status" value="still_thinking">
                     <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
-                    <button class="post-feed-status-option{% if post.thread_status != 'answered' %} is-active{% endif %}" type="submit">Still thinking</button>
+                    <button class="post-feed-status-option{% if post.thread_status != 'answered' %} is-active{% endif %}" type="submit">Still thinking about this</button>
                 </form>
                 <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
