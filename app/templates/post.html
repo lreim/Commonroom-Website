@@ -178,7 +178,7 @@
             </div>
             {% endif %}
             {% if post.is_starter and post.body.startswith('Sunday Check-in') %}<p class="sunday-post-reply-hint">You have all week to add your answer. You can change your answers anytime. Want to share more? Add a longer answer below as a reply.</p></details>{% endif %}
-            <div class="post-meta-actions">
+            {% if not (post.is_starter and post.body.startswith('Sunday Check-in')) %}<div class="post-meta-actions">
                 {% if current_user.is_authenticated %}
                 <button
                     type="button"
@@ -197,7 +197,7 @@
                     <span class="post-like-count">{{ post.liked_by.count() }}</span>
                 </a>
                 {% endif %}
-            </div>
+            </div>{% endif %}
             {% set total_reply_count = post.descendant_reply_count %}
             {% if total_reply_count > 0 %}
             <div class="post-thread-row">
