@@ -98,6 +98,13 @@
         {% if (not node.is_starter and node.author_id == current_user.id) or (node.is_starter and node.parent_id and current_user.is_administrator()) %}
         <a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=node.id, next=request.path) }}">Edit</a>
         {% endif %}
+        {% if current_user.is_authenticated and current_user.is_administrator() %}
+        <form method="post" action="{{ url_for('main.archive_post_admin', post_id=node.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="next" value="{{ request.full_path }}">
+            <button type="submit" class="post-edit-link">Archive</button>
+        </form>
+        {% endif %}
         <details class="post-reply-box" data-reply-toggle{% if failed_reply_to_id == node.id %} open{% endif %}>
             <summary data-closed-label="Reply" data-open-label="Close">Reply</summary>
             <form method="post" action="{{ url_for('main.post_thread', post_id=post.id) }}">

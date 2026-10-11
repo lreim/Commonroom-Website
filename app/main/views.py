@@ -1304,6 +1304,8 @@ def post_thread(post_id):
         if reply.id in visited_reply_ids:
             continue
         visited_reply_ids.add(reply.id)
+        if reply.is_archived and not current_user.is_administrator():
+            continue
         thread_replies.append(reply)
         frontier.extend(reply.replies.all())
 
@@ -1342,6 +1344,8 @@ def post_thread(post_id):
 
     reply_groups = []
     for direct_reply in root_post.replies.all():
+        if direct_reply.is_archived and not current_user.is_administrator():
+            continue
         replies = [direct_reply] + descendants_for(direct_reply)
         reply_groups.append(SimpleNamespace(replies=replies))
 
@@ -1909,7 +1913,7 @@ def archive_sunday_checkin(post_id):
 @login_required
 @admin_required
 def archive_post_admin(post_id):
-    post = Post.query.filter_by(id=post_id, parent_id=None).first_or_404()
+    post = Post.query.get_or_404(post_id)
     post.is_archived = True
     db.session.commit()
     flash('Post archived. It is now available in the admin archive.')
@@ -1919,7 +1923,7 @@ def archive_post_admin(post_id):
 @login_required
 @admin_required
 def archived_posts_admin():
-    archived_posts = Post.query.filter_by(parent_id=None, is_archived=True).order_by(Post.timestamp.desc()).all()
+    archived_posts = Post.query.filter_by(is_archived=True).order_by(Post.timestamp.desc()).all()
     return render_template('admin/archived_posts.html', archived_posts=archived_posts, active_page=None)
 @main.route('/admin/starter-posts/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
