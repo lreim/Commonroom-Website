@@ -641,7 +641,10 @@ def index():
     reply_form = ReplyForm()
     homepage_posts = (
         Post.query
-        .filter(Post.parent_id.is_(None))
+        .filter(
+            Post.parent_id.is_(None),
+            or_(Post.is_archived.is_(False), Post.is_archived.is_(None)),
+        )
         .order_by(Post.timestamp.desc(), Post.id.desc())
         .limit(6)
         .all()
