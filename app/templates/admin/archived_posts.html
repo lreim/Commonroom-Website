@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}CommonRoom - Archived posts{% endblock %}
+{% block page_content %}
+<main class="starter-post-admin">
+  <header class="starter-post-admin-header">
+    <div class="starter-post-admin-kicker">ADMIN ONLY</div>
+    <h1>Archived posts</h1>
+    <p>Posts archived by the admin remain available here and are hidden from everyone else.</p>
+  </header>
+  <section class="starter-post-list">
+    {% for post in archived_posts %}
+    <article class="starter-post-admin-card">
+      <div class="starter-post-admin-card-meta"><span>{{ post.post_type|capitalize }}</span><span>{{ moment(post.timestamp).fromNow() }}</span></div>
+      <p>{{ post.body }}</p>
+      <a class="btn btn-default" href="{{ url_for('main.post_thread', post_id=post.id) }}">View archived post</a>
+    </article>
+    {% else %}<p class="starter-post-empty">No archived posts yet.</p>{% endfor %}
+  </section>
+</main>
+{% endblock %}

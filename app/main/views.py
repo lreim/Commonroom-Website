@@ -1904,6 +1904,23 @@ def archive_sunday_checkin(post_id):
     db.session.commit()
     flash('Sunday Check-in archived. It remains available in the admin archive.')
     return redirect(url_for('main.sunday_checkins_admin'))
+
+@main.route('/admin/posts/<int:post_id>/archive', methods=['POST'])
+@login_required
+@admin_required
+def archive_post_admin(post_id):
+    post = Post.query.filter_by(id=post_id, parent_id=None).first_or_404()
+    post.is_archived = True
+    db.session.commit()
+    flash('Post archived. It is now available in the admin archive.')
+    return redirect(request.form.get('next') or url_for('main.post'))
+
+@main.route('/admin/archived-posts')
+@login_required
+@admin_required
+def archived_posts_admin():
+    archived_posts = Post.query.filter_by(parent_id=None, is_archived=True).order_by(Post.timestamp.desc()).all()
+    return render_template('admin/archived_posts.html', archived_posts=archived_posts, active_page=None)
 @main.route('/admin/starter-posts/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required

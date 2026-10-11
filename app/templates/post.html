@@ -120,6 +120,13 @@
             <a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">{% if post.body.startswith('Sunday Check-in') %}Sunday Check-in{% else %}Starter post{% endif %}</a>
             {% endif %}
             <span class="post-category-label">{{ post.post_type|capitalize }}</span>
+            {% if current_user.is_authenticated and current_user.is_administrator() %}
+            <form method="post" action="{{ url_for('main.archive_post_admin', post_id=post.id) }}" class="admin-post-archive-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
+                <button type="submit" class="post-feed-status-option">Archive</button>
+            </form>
+            {% endif %}
             {% if current_user.is_authenticated and not (post.is_starter and post.body.startswith('Sunday Check-in')) and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
             <div class="post-feed-status-controls" aria-label="Thread status">
                 <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}">
@@ -164,7 +171,7 @@
             <div class="post-body">{% if post.is_starter and post.body.startswith('Sunday Check-in') %}Sunday Check-in 🌿{% else %}{{ post.body }}{% endif %}</div>
             {% if post.is_starter and post.body.startswith('Sunday Check-in') %}
             <div class="sunday-post-poll" aria-label="Sunday Check-in response options">
-                {% for question, prompt, choices in [('moment', 'What was one small win from your week?', [('win','A small win'),('kind','A kind moment'),('laugh','Something that made you laugh'),('none','Nothing comes to mind')]), ('plan', 'What are you looking forward to?', [('food','Good food'),('people','Seeing someone'),('break','A little break'),('nothing','Nothing planned yet')]), ('energy', 'What would help you recharge?', [('sleep','More sleep'),('walk','A walk outside'),('music','Music or a podcast'),('quiet','Some quiet time')]), ('new', 'What would you like to try soon?', [('new','Trying something new'),('place','A new place'),('recipe','A new recipe'),('idea','A new idea')])] %}
+                {% for question, prompt, choices in [('moment', 'What was one small win from your week?', [('win','Overcame a hurdle'),('kind','A kind moment'),('laugh','Something that made you laugh'),('none','Nothing comes to mind')]), ('plan', 'What would make this week a little better?', [('meal','A good meal'),('rest','A bit of rest'),('people','Time with someone'),('small_win','A small win'),('unsure','Not sure yet')]), ('energy', 'What would help you recharge?', [('sleep','More sleep'),('walk','A walk outside'),('music','Music or a podcast'),('quiet','Some quiet time')]), ('new', 'What would you like to try soon?', [('new','Trying something new'),('place','A new place'),('recipe','A new recipe'),('idea','A new idea')])] %}
                 <div class="sunday-question-block"><strong>{{ prompt }}</strong><div>{% for value, label in choices %}<form method="post" action="{{ url_for('main.sunday_checkin_vote', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="question" value="{{ question }}"><input type="hidden" name="choice" value="{{ value }}"><input type="hidden" name="next" value="{{ request.full_path }}"><button type="submit">{{ label }}</button></form>{% endfor %}</div>{% set poll_stats = sunday_poll_stats|default({}) %}{% set question_stats = poll_stats.get(post.id, {}).get(question, {}) %}{% set ns = namespace(total=0) %}{% for value, label in choices %}{% set ns.total = ns.total + question_stats.get(value, 0) %}{% endfor %}{% if ns.total %}<div class="sunday-question-results">{% for value, label in choices %}<div><span>{{ label }}</span><i><b style="width: {{ (question_stats.get(value, 0) / ns.total * 100) if ns.total else 0 }}%;"></b></i><small>{{ question_stats.get(value, 0) }}</small></div>{% endfor %}</div>{% endif %}</div>
                 {% endfor %}
             </div>
