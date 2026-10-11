@@ -385,6 +385,7 @@ class Post(db.Model):
     thread_status = db.Column(db.String(32), nullable=False, default='still_thinking')
     reply_type = db.Column(db.String(32), nullable=True)
     is_starter = db.Column(db.Boolean, nullable=False, default=False)
+    is_archived = db.Column(db.Boolean, nullable=False, default=False, index=True)
     liked_by = db.relationship('User', secondary=post_likes, back_populates='liked_posts', lazy='dynamic')
 
     parent = db.relationship(

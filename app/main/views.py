@@ -657,7 +657,25 @@ def index():
     )
 
 
-CHECKIN_CHOICES = [('calm', 'Calm'), ('overwhelmed', 'A bit overwhelmed'), ('motivated', 'Motivated'), ('lonely', 'Lonely'), ('unsure', 'Not sure yet')]
+CHECKIN_CHOICES = [
+    ('food', 'Good food'),
+    ('people', 'Seeing someone'),
+    ('break', 'A little break'),
+    ('done', 'Getting something done'),
+    ('new', 'Trying something new'),
+    ('nothing', 'Nothing planned yet'),
+]
+CHECKIN_QUESTION = "What's one small thing you're looking forward to this week?"
+CHECKIN_LEGACY_CHOICES = [
+    ('listening', 'A listening ear'),
+    ('advice', 'Practical advice'),
+    ('encouragement', 'A little encouragement'),
+    ('quiet', 'Some quiet space'),
+    ('calm', 'Calm'),
+    ('overwhelmed', 'A bit overwhelmed'),
+    ('motivated', 'Motivated'),
+    ('lonely', 'Lonely'),
+]
 
 
 def _weekly_checkin_week_key(now=None):
@@ -701,6 +719,7 @@ def _weekly_checkin_context():
     ).order_by(Post.timestamp.desc(), Post.id.desc()).first()
     return {
         'week_key': week_key,
+        'question': CHECKIN_QUESTION,
         'choices': CHECKIN_CHOICES,
         'counts': counts,
         'total': total,
@@ -711,14 +730,15 @@ def _weekly_checkin_context():
 
 def _build_weekly_checkin_admin_stats():
     rows = WeeklyCheckInResponse.query.order_by(WeeklyCheckInResponse.week_key.desc()).all()
+    analytics_choices = CHECKIN_CHOICES + [choice for choice in CHECKIN_LEGACY_CHOICES if choice[0] not in dict(CHECKIN_CHOICES)]
     grouped = {}
     for row in rows:
-        week = grouped.setdefault(row.week_key, {'week_key': row.week_key, 'total': 0, 'logged_in': 0, 'visitors': 0, 'counts': {value: 0 for value, _ in CHECKIN_CHOICES}})
+        week = grouped.setdefault(row.week_key, {'week_key': row.week_key, 'total': 0, 'logged_in': 0, 'visitors': 0, 'counts': {value: 0 for value, _ in analytics_choices}})
         week['total'] += 1
         week['logged_in' if row.user_id is not None else 'visitors'] += 1
         week['counts'][row.choice] = week['counts'].get(row.choice, 0) + 1
     weeks = list(grouped.values())[:12]
-    return {'choices': CHECKIN_CHOICES, 'weeks': weeks, 'latest': weeks[0] if weeks else None}
+    return {'choices': analytics_choices, 'weeks': weeks, 'latest': weeks[0] if weeks else None}
 
 @main.route('/weekly-checkin', methods=['POST'])
 def weekly_checkin():
@@ -1039,7 +1059,7 @@ def post():
     if post_type_filter not in {'all', 'relate', 'question', 'confession'}:
         post_type_filter = 'all'
     page = request.args.get('page', 1, type=int)
-    post_query = Post.query.filter(Post.parent_id.is_(None))
+    post_query = Post.query.filter(Post.parent_id.is_(None), Post.is_archived.is_(False))
     if post_type_filter != 'all':
         post_query = post_query.filter(Post.post_type == post_type_filter)
     if matched_topics:
@@ -1871,8 +1891,19 @@ def sunday_checkins_admin():
         db.session.commit()
         flash('Sunday Check-in published as CommonRoom platform content.')
         return redirect(url_for('main.sunday_checkins_admin'))
-    checkins = Post.query.filter(Post.is_starter.is_(True), Post.body.ilike('%Sunday Check-in%')).order_by(Post.timestamp.desc()).all()
-    return render_template('admin/sunday_checkins.html', form=form, checkins=checkins, active_page=None)
+    checkins = Post.query.filter(Post.is_starter.is_(True), Post.body.ilike('%Sunday Check-in%'), Post.is_archived.is_(False)).order_by(Post.timestamp.desc()).all()
+    archived_checkins = Post.query.filter(Post.is_starter.is_(True), Post.body.ilike('%Sunday Check-in%'), Post.is_archived.is_(True)).order_by(Post.timestamp.desc()).all()
+    return render_template('admin/sunday_checkins.html', form=form, checkins=checkins, archived_checkins=archived_checkins, active_page=None)
+
+@main.route('/admin/sunday-checkins/<int:post_id>/archive', methods=['POST'])
+@login_required
+@admin_required
+def archive_sunday_checkin(post_id):
+    post = Post.query.filter_by(id=post_id, is_starter=True).first_or_404()
+    post.is_archived = True
+    db.session.commit()
+    flash('Sunday Check-in archived. It remains available in the admin archive.')
+    return redirect(url_for('main.sunday_checkins_admin'))
 @main.route('/admin/starter-posts/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
 @admin_required

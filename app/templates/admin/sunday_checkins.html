@@ -18,7 +18,11 @@
   </section>
   <section class="starter-post-list" aria-labelledby="published-sunday-checkins-title">
     <h2 id="published-sunday-checkins-title">Published Sunday Check-ins</h2>
-    {% for post in checkins %}<article class="starter-post-admin-card"><div class="starter-post-admin-card-meta"><span>Question</span><span>{{ moment(post.timestamp).fromNow() }}</span></div><p>{{ post.body }}</p></article>{% else %}<p class="starter-post-empty">No Sunday Check-ins have been published yet.</p>{% endfor %}
+    {% for post in checkins %}<article class="starter-post-admin-card"><div class="starter-post-admin-card-meta"><span>Question</span><span>{{ moment(post.timestamp).fromNow() }}</span></div><p>{{ post.body }}</p><form method="post" action="{{ url_for('main.archive_sunday_checkin', post_id=post.id) }}">{{ form.csrf_token }}<button class="btn btn-default" type="submit">Archive post</button></form></article>{% else %}<p class="starter-post-empty">No Sunday Check-ins have been published yet.</p>{% endfor %}
+  </section>
+  <section class="starter-post-list" aria-labelledby="archived-sunday-checkins-title">
+    <h2 id="archived-sunday-checkins-title">Sunday Check-in archive</h2>
+    {% for post in archived_checkins %}<article class="starter-post-admin-card"><div class="starter-post-admin-card-meta"><span>Archived</span><span>{{ moment(post.timestamp).fromNow() }}</span></div><p>{{ post.body }}</p><a class="btn btn-default" href="{{ url_for('main.post_thread', post_id=post.id) }}">View archived post</a></article>{% else %}<p class="starter-post-empty">No archived Sunday Check-ins yet.</p>{% endfor %}
   </section>
 </main>
 {% endblock %}
