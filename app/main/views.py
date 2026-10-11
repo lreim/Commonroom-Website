@@ -765,10 +765,10 @@ def weekly_checkin():
 
 
 SUNDAY_CHECKIN_QUESTIONS = {
-    'moment': ('What was a small moment that stayed with you this week?', [('win', 'A win'), ('connection', 'A nice interaction'), ('surprise', 'Something unexpected'), ('none', 'Nothing specific')]),
-    'proud': ('What are you proud of, even if it feels small?', [('study', 'Studying or work'), ('care', 'Taking care of myself'), ('reach', 'Reaching out'), ('through', 'Getting through a hard day')]),
-    'easier': ('What would make next week easier?', [('rest', 'More rest'), ('structure', 'More structure'), ('support', 'More support'), ('time', 'More time for myself')]),
-    'carry': ('What do you want to carry into the new week?', [('lesson', 'A lesson'), ('feeling', 'A good feeling'), ('decision', 'A decision'), ('intention', 'A new intention')]),
+    'moment': ('What was one small win from your week?', [('win', 'Overcame a hurdle'), ('kind', 'A kind moment'), ('laugh', 'Something that made you laugh'), ('none', 'Nothing comes to mind')]),
+    'plan': ('What would make this week a little better?', [('meal', 'A good meal'), ('rest', 'A bit of rest'), ('people', 'Time with someone'), ('small_win', 'A small win'), ('unsure', 'Not sure yet')]),
+    'energy': ('What would help you recharge?', [('sleep', 'More sleep'), ('walk', 'A walk outside'), ('music', 'Music or a podcast'), ('quiet', 'Some quiet time')]),
+    'new': ('What would you like to try soon?', [('new', 'Trying something new'), ('place', 'A new place'), ('recipe', 'A new recipe'), ('idea', 'A new idea')]),
 }
 
 
