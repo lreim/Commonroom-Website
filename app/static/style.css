@@ -10474,6 +10474,13 @@ html.dark-mode .post-card-date {
 .sunday-post-collapsible > summary::-webkit-details-marker { display:none; }
 .sunday-post-collapsible > summary span { display:inline-block; margin-left:5px; transition:transform .15s ease; }
 .sunday-post-collapsible[open] > summary span { transform:rotate(180deg); }
+.post-page-list .post { position:relative; }
+.sunday-checkin-pin { position:absolute; left:-18px; top:18px; font-size:16px; line-height:1; transform:rotate(-16deg); }
+@media (max-width:767px) { .sunday-checkin-pin { left:6px; top:14px; font-size:14px; } }
+.post-pagination { display:flex; flex-wrap:wrap; gap:6px; margin:14px 0; justify-content:center; }
+.post-pagination a { min-width:30px; padding:5px 9px; border:1px solid #dfcfb5; border-radius:999px; background:#fff8f1; color:#80684c; text-align:center; font-size:12px; font-weight:700; }
+.post-pagination a:hover, .post-pagination a.is-active { background:#b45f78; border-color:#b45f78; color:#fff8f1; }
+.post-pagination-bottom { margin:20px 0 45px; }
 .analytics-chart-controls { display:flex; align-items:flex-end; gap:14px; }
 .analytics-chart-controls form { display:flex; align-items:center; gap:7px; }
 .analytics-chart-controls label { font-size:11px; color:#80684c; }

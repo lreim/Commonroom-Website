@@ -7,7 +7,7 @@ from types import SimpleNamespace
 from urllib.parse import urlparse
 from uuid import uuid4
 from zoneinfo import ZoneInfo
-from sqlalchemy import func, case
+from sqlalchemy import func, case, or_
 from sqlalchemy.orm import aliased
 from flask import Response, abort, render_template, session, redirect, url_for, current_app, request, flash, jsonify
 from . import main
@@ -1059,7 +1059,10 @@ def post():
     if post_type_filter not in {'all', 'relate', 'question', 'confession'}:
         post_type_filter = 'all'
     page = request.args.get('page', 1, type=int)
-    post_query = Post.query.filter(Post.parent_id.is_(None), Post.is_archived.is_(False))
+    post_query = Post.query.filter(
+        Post.parent_id.is_(None),
+        or_(Post.is_archived.is_(False), Post.is_archived.is_(None)),
+    )
     if post_type_filter != 'all':
         post_query = post_query.filter(Post.post_type == post_type_filter)
     if matched_topics:
