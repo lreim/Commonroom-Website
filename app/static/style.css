@@ -10111,7 +10111,7 @@ html.dark-mode .content-report-dialog h2 { color: #f2dbe6; }
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 7px;
+  gap: 14px;
   flex: 0 0 auto;
 }
 .content-report-button:not(.content-report-submit) {
