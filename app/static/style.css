@@ -10350,6 +10350,25 @@ html.dark-mode .post-card-date {
 .homepage-real-post .post-action-stack { align-items: flex-end; }
 .homepage-real-post .post-author a { font-weight: 600; }
 
+@media (max-width: 767px) {
+  .post-page-list .post-side-actions,
+  .homepage-real-post .post-side-actions {
+    width: 150px;
+    flex: 0 0 150px;
+    flex-basis: 150px;
+    margin-left: auto;
+    align-self: stretch;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .post-page-list .post-action-stack,
+  .homepage-real-post .post-action-stack {
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
 .chat-reply-button {
   border: 0;
   background: transparent;
