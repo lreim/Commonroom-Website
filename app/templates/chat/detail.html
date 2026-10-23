@@ -241,6 +241,7 @@
     messageElement.querySelector('[data-delete-message]')?.remove();
   });
 
+
   messagesList.addEventListener('click', (event) => {
     const replyButton = event.target.closest('[data-reply-message]');
     if (replyButton) {

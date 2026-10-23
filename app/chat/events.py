@@ -126,7 +126,11 @@ def delete_message(data):
         emit("chat_error", {"message": "Not authenticated"})
         return
 
-    message_id = data.get("message_id")
+    try:
+        message_id = int(data.get("message_id"))
+    except (TypeError, ValueError):
+        emit("chat_error", {"message": "This message could not be identified."})
+        return
     msg = Message.query.get(message_id)
     if msg is None or msg.author_id != current_user.id or msg.deleted_at is not None:
         emit("chat_error", {"message": "You can only delete your own messages."})
@@ -141,8 +145,9 @@ def delete_message(data):
     msg.deleted_at = datetime.now(timezone.utc)
     msg.edited_at = None
     db.session.commit()
-    emit("message_deleted", {
-        "id": int(message_id),
+    payload = {
+        "id": message_id,
         "conversation_id": conversation_id,
         "deleted_at": msg.deleted_at.isoformat(),
-    }, to=_room_name(conversation_id))
+    }
+    emit("message_deleted", payload, to=_room_name(conversation_id))
