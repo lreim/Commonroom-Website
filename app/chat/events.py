@@ -150,4 +150,9 @@ def delete_message(data):
         "conversation_id": conversation_id,
         "deleted_at": msg.deleted_at.isoformat(),
     }
+    deleted_at = msg.deleted_at
+    deleted_at_iso = deleted_at.isoformat()
+    if deleted_at.tzinfo is None:
+        deleted_at_iso += "+00:00"
+    payload["deleted_at"] = deleted_at_iso
     emit("message_deleted", payload, to=_room_name(conversation_id))
