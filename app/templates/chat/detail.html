@@ -51,11 +51,11 @@
                 <div class="chat-meta">
                   {% if m.author_id != current_user.id %}{{ report_button("message", m.id) }}{% endif %}
                   <a class="chat-author chat-author-link" href="{{ url_for('main.user', username=m.author.username) }}">{{ m.author.username }}</a>
-                  {% if m.author_id == current_user.id %}<button type="button" class="chat-edit-button" data-edit-message="{{ m.id }}">Edit</button>{% endif %}
+                  {% if m.author_id == current_user.id and not m.deleted_at %}<button type="button" class="chat-edit-button" data-edit-message="{{ m.id }}">Edit</button><button type="button" class="chat-delete-button" data-delete-message="{{ m.id }}">Delete</button>{% endif %}
                   <button type="button" class="chat-reply-button" data-reply-message="{{ m.id }}">Reply</button>
                 </div>
                 {% if m.reply_to %}<div class="chat-reply-preview"><strong>{{ m.reply_to.author.username }}</strong><span>{{ m.reply_to.body }}</span></div>{% endif %}
-                <div class="chat-body">{{ m.body }}</div>
+                <div class="chat-body">{% if m.deleted_at %}This message was deleted on {{ m.deleted_at.strftime('%d.%m.%Y %H:%M') }}{% else %}{{ m.body }}{% endif %}</div>
                 {% if m.edited_at %}<span class="chat-edited-label">edited</span>{% endif %}
               </div>
               <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
@@ -119,7 +119,9 @@
 
     const body = document.createElement("div");
     body.className = "chat-body";
-    body.textContent = msg.body;
+    body.textContent = msg.deleted_at
+      ? `This message was deleted on ${formatTimestamp(msg.deleted_at)}`
+      : msg.body;
 
     if (msg.reply_to) {
       const quote = document.createElement('div');
@@ -133,13 +135,19 @@
     }
 
     meta.appendChild(authorLink);
-    if (msg.author_id === currentUserId) {
+    if (msg.author_id === currentUserId && !msg.deleted_at) {
       const edit = document.createElement('button');
       edit.type = 'button';
       edit.className = 'chat-edit-button';
       edit.textContent = 'Edit';
       edit.dataset.editMessage = String(msg.id);
       meta.appendChild(edit);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'chat-delete-button';
+      remove.textContent = 'Delete';
+      remove.dataset.deleteMessage = String(msg.id);
+      meta.appendChild(remove);
     }
     if (msg.author_id !== currentUserId) {
       const report = document.createElement('button');
@@ -224,6 +232,15 @@
     }
   });
 
+  socket.on("message_deleted", (msg) => {
+    if (msg.conversation_id !== conversationId) return;
+    const messageElement = document.getElementById(`message-${msg.id}`);
+    if (!messageElement) return;
+    messageElement.querySelector('.chat-body').textContent = `This message was deleted on ${formatTimestamp(msg.deleted_at)}`;
+    messageElement.querySelector('[data-edit-message]')?.remove();
+    messageElement.querySelector('[data-delete-message]')?.remove();
+  });
+
   messagesList.addEventListener('click', (event) => {
     const replyButton = event.target.closest('[data-reply-message]');
     if (replyButton) {
@@ -237,6 +254,13 @@
       return;
     }
     const button = event.target.closest('[data-edit-message]');
+    const deleteButton = event.target.closest('[data-delete-message]');
+    if (deleteButton) {
+      if (window.confirm('Delete this message?')) {
+        socket.emit('delete_message', { message_id: Number(deleteButton.dataset.deleteMessage) });
+      }
+      return;
+    }
     if (!button) return;
     const messageElement = document.getElementById(`message-${button.dataset.editMessage}`);
     const body = messageElement.querySelector('.chat-body');

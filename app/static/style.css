@@ -10062,6 +10062,8 @@ html.dark-mode .post-thread-item .post-like-button.is-liked {
   padding: 0 4px;
 }
 .chat-edit-button { margin-left: 8px; }
+.chat-delete-button { border: 0; background: transparent; color: #a34f58; cursor: pointer; font-size: 11px; padding: 0 4px; }
+.chat-delete-button:hover { color: #7f2632; text-decoration: underline; }
 .chat-edit-save { color: #49613f; font-weight: 700; }
 .chat-edit-cancel { color: #8a3f61; }
 .chat-edit-editor { display: flex; align-items: center; gap: 6px; }
@@ -10144,7 +10146,7 @@ html.dark-mode .content-report-dialog h2 { color: #f2dbe6; }
 .post-new-indicator {
   position: absolute;
   top: 9px;
-  left: -13px;
+  left: 18px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -10154,7 +10156,12 @@ html.dark-mode .content-report-dialog h2 { color: #f2dbe6; }
   font-weight: 700;
   letter-spacing: .03em;
   text-transform: lowercase;
+  z-index: 2;
 }
+
+/* Reserve a little room for the marker so it stays inside the card instead
+   of hanging off the left edge on narrow screens. */
+.post:has(.post-new-indicator) .post-card-date { padding-left: 38px; }
 
 .post-new-indicator > span:first-child {
   width: 7px;
@@ -10168,6 +10175,12 @@ html.dark-mode .post-new-indicator { color: #7bd98d; }
 
 html.dark-mode .post-card-date {
   color: #b9aa9b;
+}
+
+@media (max-width: 767px) {
+  .post-new-indicator { top: 8px; left: 14px; font-size: 8px; }
+  .post-new-indicator > span:first-child { width: 6px; height: 6px; }
+  .post:has(.post-new-indicator) .post-card-date { padding-left: 34px; }
 }
 
 .post-category-status-row {

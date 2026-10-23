@@ -379,6 +379,7 @@ class Post(db.Model):
         default=lambda: datetime.now(timezone.utc),
     )
     edited_at = db.Column(db.DateTime, nullable=True)
+    deleted_at = db.Column(db.DateTime, nullable=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('posts.id'), index=True)
     post_type = db.Column(db.String(16), nullable=False, default='relate', index=True)

@@ -101,7 +101,7 @@ def edit_message(data):
         return
 
     msg = Message.query.get(message_id)
-    if msg is None or msg.author_id != current_user.id:
+    if msg is None or msg.author_id != current_user.id or msg.deleted_at is not None:
         emit("chat_error", {"message": "You can only edit your own messages."})
         return
     conversation = msg.conversation
@@ -118,3 +118,31 @@ def edit_message(data):
         "body": msg.body,
         "edited_at": msg.edited_at.isoformat(),
     }, to=_room_name(conversation.id))
+
+
+@socketio.on("delete_message")
+def delete_message(data):
+    if not current_user.is_authenticated:
+        emit("chat_error", {"message": "Not authenticated"})
+        return
+
+    message_id = data.get("message_id")
+    msg = Message.query.get(message_id)
+    if msg is None or msg.author_id != current_user.id or msg.deleted_at is not None:
+        emit("chat_error", {"message": "You can only delete your own messages."})
+        return
+
+    conversation = msg.conversation
+    if current_user.has_block_relationship(conversation.other_user(current_user.id)):
+        emit("chat_error", {"message": "You cannot delete messages in this chat."})
+        return
+
+    conversation_id = conversation.id
+    msg.deleted_at = datetime.now(timezone.utc)
+    msg.edited_at = None
+    db.session.commit()
+    emit("message_deleted", {
+        "id": int(message_id),
+        "conversation_id": conversation_id,
+        "deleted_at": msg.deleted_at.isoformat(),
+    }, to=_room_name(conversation_id))
