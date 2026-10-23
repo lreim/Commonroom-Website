@@ -55,7 +55,7 @@
                   <button type="button" class="chat-reply-button" data-reply-message="{{ m.id }}">Reply</button>
                 </div>
                 {% if m.reply_to %}<div class="chat-reply-preview"><strong>{{ m.reply_to.author.username }}</strong><span>{{ m.reply_to.body }}</span></div>{% endif %}
-                <div class="chat-body">{% if m.deleted_at %}This message was deleted on {{ m.deleted_at.strftime('%d.%m.%Y %H:%M') }}{% else %}{{ m.body }}{% endif %}</div>
+                <div class="chat-body">{% if m.deleted_at %}This message was deleted on {{ moment(m.deleted_at).format('DD.MM.YYYY HH:mm') }}{% else %}{{ m.body }}{% endif %}</div>
                 {% if m.edited_at %}<span class="chat-edited-label">edited</span>{% endif %}
               </div>
               <span class="chat-time">{{ moment(m.created_at).format('DD.MM.YYYY HH:mm') }}</span>
