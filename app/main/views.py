@@ -917,6 +917,9 @@ def visit_purpose_survey():
         if audience == 'existing':
             session['visit_purpose_survey_cycle_index'] = session.get('visit_purpose_survey_cycle_index', 0) + 1
             session.pop('visit_purpose_admin_recurring_ready', None)
+        if audience in {'existing', 'visitor'}:
+            from datetime import datetime, timezone, timedelta
+            session['visit_purpose_survey_snoozed_until'] = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
     session.modified = True
     db.session.commit()
     return redirect(request.form.get('next') or url_for('main.index'))
