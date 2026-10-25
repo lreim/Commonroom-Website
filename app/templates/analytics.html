@@ -492,6 +492,12 @@
   </section>
   <section id="analytics-checkin" class="analytics-view-panel" role="tabpanel" data-analytics-panel="checkin" hidden>
     <div class="analytics-section-heading"><div><span>WEEKLY CHECK-IN</span><h2>How is the community arriving?</h2></div><p>Anonymous totals, split between logged-in profiles and visitors.</p></div>
+    {% if sunday_post_stats %}
+    <article class="analytics-breakdown-card"><span class="analytics-card-kicker">SUNDAY CHECK-IN POSTS</span><h3>Responses by post</h3>
+      {% set all_post_responses = sunday_post_stats|map(attribute='total')|sum %}
+      {% for item in sunday_post_stats %}<div class="analytics-ranking-row"><span>Post #{{ item.post.id }} · {{ moment(item.post.timestamp).format('DD.MM.YYYY') }}{% if item.post.is_archived %} · archived{% endif %}</span><div><i style="width: {{ (item.total / all_post_responses * 100) if all_post_responses else 0 }}%;"></i></div><strong>{{ item.total }}</strong></div>{% endfor %}
+    </article>
+    {% endif %}
     {% if weekly_checkin_stats.latest %}
     {% set latest = weekly_checkin_stats.latest %}
     <div class="analytics-split-grid">

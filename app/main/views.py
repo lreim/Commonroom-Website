@@ -614,6 +614,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
     }
     snapshot.update(_build_content_stats())
     snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats()
+    snapshot['sunday_post_stats'] = _build_sunday_post_admin_stats()
     event_counts = Counter(
         event.event_type
         for event in ProfileNudgeEvent.query
@@ -741,6 +742,17 @@ def _build_weekly_checkin_admin_stats():
         week['counts'][row.choice] = week['counts'].get(row.choice, 0) + 1
     weeks = list(grouped.values())[:12]
     return {'choices': analytics_choices, 'weeks': weeks, 'latest': weeks[0] if weeks else None}
+
+def _build_sunday_post_admin_stats():
+    posts = Post.query.filter(Post.is_starter.is_(True), Post.body.ilike('%Sunday Check-in%')).order_by(Post.timestamp.desc()).all()
+    result = []
+    for post in posts:
+        rows = SundayCheckInResponse.query.filter_by(post_id=post.id).all()
+        counts = {}
+        for row in rows:
+            counts.setdefault(row.question, {})[row.choice] = counts.setdefault(row.question, {}).get(row.choice, 0) + 1
+        result.append({'post': post, 'total': len(rows), 'counts': counts})
+    return result
 
 @main.route('/weekly-checkin', methods=['POST'])
 def weekly_checkin():
