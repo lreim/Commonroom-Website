@@ -835,6 +835,8 @@ SUNDAY_CHECKIN_REDIRECTS = {
     '1': 'sunday_checkin_Physik1',
     '2': 'sunday_checkin_Physik2',
     '3': 'sunday_checkin_Physik3',
+    '4': 'sunday_checkin_Studentenwohnheim_LS',
+    '5': 'sunday_checkin_Studentenwohnheim_SV',
 }
 
 
