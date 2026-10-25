@@ -107,8 +107,7 @@ def create_app(config_name):
                 # The onboarding question is shown only once, on the first
                 # authenticated visit after registration. Afterwards every
                 # three-day cycle uses the current-visit question.
-                audience = ('admin_intro' if session.get('visit_purpose_survey_admin_intro') else
-                            'new' if not latest and member_since and
+                audience = ('new' if not latest and member_since and
                             member_since >= now - timedelta(days=3) else 'existing')
             else:
                 visitor_token = session.get('visit_purpose_survey_token')
@@ -123,9 +122,6 @@ def create_app(config_name):
             if latest_at and latest_at.tzinfo is None:
                 latest_at = latest_at.replace(tzinfo=timezone.utc)
             followup = session.get('visit_purpose_survey_followup') == 'needs'
-            admin_recurring_ready = session.get('visit_purpose_admin_recurring_ready') is True
-            if admin_recurring_ready:
-                audience = 'existing'
             snoozed_until = session.get('visit_purpose_survey_snoozed_until')
             if snoozed_until:
                 try:
@@ -136,14 +132,12 @@ def create_app(config_name):
                     snoozed_until = None
             if followup:
                 audience = 'new_followup'
-            admin_intro = audience == 'admin_intro'
             # The admin has a one-day schedule offset via the login preview,
             # but the recurring interval remains three days for everyone.
             cooldown_days = 3
             existing_initial_delay = (audience == 'existing' and latest_at is None and
                                       now < (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)))
-            if (followup or admin_intro or admin_recurring_ready or
-                not snoozed_until or snoozed_until <= now) and (followup or admin_intro or admin_recurring_ready or
+            if (followup or not snoozed_until or snoozed_until <= now) and (followup or
                 (not existing_initial_delay and (not latest_at or latest_at <= now - timedelta(days=cooldown_days)))):
                 cycle_started = session.get('visit_purpose_survey_cycle_started_at')
                 if cycle_started:
@@ -153,10 +147,10 @@ def create_app(config_name):
                             cycle_started = cycle_started.replace(tzinfo=timezone.utc)
                     except ValueError:
                         cycle_started = None
-                if cycle_started and cycle_started <= now - timedelta(days=3) and not followup and not admin_intro:
+                if cycle_started and cycle_started <= now - timedelta(days=3) and not followup:
                     session['visit_purpose_survey_cycle_index'] = session.get('visit_purpose_survey_cycle_index', 0) + 1
                     cycle_started = None
-                if not cycle_started and not followup and not admin_intro:
+                if not cycle_started and not followup:
                     session['visit_purpose_survey_cycle_started_at'] = now.isoformat()
                     session.modified = True
                 recurring_questions = [
@@ -177,7 +171,6 @@ def create_app(config_name):
                     'audience': audience,
                     'question': ('What would be most useful for you here right now?' if audience == 'new_followup' else
                                  'What first brought you to CommonRoom?' if audience == 'new' else
-                                 'What first brought you to CommonRoom?' if audience == 'admin_intro' else
                                  recurring_question if audience == 'existing' else
                                  'What brought you to CommonRoom today?'),
                     'choices': ([('advice', 'Advice or a practical tip'), ('share', 'A place to share without judgment'),
@@ -185,7 +178,7 @@ def create_app(config_name):
                                  ('reading', 'Just reading around'), ('unsure', "I'm not sure yet")] if audience == 'new_followup' else
                                 [('curiosity', 'I was curious'), ('support', 'I wanted support'),
                                  ('recommendation', 'Someone recommended it'), ('event', 'I came from an event or link'),
-                                 ('other', 'Something else')] if audience in {'new', 'admin_intro'} else
+                                 ('other', 'Something else')] if audience == 'new' else
                                 recurring_choices[recurring_index] if audience == 'existing' else
                                 [('read', 'Read what others shared'), ('post', 'Share something'),
                                  ('reply', 'Reply or connect'), ('checkin', 'Take a check-in'),

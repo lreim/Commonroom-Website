@@ -31,8 +31,6 @@ OAUTH_ERROR_CODE_MAX_LENGTH = 64
 def _login_with_demo_mode(user, remember=False):
     login_user(user, remember)
     _claim_visit_purpose_surveys(user)
-    if user.is_administrator():
-        session['visit_purpose_survey_admin_intro'] = True
     session.pop('profile_nudge_dismissed', None)
     session.pop('profile_nudge_shown', None)
     _claim_anonymous_checkins(user)
