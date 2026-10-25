@@ -2022,7 +2022,8 @@ def _build_visit_purpose_survey_stats():
     rows = VisitPurposeSurveyEvent.query.filter(VisitPurposeSurveyEvent.event_type == 'answered').all()
     grouped = defaultdict(Counter)
     for row in rows:
-        grouped[row.audience][row.choice or 'unknown'] += 1
+        audience = 'visitor_then_logged_in' if row.audience == 'visitor' and row.user_id else row.audience
+        grouped[audience][row.choice or 'unknown'] += 1
     return {audience: dict(counts) for audience, counts in grouped.items()}
 
 
