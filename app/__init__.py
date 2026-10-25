@@ -129,7 +129,10 @@ def create_app(config_name):
             # The admin has a one-day schedule offset via the login preview,
             # but the recurring interval remains three days for everyone.
             cooldown_days = 3
-            if followup or admin_intro or not latest_at or latest_at <= now - timedelta(days=cooldown_days):
+            existing_initial_delay = (audience == 'existing' and latest_at is None and
+                                      now < (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)))
+            if (followup or admin_intro or
+                (not existing_initial_delay and (not latest_at or latest_at <= now - timedelta(days=cooldown_days)))):
                 cycle_started = session.get('visit_purpose_survey_cycle_started_at')
                 if cycle_started:
                     try:

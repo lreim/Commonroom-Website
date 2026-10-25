@@ -904,7 +904,7 @@ def visit_purpose_survey():
     db.session.add(VisitPurposeSurveyEvent(user_id=current_user.id if current_user.is_authenticated else None,
                                            visitor_token=token, audience=audience,
                                            event_type=event_type, choice=choice))
-    if audience in {'new', 'admin_intro'} and event_type == 'answered':
+    if audience in {'new', 'admin_intro'}:
         session['visit_purpose_survey_followup'] = 'needs'
     elif audience == 'new_followup' or event_type == 'dismissed':
         session.pop('visit_purpose_survey_followup', None)
