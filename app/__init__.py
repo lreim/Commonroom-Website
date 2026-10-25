@@ -123,6 +123,9 @@ def create_app(config_name):
             if latest_at and latest_at.tzinfo is None:
                 latest_at = latest_at.replace(tzinfo=timezone.utc)
             followup = session.get('visit_purpose_survey_followup') == 'needs'
+            admin_recurring_ready = session.get('visit_purpose_admin_recurring_ready') is True
+            if admin_recurring_ready:
+                audience = 'existing'
             if followup:
                 audience = 'new_followup'
             admin_intro = audience == 'admin_intro'
@@ -131,7 +134,7 @@ def create_app(config_name):
             cooldown_days = 3
             existing_initial_delay = (audience == 'existing' and latest_at is None and
                                       now < (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)))
-            if (followup or admin_intro or
+            if (followup or admin_intro or admin_recurring_ready or
                 (not existing_initial_delay and (not latest_at or latest_at <= now - timedelta(days=cooldown_days)))):
                 cycle_started = session.get('visit_purpose_survey_cycle_started_at')
                 if cycle_started:

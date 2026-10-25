@@ -910,10 +910,13 @@ def visit_purpose_survey():
         session.pop('visit_purpose_survey_followup', None)
     if audience == 'admin_intro':
         session.pop('visit_purpose_survey_admin_intro', None)
+    if audience == 'new_followup' and current_user.is_authenticated and current_user.is_administrator():
+        session['visit_purpose_admin_recurring_ready'] = True
     if event_type in {'answered', 'dismissed'}:
         session.pop('visit_purpose_survey_cycle_started_at', None)
         if audience == 'existing':
             session['visit_purpose_survey_cycle_index'] = session.get('visit_purpose_survey_cycle_index', 0) + 1
+            session.pop('visit_purpose_admin_recurring_ready', None)
     session.modified = True
     db.session.commit()
     return redirect(request.form.get('next') or url_for('main.index'))
