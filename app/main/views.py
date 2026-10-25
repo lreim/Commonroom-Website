@@ -661,14 +661,13 @@ def index():
 
 
 CHECKIN_CHOICES = [
-    ('food', 'Good food'),
-    ('people', 'Seeing someone'),
-    ('break', 'A little break'),
-    ('done', 'Getting something done'),
-    ('new', 'Trying something new'),
-    ('nothing', 'Nothing planned yet'),
+    ('uni_work', 'Uni or work'),
+    ('people', 'People and relationships'),
+    ('money_future', 'Money or the future'),
+    ('wellbeing', 'My own wellbeing'),
+    ('nothing', 'Nothing in particular'),
 ]
-CHECKIN_QUESTION = "What's one small thing you're looking forward to this week?"
+CHECKIN_QUESTION = "What's taking up the most space in your mind this week?"
 CHECKIN_LEGACY_CHOICES = [
     ('listening', 'A listening ear'),
     ('advice', 'Practical advice'),
@@ -768,10 +767,10 @@ def weekly_checkin():
 
 
 SUNDAY_CHECKIN_QUESTIONS = {
-    'moment': ('What was one small win from your week?', [('win', 'Overcame a hurdle'), ('kind', 'A kind moment'), ('laugh', 'Something that made you laugh'), ('none', 'Nothing comes to mind')]),
-    'plan': ('What would make this week a little better?', [('meal', 'A good meal'), ('rest', 'A bit of rest'), ('people', 'Time with someone'), ('small_win', 'A small win'), ('unsure', 'Not sure yet')]),
-    'energy': ('What would help you recharge?', [('sleep', 'More sleep'), ('walk', 'A walk outside'), ('music', 'Music or a podcast'), ('quiet', 'Some quiet time')]),
-    'new': ('What would you like to try soon?', [('new', 'Trying something new'), ('place', 'A new place'), ('recipe', 'A new recipe'), ('idea', 'A new idea')]),
+    'cancel': ('What’s something you’d happily cancel this week?', [('morning', 'An early morning'), ('task', 'A stressful task'), ('social', 'A social obligation'), ('decision', 'A difficult decision'), ('nothing', 'Nothing in particular')]),
+    'luxury': ('Which tiny luxury would improve your week?', [('sleep', 'More sleep'), ('food', 'Good food'), ('quiet', 'A quiet evening'), ('spontaneous', 'A spontaneous plan'), ('outside', 'More time outside')]),
+    'moment': ('Who would you like to spend a little more time with?', [('friend', 'A close friend'), ('family', 'Family'), ('classmate', 'A classmate'), ('someone_new', 'Someone new'), ('myself', 'Myself')]),
+    'attention': ('What deserves more attention from you this week?', [('body', 'My body'), ('surroundings', 'My surroundings'), ('project', 'A personal project'), ('someone', 'Someone I care about'), ('boundaries', 'My own boundaries')]),
 }
 
 
