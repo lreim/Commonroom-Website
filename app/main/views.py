@@ -26,6 +26,7 @@ from ..models import (
     WeeklyCheckInResponse,
     SundayCheckInResponse,
     ProfileNudgeEvent,
+    VisitPurposeSurveyEvent,
     post_likes,
 )
 from ..tag_matching import match_tags, get_model
@@ -615,6 +616,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
     snapshot.update(_build_content_stats())
     snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats()
     snapshot['sunday_post_stats'] = _build_sunday_post_admin_stats()
+    snapshot['visit_purpose_survey_stats'] = _build_visit_purpose_survey_stats()
     event_counts = Counter(
         event.event_type
         for event in ProfileNudgeEvent.query
@@ -882,6 +884,39 @@ def profile_nudge_event():
         session.modified = True
     db.session.commit()
     return ('', 204)
+
+
+@main.route('/visit-purpose-survey', methods=['POST'])
+def visit_purpose_survey():
+    audience = request.form.get('audience', '')
+    choice = request.form.get('choice')
+    event_type = 'answered' if choice else 'dismissed'
+    if audience not in {'new', 'admin_intro', 'new_followup', 'existing', 'visitor'}:
+        abort(400)
+    allowed = {'new': {'curiosity', 'support', 'recommendation', 'event', 'other'},
+               'admin_intro': {'curiosity', 'support', 'recommendation', 'event', 'other'},
+               'new_followup': {'advice', 'share', 'private_chat', 'information', 'reading', 'unsure'},
+               'existing': {'read', 'share', 'post', 'reply', 'checkin', 'chat', 'other', 'advice', 'listening', 'reassurance', 'resources', 'connection', 'unsure', 'understanding', 'feel_less_alone', 'new_perspective', 'be_heard', 'quiet_space', 'curious', 'new_post', 'routine'},
+               'visitor': {'read', 'post', 'reply', 'checkin', 'chat', 'other'}}
+    if choice and choice not in allowed[audience]:
+        abort(400)
+    token = session.get('visit_purpose_survey_token') if not current_user.is_authenticated else None
+    db.session.add(VisitPurposeSurveyEvent(user_id=current_user.id if current_user.is_authenticated else None,
+                                           visitor_token=token, audience=audience,
+                                           event_type=event_type, choice=choice))
+    if audience in {'new', 'admin_intro'} and event_type == 'answered':
+        session['visit_purpose_survey_followup'] = 'needs'
+    elif audience == 'new_followup' or event_type == 'dismissed':
+        session.pop('visit_purpose_survey_followup', None)
+    if audience == 'admin_intro':
+        session.pop('visit_purpose_survey_admin_intro', None)
+    if event_type in {'answered', 'dismissed'}:
+        session.pop('visit_purpose_survey_cycle_started_at', None)
+        if audience == 'existing':
+            session['visit_purpose_survey_cycle_index'] = session.get('visit_purpose_survey_cycle_index', 0) + 1
+    session.modified = True
+    db.session.commit()
+    return redirect(request.form.get('next') or url_for('main.index'))
 
 
 @main.route('/about')
@@ -1978,6 +2013,14 @@ def edit_starter_post_admin(post_id):
         editing_post=starter_post,
         active_page=None,
     )
+
+
+def _build_visit_purpose_survey_stats():
+    rows = VisitPurposeSurveyEvent.query.filter(VisitPurposeSurveyEvent.event_type == 'answered').all()
+    grouped = defaultdict(Counter)
+    for row in rows:
+        grouped[row.audience][row.choice or 'unknown'] += 1
+    return {audience: dict(counts) for audience, counts in grouped.items()}
 
 
 @main.route('/analytics')

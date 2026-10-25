@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from flask import Flask, render_template, redirect, request, url_for
+from flask import Flask, render_template, redirect, request, url_for, session
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
 from flask_moment import Moment
@@ -81,6 +81,8 @@ def create_app(config_name):
     @app.context_processor
     def inject_session_timeout():
         from .admin_demo import is_admin_demo_mode
+        from .models import VisitPurposeSurveyEvent
+        from datetime import timedelta
 
         notification_payload = {"items": [], "has_unseen": False}
         if current_user.is_authenticated:
@@ -90,6 +92,90 @@ def create_app(config_name):
         lifetime = app.config.get('PERMANENT_SESSION_LIFETIME')
         timeout_minutes = int(lifetime.total_seconds() // 60) if lifetime else 0
         admin_demo_mode = is_admin_demo_mode()
+
+        visit_purpose_survey = None
+        survey_endpoints = {'main.analytics', 'main.admin_sunday_checkins', 'auth.login', 'auth.register'}
+        if request.endpoint not in survey_endpoints and not (request.endpoint or '').startswith('static'):
+            now = datetime.now(timezone.utc)
+            survey_user_id = current_user.id if current_user.is_authenticated else None
+            if survey_user_id:
+                member_since = current_user.member_since
+                if member_since and member_since.tzinfo is None:
+                    member_since = member_since.replace(tzinfo=timezone.utc)
+                latest = (VisitPurposeSurveyEvent.query.filter_by(user_id=survey_user_id)
+                          .order_by(VisitPurposeSurveyEvent.created_at.desc()).first())
+                # The onboarding question is shown only once, on the first
+                # authenticated visit after registration. Afterwards every
+                # three-day cycle uses the current-visit question.
+                audience = ('admin_intro' if session.get('visit_purpose_survey_admin_intro') else
+                            'new' if not latest and member_since and
+                            member_since >= now - timedelta(days=3) else 'existing')
+            else:
+                visitor_token = session.get('visit_purpose_survey_token')
+                if not visitor_token:
+                    import secrets
+                    visitor_token = secrets.token_urlsafe(24)
+                    session['visit_purpose_survey_token'] = visitor_token
+                audience = 'visitor'
+                latest = (VisitPurposeSurveyEvent.query.filter_by(visitor_token=visitor_token)
+                          .order_by(VisitPurposeSurveyEvent.created_at.desc()).first())
+            latest_at = latest.created_at if latest else None
+            if latest_at and latest_at.tzinfo is None:
+                latest_at = latest_at.replace(tzinfo=timezone.utc)
+            followup = session.get('visit_purpose_survey_followup') == 'needs'
+            if followup:
+                audience = 'new_followup'
+            admin_intro = audience == 'admin_intro'
+            # The admin has a one-day schedule offset via the login preview,
+            # but the recurring interval remains three days for everyone.
+            cooldown_days = 3
+            if followup or admin_intro or not latest_at or latest_at <= now - timedelta(days=cooldown_days):
+                cycle_started = session.get('visit_purpose_survey_cycle_started_at')
+                if cycle_started:
+                    try:
+                        cycle_started = datetime.fromisoformat(cycle_started)
+                        if cycle_started.tzinfo is None:
+                            cycle_started = cycle_started.replace(tzinfo=timezone.utc)
+                    except ValueError:
+                        cycle_started = None
+                if cycle_started and cycle_started <= now - timedelta(days=3) and not followup and not admin_intro:
+                    session['visit_purpose_survey_cycle_index'] = session.get('visit_purpose_survey_cycle_index', 0) + 1
+                    cycle_started = None
+                if not cycle_started and not followup and not admin_intro:
+                    session['visit_purpose_survey_cycle_started_at'] = now.isoformat()
+                    session.modified = True
+                recurring_questions = [
+                    'What brings you to CommonRoom today?',
+                    'What would help you most right now?',
+                    'What are you hoping to find here today?',
+                    'What made you come back to CommonRoom?',
+                ]
+                recurring_choices = [
+                    [('read', 'Read what others shared'), ('share', 'Share something'), ('reply', 'Reply or connect'), ('checkin', 'Take a check-in'), ('chat', 'Use private chat'), ('other', 'Something else')],
+                    [('advice', 'Advice or a practical tip'), ('listening', 'Someone to listen'), ('reassurance', 'Reassurance'), ('resources', 'Useful resources'), ('connection', 'A real connection'), ('unsure', "I’m not sure yet")],
+                    [('understanding', 'Understand something better'), ('feel_less_alone', 'Feel less alone'), ('new_perspective', 'Find a new perspective'), ('be_heard', 'Feel heard'), ('quiet_space', 'A quiet space to think'), ('curious', 'Just curious')],
+                    [('new_post', 'A new post or conversation'), ('checkin', 'The weekly check-in'), ('reply', 'A reply or notification'), ('chat', 'A private chat'), ('routine', 'My usual routine'), ('other', 'Something else')],
+                ]
+                recurring_index = session.get('visit_purpose_survey_cycle_index', 0) % len(recurring_questions)
+                recurring_question = recurring_questions[recurring_index]
+                visit_purpose_survey = {
+                    'audience': audience,
+                    'question': ('What would be most useful for you here right now?' if audience == 'new_followup' else
+                                 'What first brought you to CommonRoom?' if audience == 'new' else
+                                 'What first brought you to CommonRoom?' if audience == 'admin_intro' else
+                                 recurring_question if audience == 'existing' else
+                                 'What brought you to CommonRoom today?'),
+                    'choices': ([('advice', 'Advice or a practical tip'), ('share', 'A place to share without judgment'),
+                                 ('private_chat', 'Someone to talk to privately'), ('information', 'Information or support'),
+                                 ('reading', 'Just reading around'), ('unsure', "I'm not sure yet")] if audience == 'new_followup' else
+                                [('curiosity', 'I was curious'), ('support', 'I wanted support'),
+                                 ('recommendation', 'Someone recommended it'), ('event', 'I came from an event or link'),
+                                 ('other', 'Something else')] if audience in {'new', 'admin_intro'} else
+                                recurring_choices[recurring_index] if audience == 'existing' else
+                                [('read', 'Read what others shared'), ('post', 'Share something'),
+                                 ('reply', 'Reply or connect'), ('checkin', 'Take a check-in'),
+                                 ('chat', 'Use private chat'), ('other', 'Something else')]),
+                }
 
         def display_username(user):
             if admin_demo_mode and user.id == current_user.id:
@@ -109,6 +195,7 @@ def create_app(config_name):
             admin_demo_mode=admin_demo_mode,
             display_username=display_username,
             display_avatar_url=display_avatar_url,
+            visit_purpose_survey=visit_purpose_survey,
         )
     
     # attach routes and custom error pages here

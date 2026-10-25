@@ -664,6 +664,19 @@ document.addEventListener("DOMContentLoaded", function () {
   </aside>
   <script>(function(){if(!sessionStorage.getItem('profileNudgeShown')){sessionStorage.setItem('profileNudgeShown','1');fetch("{{ url_for('main.profile_nudge_event') }}", {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body:'event_type=shown&csrf_token={{ csrf_token() }}'});} document.querySelector('[data-profile-nudge-click]')?.addEventListener('click', function(){ navigator.sendBeacon("{{ url_for('main.profile_nudge_event') }}", 'event_type=clicked&csrf_token={{ csrf_token() }}'); });})();</script>
   {% endif %}
+  {% if visit_purpose_survey %}
+  <aside class="visit-purpose-survey" aria-label="Visit survey">
+    <form method="post" action="{{ url_for('main.visit_purpose_survey') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="audience" value="{{ visit_purpose_survey.audience }}">
+      <input type="hidden" name="next" value="{{ request.full_path }}">
+      <div class="visit-purpose-survey-heading"><strong>{{ visit_purpose_survey.question }}</strong><button type="submit" name="dismiss" value="1" aria-label="Dismiss survey">&times;</button></div>
+      <div class="visit-purpose-survey-choices">
+        {% for value, label in visit_purpose_survey.choices %}<button type="submit" name="choice" value="{{ value }}">{{ label }}</button>{% endfor %}
+      </div>
+    </form>
+  </aside>
+  {% endif %}
   {% if not session.get('whats_new_dismissed') and request.endpoint != 'main.whats_new' %}
   <aside class="whats-new-nudge" aria-label="What's new">
     <div><strong>New features on CommonRoom</strong><span>Explore the new What's new? page.</span></div>

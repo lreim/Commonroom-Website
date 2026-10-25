@@ -772,3 +772,14 @@ class ProfileNudgeEvent(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
     event_type = db.Column(db.String(24), nullable=False, index=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+
+
+class VisitPurposeSurveyEvent(db.Model):
+    __tablename__ = 'visit_purpose_survey_events'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    visitor_token = db.Column(db.String(64), nullable=True, index=True)
+    audience = db.Column(db.String(24), nullable=False, index=True)
+    event_type = db.Column(db.String(24), nullable=False, index=True)
+    choice = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
