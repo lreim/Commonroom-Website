@@ -909,7 +909,7 @@ def visit_purpose_survey():
         session.pop('visit_purpose_survey_followup', None)
     if event_type in {'answered', 'dismissed'}:
         session.pop('visit_purpose_survey_cycle_started_at', None)
-        if audience == 'existing':
+        if audience in {'existing', 'visitor'}:
             session['visit_purpose_survey_cycle_index'] = session.get('visit_purpose_survey_cycle_index', 0) + 1
         if audience in {'existing', 'visitor'}:
             from datetime import datetime, timezone, timedelta
