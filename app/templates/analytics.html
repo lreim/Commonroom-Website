@@ -49,15 +49,6 @@
       <div><strong>{{ profile_nudge_stats.dismissed }}</strong><span>Dismissed</span></div>
     </div>
   </section>
-  <section class="analytics-breakdown-card" aria-labelledby="visit-purpose-title">
-    <span class="analytics-card-kicker">VISIT PURPOSE</span>
-    <h3 id="visit-purpose-title">Why people came to CommonRoom</h3>
-    {% for audience, counts in visit_purpose_survey_stats.items() %}
-    <h4>{{ {'new': 'New accounts', 'existing': 'Existing users', 'visitor': 'Visitors', 'visitor_then_logged_in': 'Visitors who later logged in'}.get(audience, audience|capitalize) }}</h4>
-    <div class="analytics-ranking">{% for choice, count in counts.items() %}<div class="analytics-ranking-row"><span>{{ choice|replace('_', ' ')|capitalize }}</span><div><i style="width: {{ (count / (counts.values()|sum) * 100) if counts.values()|sum else 0 }}%;"></i></div><strong>{{ count }}</strong></div>{% endfor %}</div>
-    {% else %}<p>No answers yet.</p>{% endfor %}
-  </section>
-
   <nav class="analytics-export-bar" aria-label="Export analytics data">
     <span>Export aggregated CSV:</span>
     <a href="{{ url_for('main.analytics_export', dataset='summary', range=selected_range, segment=selected_segment_key) }}">Summary</a>
@@ -72,6 +63,7 @@
   <div class="analytics-view-tabs" role="tablist" aria-label="Analytics views">
     <button type="button" class="is-active" role="tab" aria-selected="true" aria-controls="analytics-overview" data-analytics-tab="overview">Overview</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-checkin" data-analytics-tab="checkin">Weekly check-ins</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-visit-purpose" data-analytics-tab="visit-purpose">Visit purpose</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-content" data-analytics-tab="content">Content &amp; profiles</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-traffic" data-analytics-tab="traffic">Visits &amp; time</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-journeys" data-analytics-tab="journeys">Journeys</button>
@@ -164,6 +156,12 @@
       </div>
       {% endfor %}
     </div>
+  </section>
+
+  <section id="analytics-visit-purpose" class="analytics-view-panel" role="tabpanel" data-analytics-panel="visit-purpose" hidden>
+    <div class="analytics-section-heading"><div><span>VISIT PURPOSE · EVERY THREE DAYS</span><h2>Why people came to CommonRoom</h2><p>Complete answer labels are shown here, separated by audience.</p></div></div>
+    {% set labels = {'curiosity':'I was curious', 'support':'I wanted support', 'recommendation':'Someone recommended it', 'event':'I came from an event or link', 'other':'Something else', 'advice':'Advice or a practical tip', 'share':'A place to share without judgment', 'private_chat':'Someone to talk to privately', 'information':'Information or support', 'reading':'Just reading around', 'unsure':'I’m not sure yet', 'read':'Read what others shared', 'post':'Share something', 'reply':'Reply or connect', 'checkin':'Take a check-in', 'chat':'Use private chat', 'listening':'Someone to listen', 'reassurance':'Reassurance', 'resources':'Useful resources', 'connection':'A real connection', 'understanding':'Understand something better', 'feel_less_alone':'Feel less alone', 'new_perspective':'Find a new perspective', 'be_heard':'Feel heard', 'quiet_space':'A quiet space to think', 'curious':'Just curious', 'new_post':'A new post or conversation', 'routine':'My usual routine'} %}
+    <div class="analytics-breakdown-grid">{% for audience, counts in visit_purpose_survey_stats.items() %}<article class="analytics-breakdown-card"><span class="analytics-card-kicker">{{ {'new':'NEW ACCOUNTS','existing':'EXISTING USERS','visitor':'VISITORS','visitor_then_logged_in':'VISITORS WHO LATER LOGGED IN'}.get(audience, audience|upper) }}</span><h3>{{ counts.values()|sum }} answers</h3><div class="analytics-ranking">{% for choice, count in counts.items() %}<div class="analytics-ranking-row"><span>{{ labels.get(choice, choice) }}</span><div><i style="width: {{ (count / (counts.values()|sum) * 100) if counts.values()|sum else 0 }}%;"></i></div><strong>{{ count }}</strong></div>{% endfor %}</div></article>{% else %}<p>No answers yet.</p>{% endfor %}</div>
   </section>
 
   <section id="analytics-content" class="analytics-view-panel" role="tabpanel" data-analytics-panel="content" hidden>

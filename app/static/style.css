@@ -381,7 +381,11 @@ html {
 .analytics-ranking-row > span {
   color: #514436;
   font-size: 13px;
+  white-space: normal;
+  overflow: visible;
 }
+.analytics-visit-purpose-layout { width: min(1100px, 100%); }
+.analytics-visit-purpose-layout .analytics-breakdown-card { min-height: 260px; }
 
 .analytics-ranking-row > div {
   height: 9px;
