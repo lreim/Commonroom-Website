@@ -6711,13 +6711,23 @@ html.dark-mode .post-thread-conversation .post-thread-item + .post-thread-item {
 }
 
 .chat-detail-conversation-panel .chat-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
   margin: 0;
   padding: 16px 18px 17px;
   border-top: 1px solid #eee3d2;
   background: #fffdf8;
 }
 
+.chat-detail-conversation-panel .chat-form .chat-replying-to {
+  grid-column: 1 / -1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .chat-detail-conversation-panel .chat-form input {
+  width: 100%;
   min-width: 0;
   min-height: 46px;
   padding: 12px 14px;
