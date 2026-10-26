@@ -2016,7 +2016,12 @@ def edit_starter_post_admin(post_id):
 
 
 def _build_visit_purpose_survey_stats():
-    rows = VisitPurposeSurveyEvent.query.filter(VisitPurposeSurveyEvent.event_type == 'answered').all()
+    rows = (VisitPurposeSurveyEvent.query
+            .outerjoin(User, VisitPurposeSurveyEvent.user_id == User.id)
+            .outerjoin(Role, User.role_id == Role.id)
+            .filter(VisitPurposeSurveyEvent.event_type == 'answered')
+            .filter(or_(VisitPurposeSurveyEvent.user_id.is_(None), Role.name.is_(None), Role.name != 'Administrator'))
+            .all())
     grouped = defaultdict(Counter)
     for row in rows:
         audience = 'visitor_then_logged_in' if row.audience == 'visitor' and row.user_id else row.audience
