@@ -110,6 +110,9 @@ def create_app(config_name):
                 audience = ('new' if not latest and member_since and
                             member_since >= now - timedelta(days=3) else 'existing')
             else:
+                # Keep the anonymous survey identity in a persistent browser
+                # session so reloads cannot create a fresh visitor token.
+                session.permanent = True
                 visitor_token = session.get('visit_purpose_survey_token')
                 if not visitor_token:
                     import secrets
