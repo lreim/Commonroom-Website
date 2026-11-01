@@ -664,13 +664,14 @@ def index():
 
 
 CHECKIN_CHOICES = [
-    ('uni_work', 'Uni or work'),
-    ('people', 'People and relationships'),
-    ('money_future', 'Money or the future'),
-    ('wellbeing', 'My own wellbeing'),
-    ('nothing', 'Nothing in particular'),
+    ('conversation', 'A real conversation'),
+    ('same_feeling', 'Knowing others feel the same'),
+    ('new_person', 'Meeting someone new'),
+    ('honest_share', 'Sharing something honestly'),
+    ('invitation', 'Being invited to join in'),
+    ('encouragement', 'A little encouragement'),
 ]
-CHECKIN_QUESTION = "What's taking up the most space in your mind this week?"
+CHECKIN_QUESTION = "What would help you feel more connected this week?"
 CHECKIN_LEGACY_CHOICES = [
     ('listening', 'A listening ear'),
     ('advice', 'Practical advice'),
@@ -781,10 +782,10 @@ def weekly_checkin():
 
 
 SUNDAY_CHECKIN_QUESTIONS = {
-    'cancel': ('What’s something you’d happily cancel this week?', [('morning', 'An early morning'), ('task', 'A stressful task'), ('social', 'A social obligation'), ('decision', 'A difficult decision'), ('nothing', 'Nothing in particular')]),
-    'luxury': ('Which tiny luxury would improve your week?', [('sleep', 'More sleep'), ('food', 'Good food'), ('quiet', 'A quiet evening'), ('spontaneous', 'A spontaneous plan'), ('outside', 'More time outside')]),
-    'moment': ('Who would you like to spend a little more time with?', [('friend', 'A close friend'), ('family', 'Family'), ('classmate', 'A classmate'), ('someone_new', 'Someone new'), ('myself', 'Myself')]),
-    'attention': ('What deserves more attention from you this week?', [('body', 'My body'), ('surroundings', 'My surroundings'), ('project', 'A personal project'), ('someone', 'Someone I care about'), ('boundaries', 'My own boundaries')]),
+    'week_type': ('What kind of week has it been so far?', [('surprises', 'Full of small surprises'), ('intense', 'More intense than expected'), ('quiet', 'Quiet but okay'), ('scattered', 'A bit all over the place'), ('rhythm', 'Still finding my rhythm')]),
+    'plot_twist': ('Which tiny plot twist would improve your week?', [('invitation', 'An unexpected invitation'), ('food', 'Finding money or free food'), ('message', 'A message from the right person'), ('understanding', 'Suddenly understanding something'), ('afternoon', 'A completely free afternoon')]),
+    'understood': ('What do you wish people around you understood better?', [('time', 'That I need more time'), ('trying', 'That I’m trying my best'), ('directness', 'That I need directness'), ('encouragement', 'That I need encouragement'), ('space', 'That I sometimes need space')]),
+    'different': ('What would you like to do differently before next Sunday?', [('no', 'Say no more easily'), ('help', 'Ask for help sooner'), ('fun', 'Make time for something fun'), ('postponing', 'Stop postponing one thing'), ('kindness', 'Be kinder to myself')]),
 }
 
 
@@ -1940,10 +1941,10 @@ def sunday_checkins_admin():
     form = StarterPostForm()
     if request.method == 'GET':
         form.body.data = ('Sunday Check-in 🌿\n\nChoose one question or answer more than one:\n\n'
-                          '– What was a small moment that stayed with you this week?\n'
-                          '– What is something you are proud of, even if it feels small?\n'
-                          '– What would make next week a little easier?\n'
-                          '– What do you want to carry into the new week?\n\n'
+                          '– What kind of week has it been so far?\n'
+                          '– Which tiny plot twist would improve your week?\n'
+                          '– What do you wish people around you understood better?\n'
+                          '– What would you like to do differently before next Sunday?\n\n'
                           'Short answers are very welcome, and you can write as openly as you like.')
         form.post_type.data = 'question'
     if form.validate_on_submit():
