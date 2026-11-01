@@ -812,6 +812,10 @@ def sunday_checkin_vote(post_id):
     else:
         db.session.add(SundayCheckInResponse(post_id=post_id, question=question, choice=choice, user_id=current_user.id if current_user.is_authenticated else None, visitor_token=None if current_user.is_authenticated else token))
     db.session.commit()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+        responses = SundayCheckInResponse.query.filter_by(post_id=post_id, question=question).all()
+        counts = Counter(response.choice for response in responses)
+        return jsonify({'counts': counts, 'total': len(responses), 'choice': choice})
     return redirect(request.form.get('next') or url_for('main.post'))
 
 

@@ -366,5 +366,23 @@ window.addEventListener('pagehide', function () {
   });
 });
 {% endif %}
+document.querySelectorAll('.sunday-post-poll form').forEach(function (form) {
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var block = form.closest('.sunday-question-block');
+    fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (response) { return response.json(); })
+      .then(function (data) {
+        var results = block.querySelector('.sunday-question-results');
+        if (!results) { results = document.createElement('div'); results.className = 'sunday-question-results'; block.appendChild(results); }
+        results.innerHTML = '';
+        block.querySelectorAll('form button').forEach(function (button) { button.classList.toggle('is-selected', button.value === data.choice); });
+        block.querySelectorAll('form input[name="choice"]').forEach(function (input) {
+          var row = document.createElement('div'); var label = document.createElement('span'); label.textContent = input.parentElement.querySelector('button').textContent;
+          var track = document.createElement('i'); var bar = document.createElement('b'); var count = data.counts[input.value] || 0; bar.style.width = (data.total ? count / data.total * 100 : 0) + '%'; track.appendChild(bar); var number = document.createElement('small'); number.textContent = count; row.append(label, track, number); results.appendChild(row);
+        });
+      });
+  });
+});
 </script>
 {% endblock %}
