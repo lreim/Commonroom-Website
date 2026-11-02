@@ -281,10 +281,19 @@ html {
   bottom: 28px;
   right: 8%;
   width: min(64%, 25px);
-  min-height: 5px;
+  min-height: 0;
   border-radius: 8px 8px 3px 3px;
   background: linear-gradient(180deg, #8a78b4 0%, #57427f 100%);
   box-shadow: 0 6px 15px rgba(87, 66, 127, 0.14);
+}
+
+.analytics-column > span.analytics-registration-count {
+  position: absolute;
+  right: 8%;
+  bottom: 220px;
+  color: #57427f;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
 }
 
 .analytics-column > small {
