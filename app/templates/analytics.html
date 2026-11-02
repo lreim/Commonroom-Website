@@ -167,7 +167,7 @@
           <div><strong>{{ visit_identity_stats.anonymous_only_visits }}</strong><span>Anonymous-only visits</span></div>
           <div><strong>{{ visit_identity_stats.unique_logged_in_users }}</strong><span>Distinct users</span></div>
         </div>
-        <p class="analytics-card-note">{{ visit_identity_stats.returning_users }} users returned for {{ visit_identity_stats.returning_user_visits }} visits; {{ visit_identity_stats.one_time_user_visits }} visits came from users seen once. Anonymous visits are reassigned when that browser later logs in.</p>
+        <p class="analytics-card-note">{{ visit_identity_stats.returning_users }} users returned for {{ visit_identity_stats.returning_user_visits }} visits; {{ visit_identity_stats.one_time_user_visits }} visits came from users seen once. Among anonymous visits, {{ visit_identity_stats.returning_anonymous_sessions }} of {{ visit_identity_stats.anonymous_sessions }} browser sessions returned, accounting for {{ visit_identity_stats.returning_anonymous_visits }} visits. Anonymous visits are reassigned when that browser later logs in.</p>
       </article>
     </div>
 

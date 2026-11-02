@@ -424,6 +424,10 @@ def _build_visit_identity_stats(visits):
     logged_in = [visit for visit in visits if visit.user_id is not None]
     anonymous = [visit for visit in visits if visit.user_id is None]
     user_visits = Counter(visit.user_id for visit in logged_in)
+    anonymous_sessions = Counter(
+        visit.session_token or f"visit-{visit.id}"
+        for visit in anonymous
+    )
     return {
         "logged_in_visits": len(logged_in),
         "anonymous_only_visits": len(anonymous),
@@ -431,6 +435,9 @@ def _build_visit_identity_stats(visits):
         "returning_user_visits": sum(count for count in user_visits.values() if count > 1),
         "one_time_user_visits": sum(count for count in user_visits.values() if count == 1),
         "returning_users": sum(1 for count in user_visits.values() if count > 1),
+        "anonymous_sessions": len(anonymous_sessions),
+        "returning_anonymous_sessions": sum(1 for count in anonymous_sessions.values() if count > 1),
+        "returning_anonymous_visits": sum(count for count in anonymous_sessions.values() if count > 1),
     }
 
 
