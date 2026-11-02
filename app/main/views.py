@@ -183,7 +183,20 @@ def _validated_analytics_session_token(value):
 def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=False):
     now = datetime.now(timezone.utc)
     local_timezone = ZoneInfo("Europe/Zurich")
-    if range_key == "24h":
+    if range_key == "all":
+        bucket_size = timedelta(days=1)
+        label_format = "%b %d"
+        source_query = visits_query if visits_query is not None else _tracked_page_visits_query()
+        earliest = source_query.with_entities(func.min(PageVisit.started_at)).scalar()
+        if earliest is None:
+            current_bucket_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        else:
+            current_bucket_start = earliest
+            if current_bucket_start.tzinfo is None:
+                current_bucket_start = current_bucket_start.replace(tzinfo=timezone.utc)
+            current_bucket_start = current_bucket_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        bucket_count = max((now.date() - current_bucket_start.date()).days + 1, 1)
+    elif range_key == "24h":
         bucket_count = 24
         bucket_size = timedelta(hours=1)
         current_bucket_start = now.replace(minute=0, second=0, microsecond=0)
@@ -200,7 +213,7 @@ def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=Fals
         current_bucket_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         label_format = "%a"
 
-    first_bucket_start = current_bucket_start - bucket_size * (bucket_count - 1)
+    first_bucket_start = current_bucket_start if range_key == "all" else current_bucket_start - bucket_size * (bucket_count - 1)
     visits = (
         (visits_query if visits_query is not None else _tracked_page_visits_query())
         .filter(PageVisit.started_at >= first_bucket_start)

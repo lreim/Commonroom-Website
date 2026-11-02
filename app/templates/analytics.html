@@ -27,7 +27,8 @@
       <nav class="analytics-range-switch" aria-label="Analytics time range">
         <a class="{% if selected_range == '24h' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='24h', segment=selected_segment_key) }}">24 hours</a>
         <a class="{% if selected_range == '1w' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1w', segment=selected_segment_key) }}">7 days</a>
-        <a class="{% if selected_range == '1m' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1m', segment=selected_segment_key) }}">30 days</a>
+      <a class="{% if selected_range == '1m' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='1m', segment=selected_segment_key) }}">30 days</a>
+      <a class="{% if selected_range == 'all' %}is-active{% endif %}" href="{{ url_for('main.analytics', range='all', segment=selected_segment_key) }}">Total <small>(since 13.09.2026)</small></a>
       </nav>
     </div>
   </header>
