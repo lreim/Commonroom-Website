@@ -522,7 +522,7 @@ def _build_content_stats():
             first_reply_waits.append((timestamps[0] - root.timestamp).total_seconds() / 60)
             followup_waits.extend((timestamps[index] - timestamps[index - 1]).total_seconds() / 60 for index in range(1, len(timestamps)))
     def summary(values):
-        return {"count": len(values), "average_minutes": round(mean(values), 1) if values else 0.0, "stddev_minutes": round(pstdev(values), 1) if len(values) > 1 else 0.0}
+        return {"count": len(values), "average_hours": round(mean(values) / 60, 2) if values else 0.0, "stddev_hours": round(pstdev(values) / 60, 2) if len(values) > 1 else 0.0}
     return {
         "total_root_posts": root_post_count,
         "relate_post_count": relate_post_count,

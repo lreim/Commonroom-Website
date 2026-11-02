@@ -140,11 +140,11 @@
         <span class="analytics-card-kicker">RESPONSE TIME</span>
         <h3>How quickly do posts get replies?</h3>
         <div class="analytics-big-numbers">
-          <div><strong>{{ post_response_stats.first_reply.average_minutes }} min</strong><span>Until first reply (avg.)</span></div>
-          <div><strong>{{ post_response_stats.followup_reply.average_minutes }} min</strong><span>Between later replies (avg.)</span></div>
+          <div><strong>{{ post_response_stats.first_reply.average_hours }} h</strong><span>Until first reply (avg.)</span></div>
+          <div><strong>{{ post_response_stats.followup_reply.average_hours }} h</strong><span>Between later replies (avg.)</span></div>
           <div><strong>{{ post_response_stats.posts_with_replies }}</strong><span>Posts with replies</span></div>
         </div>
-        <p class="analytics-card-note">Standard deviation: {{ post_response_stats.first_reply.stddev_minutes }} min to the first reply and {{ post_response_stats.followup_reply.stddev_minutes }} min between later replies.</p>
+        <p class="analytics-card-note">Standard deviation: {{ post_response_stats.first_reply.stddev_hours }} h to the first reply and {{ post_response_stats.followup_reply.stddev_hours }} h between later replies.</p>
       </article>
 
       <article class="analytics-breakdown-card">
@@ -158,6 +158,16 @@
           <span><i class="is-public"></i>Public <strong>{{ auth_stats.public }}</strong></span>
           <span><i class="is-logged-in"></i>Logged in <strong>{{ auth_stats.logged_in }}</strong></span>
         </div>
+      </article>
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">VISIT IDENTITY</span>
+        <h3>Returning users or one-time visitors?</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ visit_identity_stats.logged_in_visits }}</strong><span>Visits linked to users</span></div>
+          <div><strong>{{ visit_identity_stats.anonymous_only_visits }}</strong><span>Anonymous-only visits</span></div>
+          <div><strong>{{ visit_identity_stats.unique_logged_in_users }}</strong><span>Distinct users</span></div>
+        </div>
+        <p class="analytics-card-note">{{ visit_identity_stats.returning_users }} users returned for {{ visit_identity_stats.returning_user_visits }} visits; {{ visit_identity_stats.one_time_user_visits }} visits came from users seen once. Anonymous visits are reassigned when that browser later logs in.</p>
       </article>
     </div>
 
@@ -484,16 +494,6 @@
           <div><strong>{{ previous_analytics.device_stats.mobile }}</strong><span>Mobile</span></div>
           <div><strong>{{ previous_analytics.device_stats.desktop }}</strong><span>Desktop</span></div>
         </div>
-      </article>
-      <article class="analytics-breakdown-card">
-        <span class="analytics-card-kicker">VISIT IDENTITY</span>
-        <h3>Returning users or one-time visitors?</h3>
-        <div class="analytics-big-numbers">
-          <div><strong>{{ visit_identity_stats.logged_in_visits }}</strong><span>Visits linked to users</span></div>
-          <div><strong>{{ visit_identity_stats.anonymous_only_visits }}</strong><span>Anonymous-only visits</span></div>
-          <div><strong>{{ visit_identity_stats.unique_logged_in_users }}</strong><span>Distinct users</span></div>
-        </div>
-        <p class="analytics-card-note">{{ visit_identity_stats.returning_users }} users returned for {{ visit_identity_stats.returning_user_visits }} visits; {{ visit_identity_stats.one_time_user_visits }} visits came from users seen once. Anonymous visits are reassigned when that browser later logs in.</p>
       </article>
       <article class="analytics-breakdown-card">
         <span class="analytics-card-kicker">PREVIOUS ACCESS COUNTS</span>
