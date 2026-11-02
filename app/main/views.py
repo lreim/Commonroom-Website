@@ -225,10 +225,10 @@ def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=Fals
     registrations_by_index = {index: 0 for index in range(bucket_count)}
     registration_query = User.query.outerjoin(Role, User.role_id == Role.id).filter(
         ((Role.name.is_(None)) | (Role.name != "Administrator")),
-        User.created_at >= first_bucket_start,
+        User.member_since >= first_bucket_start,
     )
     for user in registration_query.all():
-        created_at = user.created_at
+        created_at = user.member_since
         if created_at.tzinfo is None:
             created_at = created_at.replace(tzinfo=timezone.utc)
         index = int((created_at - first_bucket_start).total_seconds() // bucket_size.total_seconds())
