@@ -258,6 +258,7 @@ html {
   align-items: end;
   justify-items: center;
   min-width: 0;
+  position: relative;
 }
 
 .analytics-column > span {
@@ -273,6 +274,17 @@ html {
   border-radius: 8px 8px 3px 3px;
   background: linear-gradient(180deg, #c68775 0%, #743f37 100%);
   box-shadow: 0 6px 15px rgba(96, 52, 44, 0.14);
+}
+
+.analytics-column > b.analytics-registration-column {
+  position: absolute;
+  bottom: 28px;
+  right: 8%;
+  width: min(64%, 25px);
+  min-height: 5px;
+  border-radius: 8px 8px 3px 3px;
+  background: linear-gradient(180deg, #8a78b4 0%, #57427f 100%);
+  box-shadow: 0 6px 15px rgba(87, 66, 127, 0.14);
 }
 
 .analytics-column > small {

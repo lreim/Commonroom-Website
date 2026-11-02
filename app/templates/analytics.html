@@ -98,13 +98,15 @@
       <div class="analytics-scroll-chart">
         <div class="analytics-column-chart analytics-timeline-chart analytics-columns-{{ visit_timeline.points|length }}">
           {% for point in visit_timeline.points %}
-          {% set height = 5 if visit_timeline.max_count == 0 else (point.count / visit_timeline.max_count * 180)|round(0, 'ceil')|int %}
+            {% set height = 5 if visit_timeline.max_count == 0 else (point.count / visit_timeline.max_count * 180)|round(0, 'ceil')|int %}
+          {% set registration_height = 5 if visit_timeline.max_registrations == 0 else (point.registrations / visit_timeline.max_registrations * 180)|round(0, 'ceil')|int %}
           <div class="analytics-column{% if visit_timeline.stacked_acquisition %} analytics-column-stacked{% endif %}" title="{{ point.label }}: {{ point.count }} visits">
             <span>{{ point.count }}</span>
             {% if visit_timeline.stacked_acquisition %}
             <i class="analytics-stacked-column" style="height: {{ height }}px;">{% for item in point.segments %}<b class="analytics-funnel-segment-{{ item.index }}" style="height: {{ (item.count / point.count * height) if point.count else 0 }}px; background:hsl({{ (item.index * 67 + 12) % 360 }} 38% 56%);" title="{{ item.label }}: {{ item.count }}"></b>{% endfor %}</i>
             {% else %}<i style="height: {{ height }}px;"></i>{% endif %}
-            <small>{{ point.label }}</small>
+            <b class="analytics-registration-column" style="height: {{ registration_height }}px;" title="{{ point.registrations }} new registrations"></b>
+            <small>{% if point.show_label %}{{ point.label }}{% endif %}</small>
           </div>
           {% endfor %}
         </div>

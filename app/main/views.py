@@ -222,6 +222,18 @@ def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=Fals
     )
 
     counts_by_index = {index: 0 for index in range(bucket_count)}
+    registrations_by_index = {index: 0 for index in range(bucket_count)}
+    registration_query = User.query.outerjoin(Role, User.role_id == Role.id).filter(
+        ((Role.name.is_(None)) | (Role.name != "Administrator")),
+        User.created_at >= first_bucket_start,
+    )
+    for user in registration_query.all():
+        created_at = user.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        index = int((created_at - first_bucket_start).total_seconds() // bucket_size.total_seconds())
+        if 0 <= index < bucket_count:
+            registrations_by_index[index] += 1
     # In the stacked view, keep every observed UTM source separate. This makes
     # campaign links (for example reminder_Physik1 and sunday_checkin_Physik1)
     # visible instead of collapsing them into one catch-all segment.
@@ -249,12 +261,15 @@ def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=Fals
 
     points = []
     max_count = max(counts_by_index.values()) if counts_by_index else 0
+    max_registrations = max(registrations_by_index.values()) if registrations_by_index else 0
     for index in range(bucket_count):
         bucket_start = first_bucket_start + bucket_size * index
         points.append(
             {
                 "label": bucket_start.astimezone(local_timezone).strftime(label_format),
+                "show_label": range_key != "all" or index % 7 == 0 or index == bucket_count - 1,
                 "count": counts_by_index[index],
+                "registrations": registrations_by_index[index],
                 "segments": [
                     {"label": label, "count": segment_counts_by_index[index][label], "index": label_index}
                     for label_index, label in enumerate(funnel_labels)
@@ -267,6 +282,7 @@ def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=Fals
         "range_key": range_key,
         "points": points,
         "max_count": max_count,
+        "max_registrations": max_registrations,
         "total_visits": sum(point["count"] for point in points),
         "first_bucket_start": first_bucket_start,
         "timezone": "Europe/Zurich",
