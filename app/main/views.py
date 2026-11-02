@@ -3,6 +3,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone, timedelta
 from io import StringIO
 from math import sqrt
+from statistics import mean, pstdev
 from types import SimpleNamespace
 from urllib.parse import urlparse
 from uuid import uuid4
@@ -418,6 +419,21 @@ def _build_visit_splits(visits_query):
     return device_stats, auth_stats
 
 
+def _build_visit_identity_stats(visits):
+    """Describe visit ownership, including anonymous visits later claimed at login."""
+    logged_in = [visit for visit in visits if visit.user_id is not None]
+    anonymous = [visit for visit in visits if visit.user_id is None]
+    user_visits = Counter(visit.user_id for visit in logged_in)
+    return {
+        "logged_in_visits": len(logged_in),
+        "anonymous_only_visits": len(anonymous),
+        "unique_logged_in_users": len(user_visits),
+        "returning_user_visits": sum(count for count in user_visits.values() if count > 1),
+        "one_time_user_visits": sum(count for count in user_visits.values() if count == 1),
+        "returning_users": sum(1 for count in user_visits.values() if count > 1),
+    }
+
+
 def _build_acquisition_stats(visits):
     first_visit_by_session = {}
     for visit in sorted(visits, key=lambda item: (item.started_at, item.id)):
@@ -484,6 +500,29 @@ def _build_content_stats():
         func.length(func.trim(User.contact_email)) > 0,
     ).count()
     chat_stats = _compute_chat_count_stats()
+    community_roots = [post for post in root_posts if post.author_id is not None and not post.is_archived and post.deleted_at is None]
+    author_counts = Counter(post.author_id for post in community_roots)
+    post_counts = list(author_counts.values())
+    all_posts = [post for post in Post.query.filter(Post.is_archived.is_(False), Post.deleted_at.is_(None)).all()]
+    by_id = {post.id: post for post in all_posts}
+    replies = [post for post in all_posts if post.parent_id is not None]
+    first_reply_waits, followup_waits = [], []
+    for root in community_roots:
+        root_replies = []
+        for reply in replies:
+            current = reply
+            seen = set()
+            while current.parent_id is not None and current.parent_id in by_id and current.id not in seen:
+                seen.add(current.id)
+                current = by_id[current.parent_id]
+            if current.id == root.id:
+                root_replies.append(reply)
+        timestamps = sorted(post.timestamp for post in root_replies if post.timestamp and post.timestamp >= root.timestamp)
+        if timestamps:
+            first_reply_waits.append((timestamps[0] - root.timestamp).total_seconds() / 60)
+            followup_waits.extend((timestamps[index] - timestamps[index - 1]).total_seconds() / 60 for index in range(1, len(timestamps)))
+    def summary(values):
+        return {"count": len(values), "average_minutes": round(mean(values), 1) if values else 0.0, "stddev_minutes": round(pstdev(values), 1) if len(values) > 1 else 0.0}
     return {
         "total_root_posts": root_post_count,
         "relate_post_count": relate_post_count,
@@ -501,6 +540,8 @@ def _build_content_stats():
         "max_chats_per_user": chat_stats["max_chats_per_user"],
         "chat_count_std_dev": round(chat_stats["chat_count_std_dev"], 2),
         "tracked_user_count": chat_stats["user_count"],
+        "post_author_stats": {"user_count": len(post_counts), "post_count": sum(post_counts), "average_posts_per_user": round(mean(post_counts), 2) if post_counts else 0.0, "stddev_posts_per_user": round(pstdev(post_counts), 2) if len(post_counts) > 1 else 0.0},
+        "post_response_stats": {"posts_with_replies": len(first_reply_waits), "first_reply": summary(first_reply_waits), "followup_reply": summary(followup_waits)},
     }
 
 
@@ -585,6 +626,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
     visits_in_range = visits_in_range_query.order_by(PageVisit.started_at.asc(), PageVisit.id.asc()).all()
     page_stats = _build_page_stats(visits_in_range_query)
     device_stats, auth_stats = _build_visit_splits(visits_in_range_query)
+    visit_identity_stats = _build_visit_identity_stats(visits_in_range)
 
     previous_query = _tracked_page_visits_query().filter(PageVisit.tracking_version.is_(None))
     previous_page_stats = _build_page_stats(previous_query)
@@ -601,6 +643,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
         "max_page_visits": max((item["visit_count"] for item in page_stats), default=0),
         "device_stats": device_stats,
         "auth_stats": auth_stats,
+        "visit_identity_stats": visit_identity_stats,
         "visit_timeline": visit_timeline,
         "selected_range": selected_range,
         "selected_segment": selected_segment,

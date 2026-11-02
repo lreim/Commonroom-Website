@@ -8,7 +8,7 @@ from flask import current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from sqlalchemy.exc import IntegrityError
 from . import auth     #importiert auth object aus __init__.py
-from ..models import User, WeeklyCheckInResponse, VisitPurposeSurveyEvent
+from ..models import User, WeeklyCheckInResponse, VisitPurposeSurveyEvent, PageVisit
 from .forms import LoginForm, OIDCLinkAccountForm, OIDCProfileForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm, ResetForm, EmailForm, canonicalize_eth_email
 from .. import db, oauth
 from ..email import send_email
@@ -30,6 +30,7 @@ OAUTH_ERROR_CODE_MAX_LENGTH = 64
 
 def _login_with_demo_mode(user, remember=False):
     login_user(user, remember)
+    _claim_anonymous_page_visits(user)
     _claim_visit_purpose_surveys(user)
     session.pop('profile_nudge_dismissed', None)
     session.pop('profile_nudge_shown', None)
@@ -37,6 +38,16 @@ def _login_with_demo_mode(user, remember=False):
     session.permanent = True
     activate_admin_demo_mode(user)
     complete_auth_funnel(user)
+
+
+def _claim_anonymous_page_visits(user):
+    token = session.get('analytics_client_token')
+    if not token:
+        return
+    PageVisit.query.filter_by(session_token=token, user_id=None).update(
+        {PageVisit.user_id: user.id}, synchronize_session=False
+    )
+    db.session.commit()
 
 
 def _claim_visit_purpose_surveys(user):
