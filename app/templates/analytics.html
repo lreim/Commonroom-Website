@@ -71,7 +71,18 @@
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-acquisition" data-analytics-tab="acquisition">Acquisition</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-funnel" data-analytics-tab="funnel">Sign-in funnel</button>
     <button type="button" role="tab" aria-selected="false" aria-controls="analytics-previous" data-analytics-tab="previous">Previous analytics</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="analytics-growth" data-analytics-tab="growth">User growth</button>
   </div>
+
+  <section id="analytics-growth" class="analytics-view-panel" role="tabpanel" data-analytics-panel="growth" hidden>
+    <div class="analytics-section-heading"><div><span>NEW ACCOUNTS</span><h2>How is the community growing?</h2></div><p>{{ user_growth_stats.total }} new non-admin users in this view.</p></div>
+    <nav class="analytics-range-switch" aria-label="User growth period">
+      {% for key, label in [('7d','7 days'),('1m','1 month'),('3m','3 months'),('6m','6 months'),('total','Total')] %}<a class="{% if user_growth_stats.range == key %}is-active{% endif %}" href="{{ url_for('main.analytics', user_growth_range=key) }}">{{ label }}</a>{% endfor %}
+    </nav>
+    <div class="analytics-chart-card"><div class="analytics-scroll-chart"><div class="analytics-column-chart analytics-user-growth-chart">
+      {% for point in user_growth_stats.points %}<div class="analytics-column" title="{{ point.label }}: {{ point.count }} new users"><span>{{ point.count }}</span><i style="height: {{ (point.count / user_growth_stats.max_count * 180) if user_growth_stats.max_count else 0 }}px;"></i><small>{{ point.label }}</small></div>{% endfor %}
+    </div></div></div>
+  </section>
 
   <section id="analytics-overview" class="analytics-view-panel is-active" role="tabpanel" data-analytics-panel="overview">
     <div class="analytics-section-heading">
@@ -136,6 +147,9 @@
           <div><strong>{{ post_author_stats.user_count }}</strong><span>Users who posted</span></div>
           <div><strong>{{ post_author_stats.average_posts_per_user }}</strong><span>Posts per user (avg.)</span></div>
           <div><strong>{{ post_author_stats.stddev_posts_per_user }}</strong><span>Standard deviation</span></div>
+          <div><strong>{{ content_author_stats.post_or_reply_users }}</strong><span>Users with a post or reply</span></div>
+          <div><strong>{{ content_author_stats.reply_users }}</strong><span>Users who wrote replies</span></div>
+          <div><strong>{{ content_author_stats.reply_only_users }}</strong><span>Reply-only users</span></div>
         </div>
       </article>
 

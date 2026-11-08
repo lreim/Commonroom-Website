@@ -540,6 +540,9 @@ def _build_content_stats():
     author_counts = Counter(post.author_id for post in community_roots)
     post_counts = list(author_counts.values())
     all_posts = [post for post in Post.query.filter(Post.is_archived.is_(False), Post.deleted_at.is_(None)).all()]
+    reply_authors = {post.author_id for post in all_posts if post.parent_id is not None and post.author_id is not None}
+    post_authors = set(author_counts)
+    all_content_authors = post_authors | reply_authors
     by_id = {post.id: post for post in all_posts}
     replies = [post for post in all_posts if post.parent_id is not None]
     first_reply_waits, followup_waits = [], []
@@ -577,6 +580,7 @@ def _build_content_stats():
         "chat_count_std_dev": round(chat_stats["chat_count_std_dev"], 2),
         "tracked_user_count": chat_stats["user_count"],
         "post_author_stats": {"user_count": len(post_counts), "post_count": sum(post_counts), "average_posts_per_user": round(mean(post_counts), 2) if post_counts else 0.0, "stddev_posts_per_user": round(pstdev(post_counts), 2) if len(post_counts) > 1 else 0.0},
+        "content_author_stats": {"post_or_reply_users": len(all_content_authors), "reply_users": len(reply_authors), "reply_only_users": len(reply_authors - post_authors)},
         "post_response_stats": {"posts_with_replies": len(first_reply_waits), "first_reply": summary(first_reply_waits), "followup_reply": summary(followup_waits)},
     }
 
@@ -743,14 +747,15 @@ def index():
 
 
 CHECKIN_CHOICES = [
-    ('conversation', 'A real conversation'),
-    ('same_feeling', 'Knowing others feel the same'),
-    ('new_person', 'Meeting someone new'),
-    ('honest_share', 'Sharing something honestly'),
-    ('invitation', 'Being invited to join in'),
-    ('encouragement', 'A little encouragement'),
+    ('time_management', 'How to manage my time'),
+    ('what_matters', 'What actually matters to me'),
+    ('ask_for_help', 'How to ask for help'),
+    ('uncertainty', 'How to handle uncertainty'),
+    ('make_space', 'How to make space for people'),
+    ('self_care', 'How to take better care of myself'),
+    ('still_figuring_it_out', 'I’m still figuring it out'),
 ]
-CHECKIN_QUESTION = "What would help you feel more connected this week?"
+CHECKIN_QUESTION = "What is something you’ve been figuring out as a student lately?"
 CHECKIN_LEGACY_CHOICES = [
     ('listening', 'A listening ear'),
     ('advice', 'Practical advice'),
@@ -861,10 +866,10 @@ def weekly_checkin():
 
 
 SUNDAY_CHECKIN_QUESTIONS = {
-    'week_type': ('What kind of week has it been so far?', [('surprises', 'Full of small surprises'), ('intense', 'More intense than expected'), ('quiet', 'Quiet but okay'), ('scattered', 'A bit all over the place'), ('rhythm', 'Still finding my rhythm')]),
-    'plot_twist': ('Which tiny plot twist would improve your week?', [('invitation', 'An unexpected invitation'), ('food', 'Finding money or free food'), ('message', 'A message from the right person'), ('understanding', 'Suddenly understanding something'), ('afternoon', 'A completely free afternoon')]),
-    'understood': ('What do you wish people around you understood better?', [('time', 'That I need more time'), ('trying', 'That I’m trying my best'), ('directness', 'That I need directness'), ('encouragement', 'That I need encouragement'), ('space', 'That I sometimes need space')]),
-    'different': ('What would you like to do differently before next Sunday?', [('no', 'Say no more easily'), ('help', 'Ask for help sooner'), ('fun', 'Make time for something fun'), ('postponing', 'Stop postponing one thing'), ('kindness', 'Be kinder to myself')]),
+    'better_at': ('What are you trying to get better at lately?', [('starting', 'Starting things earlier'), ('focus', 'Staying focused'), ('boundaries', 'Setting boundaries'), ('help', 'Asking for help'), ('breaks', 'Taking proper breaks')]),
+    'hardest': ('What has been hardest to figure out on your own?', [('want', 'What I actually want'), ('days', 'How to organize my days'), ('pressure', 'How to handle pressure'), ('connect', 'How to connect with people'), ('slow', 'When to slow down')]),
+    'support': ('What kind of support would feel most useful right now?', [('tip', 'A practical tip'), ('understands', 'Someone who understands'), ('encouragement', 'Encouragement to keep going'), ('feedback', 'Honest feedback'), ('company', 'Quiet company')]),
+    'try': ('What is one small thing you want to try this week?', [('routine', 'Change my routine'), ('talk', 'Talk to someone'), ('fun', 'Make time for something fun'), ('finish', 'Finish one thing I’ve been avoiding'), ('kindness', 'Be a little kinder to myself')]),
 }
 
 
@@ -2024,10 +2029,10 @@ def sunday_checkins_admin():
     form = StarterPostForm()
     if request.method == 'GET':
         form.body.data = ('Sunday Check-in 🌿\n\nChoose one question or answer more than one:\n\n'
-                          '– What kind of week has it been so far?\n'
-                          '– Which tiny plot twist would improve your week?\n'
-                          '– What do you wish people around you understood better?\n'
-                          '– What would you like to do differently before next Sunday?\n\n'
+                          '– What are you trying to get better at lately?\n'
+                          '– What has been hardest to figure out on your own?\n'
+                          '– What kind of support would feel most useful right now?\n'
+                          '– What is one small thing you want to try this week?\n\n'
                           'Short answers are very welcome, and you can write as openly as you like.')
         form.post_type.data = 'question'
     if form.validate_on_submit():
@@ -2113,6 +2118,29 @@ def _build_visit_purpose_survey_stats():
     return {audience: dict(counts) for audience, counts in grouped.items()}
 
 
+def _build_user_growth_stats(range_key="1m"):
+    now = datetime.now(timezone.utc)
+    ranges = {"7d": 7, "1m": 30, "3m": 90, "6m": 180}
+    earliest = User.query.outerjoin(Role, User.role_id == Role.id).filter((Role.name.is_(None)) | (Role.name != "Administrator")).with_entities(func.min(User.member_since)).scalar()
+    if range_key == "total":
+        start = earliest or now
+        bucket_size = max(1, ((now - start).days + 1) // 12)
+        bucket_count = max(1, ((now - start).days // bucket_size) + 1)
+    else:
+        days = ranges.get(range_key, 30)
+        start = now - timedelta(days=days - 1)
+        bucket_size, bucket_count = 1, days
+    counts = [0] * bucket_count
+    users = User.query.outerjoin(Role, User.role_id == Role.id).filter(((Role.name.is_(None)) | (Role.name != "Administrator")), User.member_since >= start).all()
+    for user in users:
+        created = user.member_since.replace(tzinfo=timezone.utc) if user.member_since.tzinfo is None else user.member_since
+        index = (created.date() - start.date()).days // bucket_size
+        if 0 <= index < bucket_count:
+            counts[index] += 1
+    points = [{"label": (start + timedelta(days=index * bucket_size)).astimezone(ZoneInfo("Europe/Zurich")).strftime("%b %d"), "count": count} for index, count in enumerate(counts)]
+    return {"range": range_key if range_key in (*ranges, "total") else "1m", "points": points, "max_count": max(counts, default=0), "total": sum(counts)}
+
+
 @main.route('/analytics')
 @login_required
 @admin_required
@@ -2122,6 +2150,7 @@ def analytics():
         request.args.get("segment", type=str),
         request.args.get("stacked", "0", type=str) == "1",
     )
+    snapshot["user_growth_stats"] = _build_user_growth_stats(request.args.get("user_growth_range", "1m", type=str))
     return render_template('analytics.html', active_page=None, **snapshot)
 
 

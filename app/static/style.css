@@ -252,6 +252,10 @@ html {
   min-width: 860px;
 }
 
+.analytics-user-growth-chart {
+  min-width: 720px;
+}
+
 .analytics-column {
   display: grid;
   grid-template-rows: 20px 190px 28px;
