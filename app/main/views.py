@@ -934,6 +934,7 @@ SUNDAY_CHECKIN_REDIRECTS = {
     'itet1': 'sunday_checkin_ITET1',
     'itet2': 'sunday_checkin_ITET2',
     'itet3': 'sunday_checkin_ITET3',
+    'infk': 'sunday_checkin_INFK',
 }
 
 
