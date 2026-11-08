@@ -928,6 +928,9 @@ SUNDAY_CHECKIN_REDIRECTS = {
     '3': 'sunday_checkin_Physik3',
     '4': 'sunday_checkin_Studentenwohnheim_LS',
     '5': 'sunday_checkin_Studentenwohnheim_SV',
+    'mavt1': 'sunday_checkin_MAVT1',
+    'mavt2': 'sunday_checkin_MAVT2',
+    'mavt3': 'sunday_checkin_MAVT3',
 }
 
 
