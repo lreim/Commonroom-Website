@@ -937,6 +937,7 @@ SUNDAY_CHECKIN_REDIRECTS = {
     'infk': 'sunday_checkin_INFK',
     'vial': 'sunday_checkin_VIAL',
     'erfa': 'sunday_checkin_ERFA',
+    'gesswho': 'sunday_checkin_GESSWHO',
 }
 
 
