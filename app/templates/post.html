@@ -98,7 +98,7 @@
 
 <ul class="posts post-page-list">
     {% for post in posts %}
-    <li id="post-{{ post.id }}" class="post{% if post.is_starter %} post-starter{% endif %}">
+    <li id="post-{{ post.id }}" class="post{% if post.is_starter %} post-starter{% endif %}{% if post.is_starter and post.body.startswith('Sunday Check-in') %} post-sunday-checkin{% endif %}">
         {% if post.is_starter and post.body.startswith('Sunday Check-in') %}<span class="sunday-checkin-pin" aria-label="Pinned Sunday Check-in" title="Pinned Sunday Check-in">📌</span>{% endif %}
         {% if post.id in new_post_ids %}<span class="post-new-indicator" aria-label="New post"><span aria-hidden="true"></span><span>New</span></span>{% endif %}
         <div class="post-card-date">
