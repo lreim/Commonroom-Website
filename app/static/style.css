@@ -10449,9 +10449,9 @@ html.dark-mode .post-card-date {
 .weekly-checkin > a { display:inline-block; margin-top:12px; color:#8d5960; font-weight:700; }
 .sunday-post-poll { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0 8px; }
 .sunday-question-block { padding:12px; border:1px solid #e2c5b9; border-radius:14px; background:#fff8f1; }
-.post-sunday-checkin { background: #f6edf5; border-color: #c9a5c2; }
+.post-page-list .post.post-sunday-checkin { background: #f6edf5 !important; border: 2px solid #c9a5c2; border-radius: 18px; padding: 14px 16px; }
 .post-sunday-checkin .sunday-post-collapsible > summary { font-size: 130%; }
-html.dark-mode .post-sunday-checkin { background: #342936; border-color: #72556f; }
+html.dark-mode .post-page-list .post.post-sunday-checkin { background: #342936 !important; border-color: #72556f; }
 .sunday-question-block strong { display:block; margin-bottom:8px; color:#765047; font-size:13px; }
 .sunday-question-block > div { display:flex; flex-wrap:wrap; gap:5px; }
 .sunday-question-results { display:grid !important; gap:4px !important; margin-top:10px; }
