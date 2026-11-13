@@ -727,7 +727,19 @@ class AuthFunnelEvent(db.Model):
     reason = db.Column(db.String(64), nullable=True)
     page_key = db.Column(db.String(16), nullable=True, index=True)
     duration_seconds = db.Column(db.Integer, nullable=True)
+    exit_method = db.Column(db.String(32), nullable=True, index=True)
+    destination_path = db.Column(db.String(255), nullable=True)
+    referrer_path = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+
+
+class LoginEvent(db.Model):
+    __tablename__ = 'login_events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    user = db.relationship('User', backref=db.backref('login_events', lazy='dynamic'))
 
 
 class ContentReport(db.Model):

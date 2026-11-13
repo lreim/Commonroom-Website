@@ -10624,5 +10624,12 @@ html.dark-mode .sunday-question-results > div { color: #3d2925 !important; }
 .auth-exit-survey-choices { display:grid; gap:8px; }
 .auth-exit-survey-choices button { border:1px solid #dec9bb; border-radius:10px; padding:10px 12px; background:#fffdf8; color:#5b3b32; text-align:left; cursor:pointer; }
 .auth-exit-survey-choices button:hover, .auth-exit-survey-choices button:focus-visible { background:#f3e3da; }
+.analytics-big-numbers small.analytics-card-note { display:block; margin-top:6px; font-size:10px; line-height:1.25; }
+.analytics-login-behavior { margin-top:18px; }
+.analytics-simple-bars { display:grid; gap:7px; margin:10px 0 22px; }
+.analytics-simple-bar-row { display:grid; grid-template-columns:minmax(110px,180px) 1fr 54px; gap:10px; align-items:center; font-size:12px; }
+.analytics-simple-bar-row i { display:block; height:12px; overflow:hidden; border-radius:999px; background:#eadbd1; }
+.analytics-simple-bar-row b { display:block; height:100%; border-radius:999px; background:#b66e64; }
+.analytics-simple-bar-row strong { text-align:right; font-size:12px; }
 html.dark-mode .auth-exit-survey-card { border-color:#72556f; background:#2d2522; color:#f6eee5; }
 html.dark-mode .auth-exit-survey-choices button { border-color:#66514c; background:#382d29; color:#f6eee5; }

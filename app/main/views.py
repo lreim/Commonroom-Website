@@ -17,6 +17,7 @@ from .. import db, csrf
 from ..models import (
     AuthFunnelAttempt,
     AuthFunnelEvent,
+    LoginEvent,
     User,
     Post,
     Role,
@@ -686,7 +687,83 @@ def _build_auth_funnel_stats(first_bucket_start):
         page: round(mean(values) / 60, 1) if values else None
         for page, values in exit_durations.items()
     }
+    method_labels = {
+        "link": "Followed a link",
+        "back": "Used browser back",
+        "visibility_hidden": "Switched away",
+        "pagehide": "Browser/tab closed or unknown",
+        "beforeunload": "Left during unload",
+        "unknown": "Unknown",
+    }
+    totals["exit_methods"] = {
+        page: [{"label": method_labels.get(method, method), "count": count}
+               for method, count in Counter(
+                   event.exit_method or "unknown" for event in exit_events
+                   if event.event_type == "pagehide" and event.page_key == page
+               ).most_common()]
+        for page in ("login", "register")
+    }
+    totals["exit_sources"] = {
+        page: [{"label": source, "count": count}
+               for source, count in Counter(
+                   event.referrer_path or "Direct / unknown" for event in exit_events
+                   if event.event_type == "survey_shown" and event.page_key == page
+               ).most_common()]
+        for page in ("login", "register")
+    }
     return totals
+
+
+def _build_login_behavior_stats():
+    """Aggregate login frequency without exposing individual user identities."""
+    users = User.query.outerjoin(Role, User.role_id == Role.id).filter(
+        (Role.name.is_(None)) | (Role.name != 'Administrator')
+    ).all()
+    counts = Counter()
+    events = LoginEvent.query.order_by(LoginEvent.created_at.asc()).all()
+    events_by_user = defaultdict(list)
+    for event in events:
+        events_by_user[event.user_id].append(event.created_at)
+    totals = [len(events_by_user[user.id]) for user in users if events_by_user.get(user.id)]
+    distribution = Counter(min(count, 10) for count in totals)
+    distribution_rows = [{"label": f"{count}+" if count == 10 else str(count), "count": distribution.get(count, 0)} for count in range(1, 11)]
+    calendar_weeks = defaultdict(lambda: {"users": set(), "logins": 0})
+    for event in events:
+        week_key = event.created_at.isocalendar()[:2]
+        calendar_weeks[week_key]["users"].add(event.user_id)
+        calendar_weeks[week_key]["logins"] += 1
+    weekly_average = []
+    for week_key in sorted(calendar_weeks):
+        row = calendar_weeks[week_key]
+        weekly_average.append({"label": f"W{week_key[1]} {week_key[0]}", "average": round(row["logins"] / len(row["users"]), 2), "users": len(row["users"])})
+    cohort = defaultdict(lambda: {"users": set(), "logins": 0})
+    user_by_id = {user.id: user for user in users}
+    for event in events:
+        user = user_by_id.get(event.user_id)
+        if not user or not user.member_since:
+            continue
+        member_since = user.member_since
+        if member_since.tzinfo is None:
+            member_since = member_since.replace(tzinfo=timezone.utc)
+        created_at = event.created_at
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        week_after_registration = int(max(0, (created_at - member_since).total_seconds()) // (7 * 86400)) + 1
+        if week_after_registration <= 26:
+            cohort[week_after_registration]["users"].add(event.user_id)
+            cohort[week_after_registration]["logins"] += 1
+    cohort_rows = []
+    for week in range(1, max(cohort.keys(), default=0) + 1):
+        row = cohort[week]
+        cohort_rows.append({"label": f"Week {week}", "average": round(row["logins"] / len(row["users"]), 2) if row["users"] else 0, "logins": row["logins"], "users": len(row["users"])})
+    return {
+        "total_logins": len(events),
+        "users_with_logins": len(totals),
+        "average_per_user": round(mean(totals), 2) if totals else 0,
+        "distribution": distribution_rows,
+        "weekly_average": weekly_average,
+        "cohort": cohort_rows,
+    }
 
 
 def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisition=False):
@@ -736,6 +813,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
         "journey_stats": _build_journey_stats(visits_in_range),
         "acquisition_stats": _build_acquisition_stats(visits_in_range),
         "auth_funnel_stats": _build_auth_funnel_stats(visit_timeline["first_bucket_start"]),
+        "login_behavior_stats": _build_login_behavior_stats(),
         "previous_analytics": previous_analytics,
     }
     snapshot.update(_build_content_stats())
@@ -1214,6 +1292,11 @@ def track_auth_funnel_event():
         duration_seconds = max(0, min(int(payload.get("duration_seconds") or 0), 86400))
     except (TypeError, ValueError):
         duration_seconds = None
+    exit_method = str(payload.get("exit_method") or "").strip().lower()
+    if exit_method not in {"link", "back", "visibility_hidden", "pagehide", "beforeunload", "unknown"}:
+        exit_method = None
+    destination_path = str(payload.get("destination_path") or "").strip()[:255] or None
+    referrer_path = str(payload.get("referrer_path") or "").strip()[:255] or None
     event = AuthFunnelEvent(
         attempt_id=attempt.id,
         user_id=current_user.id if current_user.is_authenticated else None,
@@ -1221,6 +1304,9 @@ def track_auth_funnel_event():
         reason=reason,
         page_key=page_key,
         duration_seconds=duration_seconds,
+        exit_method=exit_method,
+        destination_path=destination_path,
+        referrer_path=referrer_path,
     )
     db.session.add(event)
     db.session.commit()

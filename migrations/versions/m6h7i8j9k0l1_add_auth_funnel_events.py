@@ -20,14 +20,11 @@ def upgrade():
         sa.Column('user_id', sa.Integer(), sa.ForeignKey('users.id'), nullable=True),
         sa.Column('event_type', sa.String(length=32), nullable=False),
         sa.Column('reason', sa.String(length=64), nullable=True),
-        sa.Column('page_key', sa.String(length=16), nullable=True),
-        sa.Column('duration_seconds', sa.Integer(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=False),
     )
     op.create_index('ix_auth_funnel_events_attempt_id', 'auth_funnel_events', ['attempt_id'])
     op.create_index('ix_auth_funnel_events_user_id', 'auth_funnel_events', ['user_id'])
     op.create_index('ix_auth_funnel_events_event_type', 'auth_funnel_events', ['event_type'])
-    op.create_index('ix_auth_funnel_events_page_key', 'auth_funnel_events', ['page_key'])
     op.create_index('ix_auth_funnel_events_created_at', 'auth_funnel_events', ['created_at'])
 
 

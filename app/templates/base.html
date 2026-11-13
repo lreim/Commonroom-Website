@@ -701,9 +701,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
     const authPageKey = window.location.pathname.indexOf('/register') !== -1 ? 'register' : (window.location.pathname.indexOf('/login') !== -1 || window.location.pathname.indexOf('/eduid') !== -1 ? 'login' : null);
     const authPageStartedAt = Date.now();
+    let exitMethod = 'unknown';
+    let destinationPath = '';
+    const referrerPath = document.referrer || window.location.search || '';
     let sentExit = false;
     function send(eventType, reason) {
-      const payload = JSON.stringify({event_type: eventType, reason: reason || '', page_key: authPageKey, duration_seconds: Math.round((Date.now() - authPageStartedAt) / 1000)});
+      const payload = JSON.stringify({event_type: eventType, reason: reason || '', page_key: authPageKey, duration_seconds: Math.round((Date.now() - authPageStartedAt) / 1000), exit_method: exitMethod, destination_path: destinationPath, referrer_path: referrerPath});
       if (navigator.sendBeacon) {
         navigator.sendBeacon(endpoint, new Blob([payload], {type: 'application/json'}));
       } else {
@@ -724,6 +727,16 @@ document.addEventListener("DOMContentLoaded", function () {
     document.addEventListener('mouseout', function (event) {
       if (event.clientY <= 0 && event.relatedTarget === null) showSurvey();
     });
+    document.addEventListener('click', function (event) {
+      const link = event.target.closest && event.target.closest('a[href]');
+      if (!link || link.target === '_blank' || link.href.indexOf('javascript:') === 0) return;
+      exitMethod = 'link';
+      try { destinationPath = new URL(link.href, window.location.href).pathname; } catch (e) { destinationPath = ''; }
+    });
+    window.addEventListener('popstate', function () { exitMethod = 'back'; });
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden' && exitMethod === 'unknown') exitMethod = 'visibility_hidden';
+    });
     document.getElementById('auth-exit-survey-close').addEventListener('click', closeSurvey);
     survey.querySelectorAll('[data-exit-reason]').forEach(function (button) {
       button.addEventListener('click', function () {
@@ -732,7 +745,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
     window.addEventListener('pagehide', function () {
-      if (!sentExit) { sentExit = true; send('pagehide'); }
+      if (!sentExit) { sentExit = true; if (exitMethod === 'visibility_hidden') exitMethod = 'pagehide'; send('pagehide'); }
     });
   })();
   </script>

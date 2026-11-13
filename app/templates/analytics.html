@@ -457,7 +457,7 @@
         <h3>From intent to access</h3>
         <div class="analytics-big-numbers">
           <div><strong>{{ auth_funnel_stats.started }}</strong><span>Started</span></div>
-          <div><strong>{{ auth_funnel_stats.completed }}</strong><span>Completed</span></div>
+          <div><strong>{{ auth_funnel_stats.completed }}</strong><span>Completed</span><small class="analytics-card-note">Includes returning users who logged in after opening a protected action.</small></div>
           <div><strong>{{ auth_funnel_stats.login_abandoned }}</strong><span>Left during login</span></div>
           <div><strong>{{ auth_funnel_stats.profile_abandoned }}</strong><span>Left during profile setup</span></div>
           <div><strong>{{ auth_funnel_stats.in_progress }}</strong><span>Still in progress</span></div>
@@ -509,6 +509,18 @@
               {% for item in auth_funnel_stats.exit_reasons[page] %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}
             </tbody></table></div>
             {% else %}<p class="analytics-card-note">No answers yet.</p>{% endif %}
+            <h4>How they left</h4>
+            {% if auth_funnel_stats.exit_methods[page] %}
+            <div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Exit method</th><th>Count</th></tr></thead><tbody>
+              {% for item in auth_funnel_stats.exit_methods[page] %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}
+            </tbody></table></div>
+            {% else %}<p class="analytics-card-note">No exit events yet.</p>{% endif %}
+            <h4>Where they came from</h4>
+            {% if auth_funnel_stats.exit_sources[page] %}
+            <div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Referrer</th><th>Count</th></tr></thead><tbody>
+              {% for item in auth_funnel_stats.exit_sources[page] %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}
+            </tbody></table></div>
+            {% else %}<p class="analytics-card-note">No source data yet.</p>{% endif %}
           </div>
           {% endfor %}
         </div>
@@ -518,6 +530,31 @@
     <div class="analytics-privacy-note">
       Only the type of protected action, progress, exit event, and optional survey reason are counted. No form content, OIDC identifier, email address, or IP address is stored.
     </div>
+
+    <article class="analytics-breakdown-card analytics-login-behavior">
+      <span class="analytics-card-kicker">RETURNING USER LOGIN BEHAVIOUR</span>
+      <h3>How often do registered users log in?</h3>
+      <div class="analytics-big-numbers">
+        <div><strong>{{ login_behavior_stats.users_with_logins }}</strong><span>Users with a recorded login</span></div>
+        <div><strong>{{ login_behavior_stats.average_per_user }}</strong><span>Average logins per user</span></div>
+        <div><strong>{{ login_behavior_stats.total_logins }}</strong><span>Total login events</span></div>
+      </div>
+      <h4>Total logins per user</h4>
+      <div class="analytics-simple-bars">
+        {% set max_login_distribution = login_behavior_stats.distribution|map(attribute='count')|max or 1 %}
+        {% for item in login_behavior_stats.distribution %}<div class="analytics-simple-bar-row"><span>{{ item.label }} logins</span><i><b style="width:{{ (item.count / max_login_distribution * 100)|round(1) }}%"></b></i><strong>{{ item.count }}</strong></div>{% endfor %}
+      </div>
+      <h4>Average logins per calendar week</h4>
+      <div class="analytics-simple-bars">
+        {% set max_week_average = login_behavior_stats.weekly_average|map(attribute='average')|max or 1 %}
+        {% for item in login_behavior_stats.weekly_average %}<div class="analytics-simple-bar-row"><span>{{ item.label }}</span><i><b style="width:{{ (item.average / max_week_average * 100)|round(1) }}%"></b></i><strong>{{ item.average }}</strong></div>{% endfor %}
+      </div>
+      <h4>Average logins after registration</h4>
+      <div class="analytics-simple-bars">
+        {% set max_cohort_average = login_behavior_stats.cohort|map(attribute='average')|max or 1 %}
+        {% for item in login_behavior_stats.cohort %}<div class="analytics-simple-bar-row"><span>{{ item.label }}</span><i><b style="width:{{ (item.average / max_cohort_average * 100)|round(1) }}%"></b></i><strong>{{ item.average }}</strong></div>{% endfor %}
+      </div>
+    </article>
   </section>
 
   <section id="analytics-previous" class="analytics-view-panel" role="tabpanel" data-analytics-panel="previous" hidden>
