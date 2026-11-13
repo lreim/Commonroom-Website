@@ -13,13 +13,28 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('auth_funnel_events', sa.Column('exit_method', sa.String(length=32), nullable=True))
-    op.add_column('auth_funnel_events', sa.Column('page_key', sa.String(length=16), nullable=True))
-    op.add_column('auth_funnel_events', sa.Column('duration_seconds', sa.Integer(), nullable=True))
-    op.add_column('auth_funnel_events', sa.Column('destination_path', sa.String(length=255), nullable=True))
-    op.add_column('auth_funnel_events', sa.Column('referrer_path', sa.String(length=255), nullable=True))
-    op.create_index('ix_auth_funnel_events_exit_method', 'auth_funnel_events', ['exit_method'])
-    op.create_index('ix_auth_funnel_events_page_key', 'auth_funnel_events', ['page_key'])
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = {column['name'] for column in inspector.get_columns('auth_funnel_events')}
+    for name, column in (
+        ('exit_method', sa.Column('exit_method', sa.String(length=32), nullable=True)),
+        ('page_key', sa.Column('page_key', sa.String(length=16), nullable=True)),
+        ('duration_seconds', sa.Column('duration_seconds', sa.Integer(), nullable=True)),
+        ('destination_path', sa.Column('destination_path', sa.String(length=255), nullable=True)),
+        ('referrer_path', sa.Column('referrer_path', sa.String(length=255), nullable=True)),
+    ):
+        if name not in columns:
+            op.add_column('auth_funnel_events', column)
+    existing_indexes = {index['name'] for index in inspector.get_indexes('auth_funnel_events')}
+    for name, column in (
+        ('ix_auth_funnel_events_exit_method', 'exit_method'),
+        ('ix_auth_funnel_events_page_key', 'page_key'),
+    ):
+        if name not in existing_indexes:
+            op.create_index(name, 'auth_funnel_events', [column])
+    table_names = set(inspector.get_table_names())
+    if 'login_events' in table_names:
+        return
     op.create_table(
         'login_events',
         sa.Column('id', sa.Integer(), primary_key=True),
