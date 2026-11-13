@@ -725,6 +725,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const authPageStartedAt = Date.now();
     let exitMethod = 'unknown';
     let destinationPath = '';
+    let allowBackNavigation = false;
+    let backNavigationPending = false;
     const referrerPath = document.referrer || window.location.search || '';
     const authContextPage = {{ auth_context_page|default(false)|tojson }};
     const authSwitchReturned = {{ session.get('auth_switch_returned', false)|tojson }};
@@ -749,6 +751,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function closeSurvey() {
       survey.hidden = true;
       send('survey_dismissed');
+      if (backNavigationPending) { allowBackNavigation = true; window.history.back(); }
     }
     document.addEventListener('mouseout', function (event) {
       if (event.clientY <= 0 && event.relatedTarget === null) showSurvey();
@@ -760,7 +763,21 @@ document.addEventListener("DOMContentLoaded", function () {
       try { destinationPath = new URL(link.href, window.location.href).pathname; } catch (e) { destinationPath = ''; }
       if (authContextPage && (destinationPath.indexOf('/eduid') !== -1 || destinationPath.indexOf('/login') !== -1 && link.textContent.toLowerCase().indexOf('switch') !== -1)) send('switch_clicked');
     });
-    window.addEventListener('popstate', function () { exitMethod = 'back'; });
+    // Keep the auth page in place long enough to show the feedback dialog when
+    // the user swipes back or presses the browser back button. The previous
+    // page is restored after the dialog has been handled by normal navigation.
+    if (authContextPage && window.history && window.history.pushState) {
+      const authHistoryState = {commonroomAuthGate: true};
+      window.history.replaceState(authHistoryState, '', window.location.href);
+      window.history.pushState(authHistoryState, '', window.location.href);
+      window.addEventListener('popstate', function () {
+        if (allowBackNavigation) return;
+        exitMethod = 'back';
+        backNavigationPending = true;
+        showSurvey();
+        window.history.pushState(authHistoryState, '', window.location.href);
+      });
+    }
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden' && exitMethod === 'unknown') exitMethod = 'visibility_hidden';
     });
@@ -769,6 +786,7 @@ document.addEventListener("DOMContentLoaded", function () {
       button.addEventListener('click', function () {
         send('survey_answered', button.dataset.exitReason);
         survey.hidden = true;
+        if (backNavigationPending) { allowBackNavigation = true; window.history.back(); }
       });
     });
     window.addEventListener('pagehide', function () {
