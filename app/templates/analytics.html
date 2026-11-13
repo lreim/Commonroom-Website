@@ -500,11 +500,18 @@
           <div><strong>{% if auth_funnel_stats.exit_duration_minutes.login is not none %}{{ auth_funnel_stats.exit_duration_minutes.login }} min{% else %}—{% endif %}</strong><span>Average time before leaving login</span></div>
           <div><strong>{% if auth_funnel_stats.exit_duration_minutes.register is not none %}{{ auth_funnel_stats.exit_duration_minutes.register }} min{% else %}—{% endif %}</strong><span>Average time before leaving registration</span></div>
         </div>
-        {% if auth_funnel_stats.exit_reasons %}
-        <div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Reason</th><th>Responses</th></tr></thead><tbody>
-          {% for item in auth_funnel_stats.exit_reasons %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}
-        </tbody></table></div>
-        {% else %}<p class="analytics-card-note">No exit-survey answers yet.</p>{% endif %}
+        <div class="analytics-content-grid">
+          {% for page, title in [('login', 'Login page'), ('register', 'Registration page')] %}
+          <div>
+            <h4>{{ title }}</h4>
+            {% if auth_funnel_stats.exit_reasons[page] %}
+            <div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Reason</th><th>Responses</th></tr></thead><tbody>
+              {% for item in auth_funnel_stats.exit_reasons[page] %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}
+            </tbody></table></div>
+            {% else %}<p class="analytics-card-note">No answers yet.</p>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
       </article>
     </div>
 

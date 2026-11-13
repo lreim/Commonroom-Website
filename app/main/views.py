@@ -661,12 +661,21 @@ def _build_auth_funnel_stats(first_bucket_start):
         "return_later": "May come back later",
         "other": "Something else",
     }
-    reason_counts = Counter(event.reason for event in exit_events if event.event_type == "survey_answered")
+    reason_counts = {
+        page: Counter(
+            event.reason for event in exit_events
+            if event.event_type == "survey_answered" and event.page_key == page
+        )
+        for page in ("login", "register")
+    }
     totals["exit_events"] = sum(1 for event in exit_events if event.event_type == "pagehide")
     totals["survey_shown"] = sum(1 for event in exit_events if event.event_type == "survey_shown")
     totals["survey_answered"] = sum(1 for event in exit_events if event.event_type == "survey_answered")
     totals["survey_dismissed"] = sum(1 for event in exit_events if event.event_type == "survey_dismissed")
-    totals["exit_reasons"] = [{"label": label, "count": reason_counts[key]} for key, label in reason_labels.items() if reason_counts[key]]
+    totals["exit_reasons"] = {
+        page: [{"label": label, "count": reason_counts[page][key]} for key, label in reason_labels.items() if reason_counts[page][key]]
+        for page in ("login", "register")
+    }
     exit_durations = {
         page: [event.duration_seconds for event in exit_events
                if event.event_type == "pagehide" and event.page_key == page
