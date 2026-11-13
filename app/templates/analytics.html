@@ -521,6 +521,9 @@
               {% for item in auth_funnel_stats.exit_sources[page] %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}
             </tbody></table></div>
             {% else %}<p class="analytics-card-note">No source data yet.</p>{% endif %}
+            <h4>Feedback shown after 10 seconds</h4>
+            <p class="analytics-card-note">Shown: {{ auth_funnel_stats.stage_feedback[page].shown }} · Answered: {{ auth_funnel_stats.stage_feedback[page].answered }} · Dismissed: {{ auth_funnel_stats.stage_feedback[page].dismissed }}</p>
+            {% if auth_funnel_stats.stage_feedback[page].reasons %}<div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Reason</th><th>Responses</th></tr></thead><tbody>{% for item in auth_funnel_stats.stage_feedback[page].reasons %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
           </div>
           {% endfor %}
         </div>

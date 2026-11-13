@@ -678,6 +678,26 @@ document.addEventListener("DOMContentLoaded", function () {
   </aside>
   {% endif %}
   {% if session.get('auth_funnel_attempt_id') and not current_user.is_authenticated %}
+  {% set auth_context_page = request.path.startswith('/login') or request.path.startswith('/register') or request.path.startswith('/eduid') %}
+  {% if auth_context_page %}
+  <aside class="auth-stage-help" id="auth-stage-help" hidden aria-label="Login information">
+    <div class="auth-stage-help-card">
+      <button type="button" class="auth-stage-help-close" id="auth-stage-help-close" aria-label="Close">&times;</button>
+      <strong>Not sure about signing in?</strong>
+      <p>CommonRoom stays readable without an account. You need to sign in or register only to post, reply, relate, or start a private chat. Your SWITCH edu-ID is kept private.</p>
+      <a href="{{ url_for('main.data_and_privacy') }}" id="auth-stage-help-link">Why do I need to log in or register?</a>
+      <p class="auth-stage-help-question">What are you unsure about?</p>
+      <div class="auth-stage-help-choices">
+        <button type="button" data-auth-reason="just_looking">I was only looking around.</button>
+        <button type="button" data-auth-reason="privacy">I have a privacy concern.</button>
+        <button type="button" data-auth-reason="why_account">I do not understand why I need an account.</button>
+        <button type="button" data-auth-reason="university_login">I do not want to use university login.</button>
+        <button type="button" data-auth-reason="no_time">I do not have time right now.</button>
+        <button type="button" data-auth-reason="other">Something else.</button>
+      </div>
+    </div>
+  </aside>
+  {% endif %}
   <aside class="auth-exit-survey" id="auth-exit-survey" hidden aria-label="Sign-up feedback">
     <div class="auth-exit-survey-card" role="dialog" aria-modal="true" aria-labelledby="auth-exit-survey-title">
       <button type="button" class="auth-exit-survey-close" id="auth-exit-survey-close" aria-label="Close">&times;</button>
@@ -697,13 +717,16 @@ document.addEventListener("DOMContentLoaded", function () {
   <script>
   (function () {
     const survey = document.getElementById('auth-exit-survey');
-    if (!survey || sessionStorage.getItem('authExitSurveyShown')) return;
+    const authAttemptKey = {{ session.get('auth_funnel_attempt_id')|tojson }};
+    const surveyStorageKey = authAttemptKey ? 'authExitSurveyShown:' + authAttemptKey : 'authExitSurveyShown';
+    if (!survey || sessionStorage.getItem(surveyStorageKey)) return;
     const endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
     const authPageKey = window.location.pathname.indexOf('/register') !== -1 ? 'register' : (window.location.pathname.indexOf('/login') !== -1 || window.location.pathname.indexOf('/eduid') !== -1 ? 'login' : null);
     const authPageStartedAt = Date.now();
     let exitMethod = 'unknown';
     let destinationPath = '';
     const referrerPath = document.referrer || window.location.search || '';
+    const authContextPage = {{ auth_context_page|default(false)|tojson }};
     let sentExit = false;
     function send(eventType, reason) {
       const payload = JSON.stringify({event_type: eventType, reason: reason || '', page_key: authPageKey, duration_seconds: Math.round((Date.now() - authPageStartedAt) / 1000), exit_method: exitMethod, destination_path: destinationPath, referrer_path: referrerPath});
@@ -713,10 +736,11 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(endpoint, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: payload, keepalive: true}).catch(function () {});
       }
     }
+    if (authContextPage) send('login_page_loaded');
     function showSurvey() {
       if (survey.hidden) {
         survey.hidden = false;
-        sessionStorage.setItem('authExitSurveyShown', '1');
+        sessionStorage.setItem(surveyStorageKey, '1');
         send('survey_shown');
       }
     }
@@ -732,6 +756,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!link || link.target === '_blank' || link.href.indexOf('javascript:') === 0) return;
       exitMethod = 'link';
       try { destinationPath = new URL(link.href, window.location.href).pathname; } catch (e) { destinationPath = ''; }
+      if (authContextPage && (destinationPath.indexOf('/eduid') !== -1 || destinationPath.indexOf('/login') !== -1 && link.textContent.toLowerCase().indexOf('switch') !== -1)) send('switch_clicked');
     });
     window.addEventListener('popstate', function () { exitMethod = 'back'; });
     document.addEventListener('visibilitychange', function () {
@@ -749,6 +774,22 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
   </script>
+  {% if auth_context_page %}
+  <script>
+  (function () {
+    const box = document.getElementById('auth-stage-help');
+    if (!box || sessionStorage.getItem('authStageHelpShown:' + {{ session.get('auth_funnel_attempt_id')|tojson }})) return;
+    const endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
+    function send(eventType, reason) {
+      fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_type:eventType, reason:reason || '', page_key:window.location.pathname.indexOf('/register') !== -1 ? 'register' : 'login', duration_seconds:0, referrer_path:document.referrer || window.location.search}), keepalive:true}).catch(function () {});
+    }
+    window.setTimeout(function () { box.hidden = false; sessionStorage.setItem('authStageHelpShown:' + {{ session.get('auth_funnel_attempt_id')|tojson }}, '1'); send('stage_shown'); }, 10000);
+    document.getElementById('auth-stage-help-close').addEventListener('click', function () { box.hidden = true; send('stage_dismissed'); });
+    box.querySelectorAll('[data-auth-reason]').forEach(function (button) { button.addEventListener('click', function () { send('stage_answered', button.dataset.authReason); box.hidden = true; }); });
+    document.getElementById('auth-stage-help-link').addEventListener('click', function () { send('info_opened'); });
+  })();
+  </script>
+  {% endif %}
   {% endif %}
   {% if not session.get('whats_new_dismissed') and request.endpoint != 'main.whats_new' %}
   <aside class="whats-new-nudge" aria-label="What's new">

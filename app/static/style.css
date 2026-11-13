@@ -10624,6 +10624,19 @@ html.dark-mode .sunday-question-results > div { color: #3d2925 !important; }
 .auth-exit-survey-choices { display:grid; gap:8px; }
 .auth-exit-survey-choices button { border:1px solid #dec9bb; border-radius:10px; padding:10px 12px; background:#fffdf8; color:#5b3b32; text-align:left; cursor:pointer; }
 .auth-exit-survey-choices button:hover, .auth-exit-survey-choices button:focus-visible { background:#f3e3da; }
+.auth-stage-help { position:fixed; right:24px; bottom:24px; z-index:1100; width:min(390px,calc(100% - 32px)); }
+.auth-stage-help[hidden] { display:none; }
+.auth-stage-help-card { position:relative; padding:22px; border:1px solid #d9c1b0; border-radius:16px; background:#fffaf1; box-shadow:0 12px 36px rgba(55,35,28,.2); color:#4b2d25; }
+.auth-stage-help-card strong { display:block; margin-bottom:8px; font-size:1.15rem; }
+.auth-stage-help-card p { margin:7px 0; font-size:.9rem; line-height:1.4; }
+.auth-stage-help-card a { color:#9d5f55; font-weight:700; }
+.auth-stage-help-close { position:absolute; top:8px; right:12px; border:0; background:none; color:#8b5d50; font-size:1.4rem; cursor:pointer; }
+.auth-stage-help-question { font-weight:700; margin-top:14px !important; }
+.auth-stage-help-choices { display:grid; gap:6px; margin-top:8px; }
+.auth-stage-help-choices button { border:1px solid #dec9bb; border-radius:9px; padding:8px 10px; background:#fffdf8; color:#5b3b32; text-align:left; cursor:pointer; font-size:.84rem; }
+.auth-stage-help-choices button:hover, .auth-stage-help-choices button:focus-visible { background:#f3e3da; }
+html.dark-mode .auth-stage-help-card { border-color:#72556f; background:#2d2522; color:#f6eee5; }
+html.dark-mode .auth-stage-help-choices button { border-color:#66514c; background:#382d29; color:#f6eee5; }
 .analytics-big-numbers small.analytics-card-note { display:block; margin-top:6px; font-size:10px; line-height:1.25; }
 .analytics-login-behavior { margin-top:18px; }
 .analytics-simple-bars { display:grid; gap:7px; margin:10px 0 22px; }

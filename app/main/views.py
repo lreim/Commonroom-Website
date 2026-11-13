@@ -711,6 +711,15 @@ def _build_auth_funnel_stats(first_bucket_start):
                ).most_common()]
         for page in ("login", "register")
     }
+    totals["stage_feedback"] = {
+        page: {
+            "shown": sum(1 for event in exit_events if event.event_type == "stage_shown" and event.page_key == page),
+            "answered": sum(1 for event in exit_events if event.event_type == "stage_answered" and event.page_key == page),
+            "dismissed": sum(1 for event in exit_events if event.event_type == "stage_dismissed" and event.page_key == page),
+            "reasons": [{"label": label, "count": Counter(event.reason for event in exit_events if event.event_type == "stage_answered" and event.page_key == page)[key]} for key, label in reason_labels.items() if Counter(event.reason for event in exit_events if event.event_type == "stage_answered" and event.page_key == page)[key]],
+        }
+        for page in ("login", "register")
+    }
     return totals
 
 
@@ -1279,7 +1288,7 @@ def track_auth_funnel_event():
         return ("", 204)
     payload = request.get_json(silent=True) or {}
     event_type = str(payload.get("event_type") or "").strip()
-    if event_type not in {"pagehide", "survey_shown", "survey_answered", "survey_dismissed"}:
+    if event_type not in {"pagehide", "survey_shown", "survey_answered", "survey_dismissed", "stage_shown", "stage_answered", "stage_dismissed", "login_page_loaded", "switch_clicked", "info_opened"}:
         return ("", 204)
     reason = str(payload.get("reason") or "").strip()[:64] or None
     allowed_reasons = {"just_looking", "privacy", "university_login", "unclear_benefit", "unclear_process", "no_time", "return_later", "other"}
