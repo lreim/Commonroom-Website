@@ -16,6 +16,7 @@ from .forms import PostForm, ReplyForm, EditPostForm, StarterPostForm, EditProfi
 from .. import db, csrf
 from ..models import (
     AuthFunnelAttempt,
+    AuthFunnelEvent,
     User,
     Post,
     Role,
@@ -644,6 +645,38 @@ def _build_auth_funnel_stats(first_bucket_start):
     )
     totals["actions"] = list(action_rows.values())
     totals["abandoned_after_minutes"] = 30
+    exit_events = (
+        AuthFunnelEvent.query
+        .filter(AuthFunnelEvent.created_at >= first_bucket_start)
+        .order_by(AuthFunnelEvent.created_at.asc())
+        .all()
+    )
+    reason_labels = {
+        "just_looking": "Just looking around",
+        "privacy": "Privacy concern",
+        "university_login": "Did not want university login",
+        "unclear_benefit": "Unclear benefit",
+        "unclear_process": "Process was unclear",
+        "no_time": "No time right now",
+        "return_later": "May come back later",
+        "other": "Something else",
+    }
+    reason_counts = Counter(event.reason for event in exit_events if event.event_type == "survey_answered")
+    totals["exit_events"] = sum(1 for event in exit_events if event.event_type == "pagehide")
+    totals["survey_shown"] = sum(1 for event in exit_events if event.event_type == "survey_shown")
+    totals["survey_answered"] = sum(1 for event in exit_events if event.event_type == "survey_answered")
+    totals["survey_dismissed"] = sum(1 for event in exit_events if event.event_type == "survey_dismissed")
+    totals["exit_reasons"] = [{"label": label, "count": reason_counts[key]} for key, label in reason_labels.items() if reason_counts[key]]
+    exit_durations = {
+        page: [event.duration_seconds for event in exit_events
+               if event.event_type == "pagehide" and event.page_key == page
+               and event.duration_seconds is not None]
+        for page in ("login", "register")
+    }
+    totals["exit_duration_minutes"] = {
+        page: round(mean(values) / 60, 1) if values else None
+        for page, values in exit_durations.items()
+    }
     return totals
 
 
@@ -1143,6 +1176,44 @@ def track_page_visit():
         duration_seconds=duration_seconds,
     )
     db.session.add(visit)
+    db.session.commit()
+    return ("", 204)
+
+
+@main.route('/analytics/auth-funnel-event', methods=['POST'])
+@csrf.exempt
+def track_auth_funnel_event():
+    """Record exit-intent events for an active login or registration attempt."""
+    if not _analytics_request_has_same_origin():
+        return ("", 204)
+    attempt_id = session.get("auth_funnel_attempt_id")
+    attempt = db.session.get(AuthFunnelAttempt, attempt_id) if attempt_id else None
+    if attempt is None or attempt.completed_at is not None:
+        return ("", 204)
+    payload = request.get_json(silent=True) or {}
+    event_type = str(payload.get("event_type") or "").strip()
+    if event_type not in {"pagehide", "survey_shown", "survey_answered", "survey_dismissed"}:
+        return ("", 204)
+    reason = str(payload.get("reason") or "").strip()[:64] or None
+    allowed_reasons = {"just_looking", "privacy", "university_login", "unclear_benefit", "unclear_process", "no_time", "return_later", "other"}
+    if reason not in allowed_reasons:
+        reason = None
+    page_key = str(payload.get("page_key") or "").strip().lower()
+    if page_key not in {"login", "register"}:
+        page_key = None
+    try:
+        duration_seconds = max(0, min(int(payload.get("duration_seconds") or 0), 86400))
+    except (TypeError, ValueError):
+        duration_seconds = None
+    event = AuthFunnelEvent(
+        attempt_id=attempt.id,
+        user_id=current_user.id if current_user.is_authenticated else None,
+        event_type=event_type,
+        reason=reason,
+        page_key=page_key,
+        duration_seconds=duration_seconds,
+    )
+    db.session.add(event)
     db.session.commit()
     return ("", 204)
 

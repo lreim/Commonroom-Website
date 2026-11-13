@@ -10615,3 +10615,14 @@ html.dark-mode .sunday-question-results > div { color: #3d2925 !important; }
 .analytics-funnel-legend span > i.analytics-funnel-swatch-2 { background:#8a9d72 !important; }
 .analytics-stacked-column b.analytics-funnel-segment-3,
 .analytics-funnel-legend span > i.analytics-funnel-swatch-3 { background:#c8a66a !important; }
+
+.auth-exit-survey { position:fixed; inset:0; z-index:1200; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(44,28,24,.28); }
+.auth-exit-survey[hidden] { display:none; }
+.auth-exit-survey-card { position:relative; width:min(430px,100%); padding:28px; border:1px solid #d9c1b0; border-radius:18px; background:#fffaf1; box-shadow:0 18px 60px rgba(55,35,28,.24); color:#4b2d25; }
+.auth-exit-survey-card strong { display:block; margin-bottom:18px; font-size:1.25rem; line-height:1.25; }
+.auth-exit-survey-close { position:absolute; top:10px; right:14px; border:0; background:none; color:#8b5d50; font-size:1.5rem; cursor:pointer; }
+.auth-exit-survey-choices { display:grid; gap:8px; }
+.auth-exit-survey-choices button { border:1px solid #dec9bb; border-radius:10px; padding:10px 12px; background:#fffdf8; color:#5b3b32; text-align:left; cursor:pointer; }
+.auth-exit-survey-choices button:hover, .auth-exit-survey-choices button:focus-visible { background:#f3e3da; }
+html.dark-mode .auth-exit-survey-card { border-color:#72556f; background:#2d2522; color:#f6eee5; }
+html.dark-mode .auth-exit-survey-choices button { border-color:#66514c; background:#382d29; color:#f6eee5; }

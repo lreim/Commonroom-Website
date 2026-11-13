@@ -677,6 +677,66 @@ document.addEventListener("DOMContentLoaded", function () {
     </form>
   </aside>
   {% endif %}
+  {% if session.get('auth_funnel_attempt_id') and not current_user.is_authenticated %}
+  <aside class="auth-exit-survey" id="auth-exit-survey" hidden aria-label="Sign-up feedback">
+    <div class="auth-exit-survey-card" role="dialog" aria-modal="true" aria-labelledby="auth-exit-survey-title">
+      <button type="button" class="auth-exit-survey-close" id="auth-exit-survey-close" aria-label="Close">&times;</button>
+      <strong id="auth-exit-survey-title">Before you go, what made you pause your sign-up?</strong>
+      <div class="auth-exit-survey-choices">
+        <button type="button" data-exit-reason="just_looking">I was just looking around.</button>
+        <button type="button" data-exit-reason="privacy">I had a privacy concern.</button>
+        <button type="button" data-exit-reason="university_login">I did not want to use university login.</button>
+        <button type="button" data-exit-reason="unclear_benefit">I was unsure what I would get.</button>
+        <button type="button" data-exit-reason="unclear_process">The process was unclear.</button>
+        <button type="button" data-exit-reason="no_time">I did not have time right now.</button>
+        <button type="button" data-exit-reason="return_later">I may come back later.</button>
+        <button type="button" data-exit-reason="other">Something else.</button>
+      </div>
+    </div>
+  </aside>
+  <script>
+  (function () {
+    const survey = document.getElementById('auth-exit-survey');
+    if (!survey || sessionStorage.getItem('authExitSurveyShown')) return;
+    const endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
+    const authPageKey = window.location.pathname.indexOf('/register') !== -1 ? 'register' : (window.location.pathname.indexOf('/login') !== -1 || window.location.pathname.indexOf('/eduid') !== -1 ? 'login' : null);
+    const authPageStartedAt = Date.now();
+    let sentExit = false;
+    function send(eventType, reason) {
+      const payload = JSON.stringify({event_type: eventType, reason: reason || '', page_key: authPageKey, duration_seconds: Math.round((Date.now() - authPageStartedAt) / 1000)});
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(endpoint, new Blob([payload], {type: 'application/json'}));
+      } else {
+        fetch(endpoint, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: payload, keepalive: true}).catch(function () {});
+      }
+    }
+    function showSurvey() {
+      if (survey.hidden) {
+        survey.hidden = false;
+        sessionStorage.setItem('authExitSurveyShown', '1');
+        send('survey_shown');
+      }
+    }
+    function closeSurvey() {
+      survey.hidden = true;
+      send('survey_dismissed');
+    }
+    document.addEventListener('mouseout', function (event) {
+      if (event.clientY <= 0 && event.relatedTarget === null) showSurvey();
+    });
+    document.getElementById('auth-exit-survey-close').addEventListener('click', closeSurvey);
+    survey.querySelectorAll('[data-exit-reason]').forEach(function (button) {
+      button.addEventListener('click', function () {
+        send('survey_answered', button.dataset.exitReason);
+        survey.hidden = true;
+      });
+    });
+    window.addEventListener('pagehide', function () {
+      if (!sentExit) { sentExit = true; send('pagehide'); }
+    });
+  })();
+  </script>
+  {% endif %}
   {% if not session.get('whats_new_dismissed') and request.endpoint != 'main.whats_new' %}
   <aside class="whats-new-nudge" aria-label="What's new">
     <div><strong>New features on CommonRoom</strong><span>Explore the new What's new? page.</span></div>

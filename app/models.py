@@ -714,6 +714,21 @@ class AuthFunnelAttempt(db.Model):
     profile_required_at = db.Column(db.DateTime, nullable=True)
     completed_at = db.Column(db.DateTime, nullable=True, index=True)
 
+    events = db.relationship('AuthFunnelEvent', backref='attempt', lazy='dynamic', cascade='all, delete-orphan')
+
+
+class AuthFunnelEvent(db.Model):
+    __tablename__ = 'auth_funnel_events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_id = db.Column(db.Integer, db.ForeignKey('auth_funnel_attempts.id'), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True, index=True)
+    event_type = db.Column(db.String(32), nullable=False, index=True)
+    reason = db.Column(db.String(64), nullable=True)
+    page_key = db.Column(db.String(16), nullable=True, index=True)
+    duration_seconds = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+
 
 class ContentReport(db.Model):
     """Retain a moderation snapshot even if the original content is edited/deleted."""

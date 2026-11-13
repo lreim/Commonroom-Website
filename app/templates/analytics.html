@@ -486,10 +486,30 @@
           </table>
         </div>
       </article>
+
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">EXIT FEEDBACK</span>
+        <h3>Why people paused</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ auth_funnel_stats.exit_events }}</strong><span>Left the auth page</span></div>
+          <div><strong>{{ auth_funnel_stats.survey_shown }}</strong><span>Survey shown</span></div>
+          <div><strong>{{ auth_funnel_stats.survey_answered }}</strong><span>Answered</span></div>
+          <div><strong>{{ auth_funnel_stats.survey_dismissed }}</strong><span>Dismissed</span></div>
+        </div>
+        <div class="analytics-big-numbers">
+          <div><strong>{% if auth_funnel_stats.exit_duration_minutes.login is not none %}{{ auth_funnel_stats.exit_duration_minutes.login }} min{% else %}—{% endif %}</strong><span>Average time before leaving login</span></div>
+          <div><strong>{% if auth_funnel_stats.exit_duration_minutes.register is not none %}{{ auth_funnel_stats.exit_duration_minutes.register }} min{% else %}—{% endif %}</strong><span>Average time before leaving registration</span></div>
+        </div>
+        {% if auth_funnel_stats.exit_reasons %}
+        <div class="analytics-table-wrap"><table class="analytics-table"><thead><tr><th>Reason</th><th>Responses</th></tr></thead><tbody>
+          {% for item in auth_funnel_stats.exit_reasons %}<tr><td>{{ item.label }}</td><td>{{ item.count }}</td></tr>{% endfor %}
+        </tbody></table></div>
+        {% else %}<p class="analytics-card-note">No exit-survey answers yet.</p>{% endif %}
+      </article>
     </div>
 
     <div class="analytics-privacy-note">
-      Only the type of protected action and its progress are counted. No form content, OIDC identifier, email address, IP address, or destination post is stored.
+      Only the type of protected action, progress, exit event, and optional survey reason are counted. No form content, OIDC identifier, email address, or IP address is stored.
     </div>
   </section>
 
