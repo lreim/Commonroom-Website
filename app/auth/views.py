@@ -259,7 +259,7 @@ def legacy_login():
     next_url = request.args.get('next')
     if not is_safe_local_redirect_target(next_url):
         next_url = None
-    intent = request.args.get('intent', type=str)
+    intent = request.args.get('intent', type=str) or request.form.get('intent', type=str)
     if intent in {'post', 'reply', 'relate'}:
         start_auth_funnel(intent)
     elif request.args.get('gate') == '1':
@@ -308,7 +308,7 @@ def legacy_login():
     return render_template('auth/login.html', form=form, next_url=next_url)
 
 
-@auth.route('/eduid/login')
+@auth.route('/eduid/login', methods=['GET', 'POST'])
 def eduid_login():
     if not _oidc_is_active():
         abort(404)
@@ -323,7 +323,15 @@ def eduid_login():
     elif request.args.get('gate') == '1':
         start_auth_funnel('protected_page')
 
-    next_url = request.args.get('next')
+    next_url = request.args.get('next') or request.form.get('next')
+    continue_value = request.args.get('continue') or request.form.get('continue')
+    if request.method == 'GET' and continue_value != '1':
+        return render_template(
+            'auth/eduid_gate.html',
+            next_url=next_url if is_safe_local_redirect_target(next_url) else None,
+            intent=intent,
+            auth_mode='register' if request.path.startswith('/register') else 'login',
+        )
     if is_safe_local_redirect_target(next_url):
         session[OIDC_NEXT_SESSION_KEY] = next_url
     else:
@@ -376,6 +384,7 @@ def eduid_callback():
         if userinfo.get('sub') != subject:
             raise ValueError('UserInfo subject does not match the ID token')
     except (OAuthError, KeyError, TypeError, ValueError) as exc:
+        session['auth_switch_returned'] = True
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
         session.pop(OIDC_NEXT_SESSION_KEY, None)
         if isinstance(exc, OAuthError):
@@ -394,6 +403,7 @@ def eduid_callback():
             400,
         )
     except Exception as exc:
+        session['auth_switch_returned'] = True
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
         session.pop(OIDC_NEXT_SESSION_KEY, None)
         current_app.logger.warning(
@@ -406,6 +416,7 @@ def eduid_callback():
         )
 
     if not _has_student_affiliation(userinfo):
+        session['auth_switch_returned'] = True
         session.pop(OIDC_PENDING_PROFILE_SESSION_KEY, None)
         session.pop(OIDC_NEXT_SESSION_KEY, None)
         return _render_oidc_error(

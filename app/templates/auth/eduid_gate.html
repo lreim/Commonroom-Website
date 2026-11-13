@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}CommonRoom - Continue with SWITCH edu-ID{% endblock %}
+{% block page_content %}
+<main class="oidc-gate-page">
+  <section class="oidc-gate-card" aria-labelledby="oidc-gate-title">
+    <div class="oidc-profile-kicker">CommonRoom access</div>
+    <h1 id="oidc-gate-title">{% if auth_mode == 'register' %}Create your CommonRoom profile{% else %}Continue to CommonRoom{% endif %}</h1>
+    <p>To post, reply, relate, or start a private chat, you need a CommonRoom account. Reading public posts remains open.</p>
+    <p class="oidc-gate-privacy">SWITCH edu-ID confirms student access. CommonRoom receives only a private pseudonymous number, not your name or email. Your SWITCH identity is not shown publicly on CommonRoom.</p>
+    <form method="post" action="{{ url_for('auth.eduid_login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="continue" value="1">
+      <input type="hidden" name="next" value="{{ next_url or '' }}">
+      <input type="hidden" name="intent" value="{{ intent or '' }}">
+      <button type="submit" class="btn btn-primary oidc-profile-create-button">Continue with SWITCH edu-ID</button>
+    </form>
+    <div class="oidc-gate-info" role="note" aria-label="Why do I need to log in or register?">
+      <strong>Why do I need to log in or register?</strong>
+      <div class="oidc-gate-info-panel">
+        <p>You need an account only for actions that create or connect content, such as posting, replying, relating, or starting a private chat. Public posts remain readable without an account.</p>
+        <p>SWITCH edu-ID confirms that you are a student. CommonRoom receives only a private pseudonymous number so it can recognise your account next time. Your name, university email address, and public university identifier are not imported or shown to other students.</p>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

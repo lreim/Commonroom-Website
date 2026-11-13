@@ -21,6 +21,7 @@ def _utc_aware(value):
 
 
 def start_auth_funnel(action):
+    session.pop("auth_switch_returned", None)
     if action not in VALID_ACTIONS:
         action = "protected_page"
 
@@ -58,6 +59,7 @@ def mark_auth_funnel_profile_required():
 
 
 def complete_auth_funnel(user=None):
+    session.pop("auth_switch_returned", None)
     attempt_id = session.pop(SESSION_KEY, None)
     if not attempt_id:
         return

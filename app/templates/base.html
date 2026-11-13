@@ -678,7 +678,7 @@ document.addEventListener("DOMContentLoaded", function () {
   </aside>
   {% endif %}
   {% if session.get('auth_funnel_attempt_id') and not current_user.is_authenticated %}
-  {% set auth_context_page = request.path.startswith('/login') or request.path.startswith('/register') or request.path.startswith('/eduid') %}
+  {% set auth_context_page = request.path.startswith('/login') or request.path.startswith('/register') or '/eduid' in request.path or session.get('auth_switch_returned') %}
   {% if auth_context_page %}
   <aside class="auth-stage-help" id="auth-stage-help" hidden aria-label="Login information">
     <div class="auth-stage-help-card">
@@ -721,12 +721,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const surveyStorageKey = authAttemptKey ? 'authExitSurveyShown:' + authAttemptKey : 'authExitSurveyShown';
     if (!survey || sessionStorage.getItem(surveyStorageKey)) return;
     const endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
-    const authPageKey = window.location.pathname.indexOf('/register') !== -1 ? 'register' : (window.location.pathname.indexOf('/login') !== -1 || window.location.pathname.indexOf('/eduid') !== -1 ? 'login' : null);
+    const authPageKey = window.location.pathname.indexOf('/register') !== -1 ? 'register' : (window.location.pathname.indexOf('/login') !== -1 || window.location.pathname.indexOf('/eduid') !== -1 || {{ session.get('auth_switch_returned', false)|tojson }} ? 'login' : null);
     const authPageStartedAt = Date.now();
     let exitMethod = 'unknown';
     let destinationPath = '';
     const referrerPath = document.referrer || window.location.search || '';
     const authContextPage = {{ auth_context_page|default(false)|tojson }};
+    const authSwitchReturned = {{ session.get('auth_switch_returned', false)|tojson }};
     let sentExit = false;
     function send(eventType, reason) {
       const payload = JSON.stringify({event_type: eventType, reason: reason || '', page_key: authPageKey, duration_seconds: Math.round((Date.now() - authPageStartedAt) / 1000), exit_method: exitMethod, destination_path: destinationPath, referrer_path: referrerPath});
@@ -744,6 +745,7 @@ document.addEventListener("DOMContentLoaded", function () {
         send('survey_shown');
       }
     }
+    if (authSwitchReturned) showSurvey();
     function closeSurvey() {
       survey.hidden = true;
       send('survey_dismissed');
@@ -783,7 +785,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function send(eventType, reason) {
       fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_type:eventType, reason:reason || '', page_key:window.location.pathname.indexOf('/register') !== -1 ? 'register' : 'login', duration_seconds:0, referrer_path:document.referrer || window.location.search}), keepalive:true}).catch(function () {});
     }
-    window.setTimeout(function () { box.hidden = false; sessionStorage.setItem('authStageHelpShown:' + {{ session.get('auth_funnel_attempt_id')|tojson }}, '1'); send('stage_shown'); }, 10000);
+    window.setTimeout(function () { box.hidden = false; sessionStorage.setItem('authStageHelpShown:' + {{ session.get('auth_funnel_attempt_id')|tojson }}, '1'); send('stage_shown'); }, {{ 0 if session.get('auth_switch_returned') else 4000 }});
     document.getElementById('auth-stage-help-close').addEventListener('click', function () { box.hidden = true; send('stage_dismissed'); });
     box.querySelectorAll('[data-auth-reason]').forEach(function (button) { button.addEventListener('click', function () { send('stage_answered', button.dataset.authReason); box.hidden = true; }); });
     document.getElementById('auth-stage-help-link').addEventListener('click', function () { send('info_opened'); });

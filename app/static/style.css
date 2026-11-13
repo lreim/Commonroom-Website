@@ -10635,6 +10635,19 @@ html.dark-mode .sunday-question-results > div { color: #3d2925 !important; }
 .auth-stage-help-choices { display:grid; gap:6px; margin-top:8px; }
 .auth-stage-help-choices button { border:1px solid #dec9bb; border-radius:9px; padding:8px 10px; background:#fffdf8; color:#5b3b32; text-align:left; cursor:pointer; font-size:.84rem; }
 .auth-stage-help-choices button:hover, .auth-stage-help-choices button:focus-visible { background:#f3e3da; }
+.oidc-gate-page { max-width:680px; margin:42px auto; }
+.oidc-gate-card { padding:38px; border:1px solid #dec9bb; border-radius:20px; background:#fffaf1; box-shadow:0 12px 34px rgba(55,35,28,.12); }
+.oidc-gate-card h1 { margin-top:8px; }
+.oidc-gate-card p { max-width:58ch; font-size:1.05rem; line-height:1.55; }
+.oidc-gate-privacy { color:#73564b; }
+.oidc-gate-info { margin-top:18px; color:#9d5f55; font-weight:700; }
+.oidc-gate-info > strong { display:block; }
+.oidc-gate-info-panel { margin-top:10px; padding:14px 16px; border-left:3px solid #b66e64; background:#f7eae2; color:#5b3b32; font-weight:400; }
+.oidc-gate-info-panel p { margin:0 0 8px; font-size:.92rem; }
+.oidc-gate-info-panel p:last-child { margin-bottom:0; }
+html.dark-mode .oidc-gate-card { border-color:#72556f; background:#2d2522; }
+html.dark-mode .oidc-gate-privacy { color:#d7c4b8; }
+html.dark-mode .oidc-gate-info-panel { background:#382d29; color:#f6eee5; }
 html.dark-mode .auth-stage-help-card { border-color:#72556f; background:#2d2522; color:#f6eee5; }
 html.dark-mode .auth-stage-help-choices button { border-color:#66514c; background:#382d29; color:#f6eee5; }
 .analytics-big-numbers small.analytics-card-note { display:block; margin-top:6px; font-size:10px; line-height:1.25; }
