@@ -876,15 +876,15 @@ def index():
 
 
 CHECKIN_CHOICES = [
-    ('time_management', 'How to manage my time'),
-    ('what_matters', 'What actually matters to me'),
-    ('ask_for_help', 'How to ask for help'),
-    ('uncertainty', 'How to handle uncertainty'),
-    ('make_space', 'How to make space for people'),
-    ('self_care', 'How to take better care of myself'),
-    ('still_figuring_it_out', 'I’m still figuring it out'),
+    ('relatable_anonymous_post', 'When I read an anonymous post I deeply relate to'),
+    ('similar_experience_reply', 'When someone replies with a similar experience'),
+    ('share_anonymously', 'When I can share honestly without revealing my identity'),
+    ('shared_tags', 'When I find people through shared interests or tags'),
+    ('private_conversation', 'When I can continue a meaningful conversation privately'),
+    ('regular_checkin', 'When people check in and make space for quieter voices'),
+    ('helpful_support', 'When I find helpful advice or support resources'),
 ]
-CHECKIN_QUESTION = "What is something you’ve been figuring out as a student lately?"
+CHECKIN_QUESTION = "When do you feel most understood and accepted in a community?"
 CHECKIN_LEGACY_CHOICES = [
     ('listening', 'A listening ear'),
     ('advice', 'Practical advice'),
