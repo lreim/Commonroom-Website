@@ -995,10 +995,10 @@ def weekly_checkin():
 
 
 SUNDAY_CHECKIN_QUESTIONS = {
-    'better_at': ('What are you trying to get better at lately?', [('starting', 'Starting things earlier'), ('focus', 'Staying focused'), ('boundaries', 'Setting boundaries'), ('help', 'Asking for help'), ('breaks', 'Taking proper breaks')]),
-    'hardest': ('What has been hardest to figure out on your own?', [('want', 'What I actually want'), ('days', 'How to organize my days'), ('pressure', 'How to handle pressure'), ('connect', 'How to connect with people'), ('slow', 'When to slow down')]),
-    'support': ('What kind of support would feel most useful right now?', [('tip', 'A practical tip'), ('understands', 'Someone who understands'), ('encouragement', 'Encouragement to keep going'), ('feedback', 'Honest feedback'), ('company', 'Quiet company')]),
-    'try': ('What is one small thing you want to try this week?', [('routine', 'Change my routine'), ('talk', 'Talk to someone'), ('fun', 'Make time for something fun'), ('finish', 'Finish one thing I’ve been avoiding'), ('kindness', 'Be a little kinder to myself')]),
+    'share_safety': ('What makes you feel safe enough to share honestly?', [('anonymous', 'Being anonymous'), ('open_first', 'Seeing others be open first'), ('kind_reply', 'A kind and thoughtful reply'), ('no_judgment', 'Knowing I will not be judged'), ('think_first', 'Having time to think before posting')]),
+    'understood_response': ('What kind of response makes you feel truly understood?', [('similar', 'Someone sharing a similar experience'), ('advice', 'Practical advice'), ('reassurance', 'Reassurance'), ('question', 'A thoughtful question'), ('listening', 'Simply being listened to')]),
+    'connection_place': ('Where do you feel most comfortable connecting with others?', [('anonymous_post', 'In anonymous posts'), ('shared_reply', 'In replies to a shared experience'), ('private_chat', 'In a private chat'), ('shared_tags', 'Through shared interests or tags'), ('checkin', 'In a regular check-in')]),
+    'belonging': ('What helps you feel that you belong in a community?', [('returning', 'Seeing people return and participate'), ('people_like_me', 'Finding others like me'), ('remembered', 'Being remembered'), ('quiet_space', 'Having space to stay quiet'), ('welcome', 'Feeling welcome even when I contribute little')]),
 }
 
 
@@ -2214,10 +2214,10 @@ def sunday_checkins_admin():
     form = StarterPostForm()
     if request.method == 'GET':
         form.body.data = ('Sunday Check-in 🌿\n\nChoose one question or answer more than one:\n\n'
-                          '– What are you trying to get better at lately?\n'
-                          '– What has been hardest to figure out on your own?\n'
-                          '– What kind of support would feel most useful right now?\n'
-                          '– What is one small thing you want to try this week?\n\n'
+                          '– What makes you feel safe enough to share honestly?\n'
+                          '– What kind of response makes you feel truly understood?\n'
+                          '– Where do you feel most comfortable connecting with others?\n'
+                          '– What helps you feel that you belong in a community?\n\n'
                           'Short answers are very welcome, and you can write as openly as you like.')
         form.post_type.data = 'question'
     if form.validate_on_submit():
