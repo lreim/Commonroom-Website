@@ -9170,18 +9170,43 @@ html.dark-mode .admin-demo-profile-note {
     font-size: 16px;
   }
 
+  .post-filter-heading {
+    font-size: 13px;
+  }
+
+  .post-type-filter {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .post-type-filter a {
+    min-height: 40px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+
   .post-sort-row {
     align-items: flex-start;
     flex-direction: column;
   }
 
   .post-sort-buttons {
-    display: none;
+    display: flex;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .post-sort-button {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 10px;
+    font-size: 14px;
+    text-align: center;
   }
 
   .post-sort-mobile {
-    display: block;
-    width: 100%;
+    display: none;
   }
 
   .post-sort-mobile label {
