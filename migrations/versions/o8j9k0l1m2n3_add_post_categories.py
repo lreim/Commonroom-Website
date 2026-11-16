@@ -19,7 +19,9 @@ def upgrade():
     if 'category' not in columns:
         op.add_column('posts', sa.Column('category', sa.String(length=32), nullable=True, server_default='other'))
         op.execute("UPDATE posts SET category = 'other' WHERE category IS NULL")
-        op.alter_column('posts', 'category', nullable=False, server_default=None)
+        # SQLite cannot alter an existing column to NOT NULL without rebuilding
+        # the whole table. The application supplies `other` for new posts, so
+        # keeping the migrated column nullable is safe and portable here.
     indexes = {index['name'] for index in inspector.get_indexes('posts')}
     if 'ix_posts_category' not in indexes:
         op.create_index('ix_posts_category', 'posts', ['category'])
