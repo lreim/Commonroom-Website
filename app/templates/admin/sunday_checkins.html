@@ -13,6 +13,7 @@
       {{ form.hidden_tag() }}
       <div class="form-group">{{ form.body.label(class="control-label") }}{{ form.body(class="form-control", rows="9") }}</div>
       <input type="hidden" name="post_type" value="question">
+      <input type="hidden" name="category" value="other">
       <div class="starter-post-editor-actions">{{ form.submit(class="btn btn-primary", value="Publish Sunday Check-in") }}<a class="btn btn-default" href="{{ url_for('main.starter_posts_admin') }}">Starter posts</a></div>
     </form>
   </section>

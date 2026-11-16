@@ -8422,6 +8422,84 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
   color: #4e351e;
 }
 
+.post-category-filter {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+
+.post-category-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 62px;
+  padding: 10px 12px;
+  border: 1px solid #ddcdb8;
+  border-radius: 13px;
+  background: #fffaf0;
+  color: #5e4631;
+  text-decoration: none;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+
+.post-category-card:hover,
+.post-category-card.is-active {
+  border-color: #a97962;
+  background: #f4e6d9;
+  transform: translateY(-1px);
+}
+
+.post-category-card strong {
+  font-size: 14px;
+  line-height: 1.15;
+}
+
+.post-category-card span {
+  color: #806b55;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.post-archived-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid #b99b82;
+  border-radius: 12px;
+  background: #eee2d4;
+  color: #765b45;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+html.dark-mode .post-archived-label {
+  border-color: #8d745d;
+  background: #493b2f;
+  color: #ead8c1;
+}
+
+html.dark-mode .post-category-card {
+  border-color: #5b4b3d;
+  background: #332a22;
+  color: #f0e2cf;
+}
+
+html.dark-mode .post-category-card span {
+  color: #cdbda8;
+}
+
+html.dark-mode .post-category-card:hover,
+html.dark-mode .post-category-card.is-active {
+  border-color: #a88d6d;
+  background: #493b2f;
+}
+
 .post-page-sort,
 .chat-page-sort {
   min-width: 150px;
@@ -8808,6 +8886,10 @@ html.dark-mode .admin-demo-profile-note {
   .post-sort-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .post-category-filter {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .post-page-list .post-side-actions {

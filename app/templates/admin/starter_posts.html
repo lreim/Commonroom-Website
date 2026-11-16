@@ -17,6 +17,7 @@
     </h2>
     <form method="post">
       {{ form.hidden_tag() }}
+      <input type="hidden" name="category" value="other">
       <div class="form-group{% if form.body.errors %} has-error{% endif %}">
         {{ form.body.label(class="control-label") }}
         {{ form.body(

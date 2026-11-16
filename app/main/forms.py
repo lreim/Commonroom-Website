@@ -25,6 +25,19 @@ class PostForm(FlaskForm):
         choices=[("relate", "Relate"), ("question", "Question"), ("confession", "Confession")],
         validators=[DataRequired()],
     )
+    category = SelectField(
+        "What is this about?",
+        choices=[
+            ("studying", "Studying"),
+            ("free_time", "Free time"),
+            ("mental_health", "Mental health"),
+            ("social", "Social life"),
+            ("practical_life", "Practical life"),
+            ("other", "Something else"),
+        ],
+        validators=[DataRequired()],
+        default="other",
+    )
     submit = SubmitField('Submit')
 
 

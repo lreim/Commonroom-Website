@@ -1346,6 +1346,7 @@ def post():
             author_id=None if posting_as_admin else current_user.id,
             parent=parent_post,
             post_type=parent_post.post_type if parent_post is not None else form.post_type.data,
+            category=parent_post.category if parent_post is not None else form.category.data,
             is_starter=posting_as_admin,
         )
         db.session.add(post)
@@ -1383,6 +1384,10 @@ def post():
     post_type_filter = request.args.get('type', 'all', type=str).lower()
     if post_type_filter not in {'all', 'relate', 'question', 'confession'}:
         post_type_filter = 'all'
+    category_filter = request.args.get('category', 'all', type=str).lower()
+    valid_categories = {'all', 'studying', 'free_time', 'mental_health', 'social', 'practical_life', 'other'}
+    if category_filter not in valid_categories:
+        category_filter = 'all'
     page = request.args.get('page', 1, type=int)
     post_query = Post.query.filter(
         Post.parent_id.is_(None),
@@ -1390,6 +1395,8 @@ def post():
     )
     if post_type_filter != 'all':
         post_query = post_query.filter(Post.post_type == post_type_filter)
+    if category_filter != 'all':
+        post_query = post_query.filter(Post.category == category_filter)
     if matched_topics:
         post_query = post_query.join(User, Post.author).join(User.tags).filter(Tag.name.in_(matched_topics)).distinct()
     # Keep the current, non-archived Sunday Check-in at the top of the feed.
@@ -1538,6 +1545,7 @@ def post():
         checkin=_weekly_checkin_context(),
         sort_by=sort_by,
         post_type_filter=post_type_filter,
+        category_filter=category_filter,
         active_page='post',
     )
 
@@ -1574,6 +1582,8 @@ def post_thread(post_id):
         while root_post.parent is not None:
             root_post = root_post.parent
         return redirect(url_for('main.post_thread', post_id=root_post.id))
+    if root_post.is_archived and not current_user.is_administrator():
+        abort(404)
 
     form = ReplyForm()
     reply_to_id = request.form.get('reply_to_id', type=int)

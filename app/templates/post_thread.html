@@ -53,6 +53,7 @@
             </span>
             {% endif %}
             {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
+            {% if node.is_archived and current_user.is_administrator() %}<span class="post-archived-label">Archived</span>{% endif %}
             {% if not is_reply and not (node.is_starter and node.body.startswith('Sunday Check-in')) %}
             <span class="post-thread-status">{{ thread_status_labels.get(node.thread_status, 'Still thinking about this') }}</span>
             {% endif %}
