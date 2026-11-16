@@ -8454,15 +8454,16 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
 }
 
 .posts-browse-layout {
-  display: grid;
-  grid-template-columns: 235px minmax(0, 1fr);
-  align-items: start;
-  gap: 22px;
+  display: block;
 }
 
 .post-category-sidebar {
-  position: sticky;
-  top: 92px;
+  position: fixed;
+  z-index: 5;
+  top: 340px;
+  left: calc(50% + 620px);
+  width: 235px;
+  box-sizing: border-box;
   padding: 14px;
   border: 1px solid #dfcfb7;
   border-radius: 18px;
@@ -8479,6 +8480,18 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
 .post-category-sidebar .post-category-filter {
   grid-template-columns: 1fr;
   gap: 8px;
+}
+
+@media (max-width: 1530px) and (min-width: 768px) {
+  .post-category-sidebar {
+    position: static;
+    width: 100%;
+    margin-bottom: 18px;
+  }
+
+  .post-category-sidebar .post-category-filter {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .post-category-sidebar .post-category-card {
