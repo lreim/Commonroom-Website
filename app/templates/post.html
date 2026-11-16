@@ -26,11 +26,12 @@
     </div>
     <button type="button" class="post-update-banner-close" data-post-update-dismiss aria-label="Dismiss this update">&times;</button>
 </aside>
-<div class="post-form-wrap">
+<details class="post-form-wrap post-compose-collapsible">
+    <summary>Drop off a thought <span aria-hidden="true">⌄</span></summary>
     <form method="post" action="{{ url_for('main.post') }}" class="post-compose-form">
         {{ form.hidden_tag() }}
         <div class="form-group">
-            <label for="{{ form.body.id }}">Drop off a thought</label>
+            <label for="{{ form.body.id }}">Your thought</label>
             {{ form.body(class="form-control", rows="4", placeholder="How do people actually manage lectures, exercise, cooking, friends and enough sleep?") }}
             <p class="post-compose-examples" aria-label="Example post categories">
                 <span>rant</span><span>relatable</span><span>win</span><span>struggle</span><span>question</span>
@@ -69,15 +70,20 @@
             </div>
         </div>
     </form>
-</div>
+</details>
 
 <div class="post-sort-row">
+    <details class="post-filter-group post-filter-disclosure" open>
+    <summary class="post-filter-heading">Filter by post type</summary>
     <nav class="post-type-filter" aria-label="Filter by post type">
     <a class="{% if post_type_filter == 'all' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='all', category=category_filter) }}">All</a>
         <a class="{% if post_type_filter == 'relate' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='relate', category=category_filter) }}">Relate</a>
         <a class="{% if post_type_filter == 'question' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='question', category=category_filter) }}">Question</a>
         <a class="{% if post_type_filter == 'confession' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='confession', category=category_filter) }}">Confession</a>
     </nav>
+    </details>
+    <details class="post-filter-group post-sort-group post-filter-disclosure" open>
+    <summary class="post-filter-heading">Sort by</summary>
     <div class="post-sort-controls" aria-label="Sort conversations">
         <nav class="post-sort-buttons" aria-label="Sort conversations on desktop">
             {% for value, label, icon in [('latest_activity','Latest activity','↕'),('most_recent','Newest posts','✦'),('most_replies','Most replies','💬'),('most_relatable','Most relatable','♡'),('unanswered','Unanswered','?'),('still_thinking','Still thinking','…'),('oldest_first','Oldest first','◷')] %}
@@ -99,6 +105,7 @@
             </select>
         </form>
     </div>
+    </details>
 </div>
 
 {% if pagination.pages > 1 %}
@@ -111,7 +118,8 @@
 
 <div class="posts-browse-layout">
   <aside class="post-category-sidebar" aria-label="Browse by topic">
-    <h2>Browse by topic</h2>
+    <details class="post-filter-disclosure" open>
+    <summary class="post-filter-heading">Filter by topic</summary>
     <div class="post-category-filter" aria-label="Filter by topic category">
         {% for value, label, description in [('all','All','See every conversation'),('studying','Studying','Exams, lectures and study tips'),('free_time','Free time','Hobbies, interests and ways to unwind'),('mental_health','Mental health','Wellbeing, stress and student balance'),('social','Social life','Friends, loneliness and campus life'),('practical_life','Practical life','Money, housing and everyday essentials'),('other','Other','Anything else on your mind')] %}
         <a class="post-category-card{% if category_filter == value %} is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type=post_type_filter, category=value) }}">
@@ -120,6 +128,7 @@
         </a>
         {% endfor %}
     </div>
+    </details>
   </aside>
   <div class="posts-feed-column">
 <ul class="posts post-page-list">
