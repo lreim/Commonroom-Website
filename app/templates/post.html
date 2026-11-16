@@ -78,19 +78,27 @@
         <a class="{% if post_type_filter == 'question' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='question', category=category_filter) }}">Question</a>
         <a class="{% if post_type_filter == 'confession' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='confession', category=category_filter) }}">Confession</a>
     </nav>
-    <form method="get" action="{{ url_for('main.post') }}">
-        <input type="hidden" name="type" value="{{ post_type_filter }}">
-        <input type="hidden" name="category" value="{{ category_filter }}">
-        <select class="sort-select post-page-sort" name="sort" onchange="this.form.submit()">
-            <option value="latest_activity" {% if sort_by == "latest_activity" %}selected{% endif %}>Latest activity (posts &amp; replies)</option>
-            <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Newest posts only</option>
-            <option value="most_relatable" {% if sort_by == "most_relatable" %}selected{% endif %}>Most Relatable</option>
-            <option value="most_replies" {% if sort_by == "most_replies" %}selected{% endif %}>Most Replies</option>
-            <option value="unanswered" {% if sort_by == "unanswered" %}selected{% endif %}>Not answered at all</option>
-            <option value="still_thinking" {% if sort_by == "still_thinking" %}selected{% endif %}>Still thinking about this</option>
-            <option value="oldest_first" {% if sort_by == "oldest_first" %}selected{% endif %}>Oldest First</option>
-        </select>
-    </form>
+    <div class="post-sort-controls" aria-label="Sort conversations">
+        <nav class="post-sort-buttons" aria-label="Sort conversations on desktop">
+            {% for value, label, icon in [('latest_activity','Latest activity','↕'),('most_recent','Newest posts','✦'),('most_replies','Most replies','💬'),('most_relatable','Most relatable','♡'),('unanswered','Unanswered','?'),('still_thinking','Still thinking','…'),('oldest_first','Oldest first','◷')] %}
+            <a class="post-sort-button{% if sort_by == value %} is-active{% endif %}" href="{{ url_for('main.post', sort=value, type=post_type_filter, category=category_filter) }}"><span aria-hidden="true">{{ icon }}</span>{{ label }}</a>
+            {% endfor %}
+        </nav>
+        <form class="post-sort-mobile" method="get" action="{{ url_for('main.post') }}">
+            <input type="hidden" name="type" value="{{ post_type_filter }}">
+            <input type="hidden" name="category" value="{{ category_filter }}">
+            <label for="post-sort-select">Sort conversations</label>
+            <select id="post-sort-select" class="sort-select post-page-sort" name="sort" onchange="this.form.submit()">
+                <option value="latest_activity" {% if sort_by == "latest_activity" %}selected{% endif %}>Latest activity (posts &amp; replies)</option>
+                <option value="most_recent" {% if sort_by == "most_recent" %}selected{% endif %}>Newest posts only</option>
+                <option value="most_relatable" {% if sort_by == "most_relatable" %}selected{% endif %}>Most relatable</option>
+                <option value="most_replies" {% if sort_by == "most_replies" %}selected{% endif %}>Most replies</option>
+                <option value="unanswered" {% if sort_by == "unanswered" %}selected{% endif %}>Unanswered</option>
+                <option value="still_thinking" {% if sort_by == "still_thinking" %}selected{% endif %}>Still thinking about this</option>
+                <option value="oldest_first" {% if sort_by == "oldest_first" %}selected{% endif %}>Oldest first</option>
+            </select>
+        </form>
+    </div>
 </div>
 
 {% if pagination.pages > 1 %}
