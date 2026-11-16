@@ -9170,21 +9170,6 @@ html.dark-mode .admin-demo-profile-note {
     font-size: 16px;
   }
 
-  .post-filter-heading {
-    font-size: 13px;
-  }
-
-  .post-type-filter {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .post-type-filter a {
-    min-height: 40px;
-    padding: 0 14px;
-    font-size: 14px;
-  }
-
   .post-sort-row {
     align-items: flex-start;
     flex-direction: column;
@@ -9192,21 +9177,20 @@ html.dark-mode .admin-demo-profile-note {
 
   .post-sort-buttons {
     display: flex;
-    width: 100%;
-    gap: 8px;
-  }
-
-  .post-sort-button {
-    flex: 1 1 calc(50% - 8px);
-    justify-content: center;
-    min-height: 44px;
-    padding: 8px 10px;
-    font-size: 14px;
-    text-align: center;
+    flex-wrap: wrap;
+    gap: 7px;
   }
 
   .post-sort-mobile {
     display: none;
+  }
+
+  .post-sort-button {
+    flex: 1 1 calc(50% - 7px);
+    min-height: 36px;
+    padding: 6px 9px;
+    border-radius: 10px;
+    font-size: 13px;
   }
 
   .post-sort-mobile label {
@@ -9248,6 +9232,8 @@ html.dark-mode .admin-demo-profile-note {
 
   .post-category-sidebar {
     position: static;
+    width: 100%;
+    box-sizing: border-box;
     margin-bottom: 18px;
   }
 
