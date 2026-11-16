@@ -78,14 +78,6 @@
         <a class="{% if post_type_filter == 'question' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='question', category=category_filter) }}">Question</a>
         <a class="{% if post_type_filter == 'confession' %}is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type='confession', category=category_filter) }}">Confession</a>
     </nav>
-    <div class="post-category-filter" aria-label="Filter by topic category">
-        {% for value, label, description in [('all','All','See every conversation'),('studying','Studying','Exams, lectures and study tips'),('free_time','Free time','Hobbies, interests and ways to unwind'),('mental_health','Mental health','Wellbeing, stress and student balance'),('social','Social life','Friends, loneliness and campus life'),('practical_life','Practical life','Money, housing and everyday essentials'),('other','Other','Anything else on your mind')] %}
-        <a class="post-category-card{% if category_filter == value %} is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type=post_type_filter, category=value) }}">
-            <strong>{{ label }}</strong>
-            <span>{{ description }}</span>
-        </a>
-        {% endfor %}
-    </div>
     <form method="get" action="{{ url_for('main.post') }}">
         <input type="hidden" name="type" value="{{ post_type_filter }}">
         <input type="hidden" name="category" value="{{ category_filter }}">
@@ -104,11 +96,24 @@
 {% if pagination.pages > 1 %}
 <nav class="post-pagination" aria-label="Post pages">
   {% for page_number in range(1, pagination.pages + 1) %}
-    <a class="{% if page_number == pagination.page %}is-active{% endif %}" href="{{ url_for('main.post', page=page_number, sort=sort_by, type=post_type_filter, topics=selected_topics) }}">{{ page_number }}</a>
+    <a class="{% if page_number == pagination.page %}is-active{% endif %}" href="{{ url_for('main.post', page=page_number, sort=sort_by, type=post_type_filter, category=category_filter, topics=selected_topics) }}">{{ page_number }}</a>
   {% endfor %}
 </nav>
 {% endif %}
 
+<div class="posts-browse-layout">
+  <aside class="post-category-sidebar" aria-label="Browse by topic">
+    <h2>Browse by topic</h2>
+    <div class="post-category-filter" aria-label="Filter by topic category">
+        {% for value, label, description in [('all','All','See every conversation'),('studying','Studying','Exams, lectures and study tips'),('free_time','Free time','Hobbies, interests and ways to unwind'),('mental_health','Mental health','Wellbeing, stress and student balance'),('social','Social life','Friends, loneliness and campus life'),('practical_life','Practical life','Money, housing and everyday essentials'),('other','Other','Anything else on your mind')] %}
+        <a class="post-category-card{% if category_filter == value %} is-active{% endif %}" href="{{ url_for('main.post', sort=sort_by, type=post_type_filter, category=value) }}">
+            <strong>{{ label }}</strong>
+            <span>{{ description }}</span>
+        </a>
+        {% endfor %}
+    </div>
+  </aside>
+  <div class="posts-feed-column">
 <ul class="posts post-page-list">
     {% for post in posts %}
     <li id="post-{{ post.id }}" class="post{% if post.is_starter %} post-starter{% endif %}{% if post.is_starter and post.body.startswith('Sunday Check-in') %} post-sunday-checkin{% endif %}">
@@ -269,6 +274,8 @@
     </li>
     {% endfor %}
 </ul>
+  </div>
+</div>
 
 {% if pagination.pages > 1 %}
 <nav class="post-pagination post-pagination-bottom" aria-label="Post pages">
