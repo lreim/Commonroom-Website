@@ -719,7 +719,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const survey = document.getElementById('auth-exit-survey');
     const authAttemptKey = {{ session.get('auth_funnel_attempt_id')|tojson }};
     const surveyStorageKey = authAttemptKey ? 'authExitSurveyShown:' + authAttemptKey : 'authExitSurveyShown';
-    if (!survey || sessionStorage.getItem(surveyStorageKey)) return;
+    if (!survey) return;
     const endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
     const authPageKey = window.location.pathname.indexOf('/register') !== -1 ? 'register' : (window.location.pathname.indexOf('/login') !== -1 || window.location.pathname.indexOf('/eduid') !== -1 || {{ session.get('auth_switch_returned', false)|tojson }} ? 'login' : null);
     const authPageStartedAt = Date.now();
@@ -797,12 +797,12 @@ document.addEventListener("DOMContentLoaded", function () {
   <script>
   (function () {
     const box = document.getElementById('auth-stage-help');
-    if (!box || sessionStorage.getItem('authStageHelpShown:' + {{ session.get('auth_funnel_attempt_id')|tojson }})) return;
+    if (!box) return;
     const endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
     function send(eventType, reason) {
       fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_type:eventType, reason:reason || '', page_key:window.location.pathname.indexOf('/register') !== -1 ? 'register' : 'login', duration_seconds:0, referrer_path:document.referrer || window.location.search}), keepalive:true}).catch(function () {});
     }
-    window.setTimeout(function () { box.hidden = false; sessionStorage.setItem('authStageHelpShown:' + {{ session.get('auth_funnel_attempt_id')|tojson }}, '1'); send('stage_shown'); }, {{ 0 if session.get('auth_switch_returned') else 4000 }});
+    window.setTimeout(function () { box.hidden = false; send('stage_shown'); }, {{ 0 if session.get('auth_switch_returned') else 4000 }});
     document.getElementById('auth-stage-help-close').addEventListener('click', function () { box.hidden = true; send('stage_dismissed'); });
     box.querySelectorAll('[data-auth-reason]').forEach(function (button) { button.addEventListener('click', function () { send('stage_answered', button.dataset.authReason); box.hidden = true; }); });
     document.getElementById('auth-stage-help-link').addEventListener('click', function () { send('info_opened'); });
