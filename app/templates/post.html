@@ -436,11 +436,12 @@ document.querySelectorAll('.admin-post-category-form').forEach(function (form) {
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     var select = form.querySelector('select');
+    var formData = new FormData(form);
     select.disabled = true;
     var csrfMeta = document.querySelector('meta[name="csrf-token"]');
     var headers = { 'X-Requested-With': 'XMLHttpRequest' };
     if (csrfMeta) headers['X-CSRFToken'] = csrfMeta.getAttribute('content');
-    fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin', headers: headers })
+    fetch(form.action, { method: 'POST', body: formData, credentials: 'same-origin', headers: headers })
       .then(function (response) { if (!response.ok) throw new Error('Category update failed'); return response.json(); })
       .then(function () { select.classList.add('is-updated'); setTimeout(function () { select.classList.remove('is-updated'); }, 700); })
       .catch(function () { select.classList.add('has-error'); select.title = 'Could not save this category'; })
