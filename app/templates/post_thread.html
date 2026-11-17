@@ -53,6 +53,18 @@
             </span>
             {% endif %}
             {% if not is_reply %}<span class="post-category-label">{{ node.post_type|capitalize }}</span>{% endif %}
+            {% if current_user.is_authenticated and current_user.is_administrator() and not is_reply %}
+            <form method="post" action="{{ url_for('main.update_post_category_admin', post_id=node.id) }}" class="admin-post-category-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
+                <label class="sr-only" for="thread-post-category-{{ node.id }}">Post topic</label>
+                <select id="thread-post-category-{{ node.id }}" name="category" onchange="this.form.submit()" title="Change post topic">
+                    {% for value, label in [('studying','Studying'),('free_time','Free time'),('mental_health','Mental health'),('social','Social life'),('practical_life','Practical life'),('other','Other')] %}
+                    <option value="{{ value }}" {% if node.category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
             {% if node.is_archived and current_user.is_administrator() %}<span class="post-archived-label">Archived</span>{% endif %}
             {% if not is_reply and not (node.is_starter and node.body.startswith('Sunday Check-in')) %}
             <span class="post-thread-status">{{ thread_status_labels.get(node.thread_status, 'Still thinking about this') }}</span>

@@ -264,6 +264,8 @@ def legacy_login():
         start_auth_funnel(intent)
     elif request.args.get('gate') == '1':
         start_auth_funnel('protected_page')
+    else:
+        start_auth_funnel('protected_page')
     if form.validate_on_submit():
         now = datetime.now(timezone.utc)
         email = canonicalize_eth_email(form.email.data)
@@ -321,6 +323,8 @@ def eduid_login():
     if intent in {'post', 'reply', 'relate'}:
         start_auth_funnel(intent)
     elif request.args.get('gate') == '1':
+        start_auth_funnel('protected_page')
+    else:
         start_auth_funnel('protected_page')
 
     next_url = request.args.get('next') or request.form.get('next')
@@ -659,6 +663,7 @@ def register():
     if _oidc_is_active():
         return eduid_login()
 
+    start_auth_funnel('protected_page')
     form = RegistrationForm()
     if form.validate_on_submit():
         email = canonicalize_eth_email(form.email.data)

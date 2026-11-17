@@ -163,6 +163,18 @@
             {% endif %}
             <span class="post-category-label">{{ post.post_type|capitalize }}</span>
             {% if current_user.is_authenticated and current_user.is_administrator() %}
+            <form method="post" action="{{ url_for('main.update_post_category_admin', post_id=post.id) }}" class="admin-post-category-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
+                <label class="sr-only" for="post-category-{{ post.id }}">Post topic</label>
+                <select id="post-category-{{ post.id }}" name="category" onchange="this.form.submit()" title="Change post topic">
+                    {% for value, label in [('studying','Studying'),('free_time','Free time'),('mental_health','Mental health'),('social','Social life'),('practical_life','Practical life'),('other','Other')] %}
+                    <option value="{{ value }}" {% if post.category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            {% endif %}
+            {% if current_user.is_authenticated and current_user.is_administrator() %}
             <form method="post" action="{{ url_for('main.archive_post_admin', post_id=post.id) }}" class="admin-post-archive-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="next" value="{{ request.full_path }}">

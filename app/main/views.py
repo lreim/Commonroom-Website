@@ -2259,6 +2259,25 @@ def archive_post_admin(post_id):
     flash('Post archived. It is now available in the admin archive.')
     return redirect(request.form.get('next') or url_for('main.post'))
 
+@main.route('/admin/posts/<int:post_id>/category', methods=['POST'])
+@login_required
+@admin_required
+def update_post_category_admin(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.parent_id is not None:
+        abort(400)
+    category = request.form.get('category', type=str)
+    valid_categories = {'studying', 'free_time', 'mental_health', 'social', 'practical_life', 'other'}
+    if category not in valid_categories:
+        abort(400)
+    post.category = category
+    db.session.commit()
+    flash('Post category updated.')
+    requested_return_url = request.form.get('next')
+    if is_safe_local_redirect_target(requested_return_url):
+        return redirect(requested_return_url)
+    return redirect(url_for('main.post'))
+
 @main.route('/admin/archived-posts')
 @login_required
 @admin_required

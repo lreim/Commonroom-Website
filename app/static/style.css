@@ -8504,6 +8504,30 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
   transform: rotate(-90deg);
 }
 
+.admin-post-category-form {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+}
+
+.admin-post-category-form select {
+  max-width: 132px;
+  min-height: 28px;
+  padding: 3px 24px 3px 8px;
+  border: 1px solid #d6c5ae;
+  border-radius: 14px;
+  background: #fffaf0;
+  color: #654d34;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+}
+
+html.dark-mode .admin-post-category-form select {
+  border-color: #665242;
+  background: #3d3028;
+  color: #eadbc8;
+}
+
 .post-type-filter {
   display: flex;
   align-items: center;
