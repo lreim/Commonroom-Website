@@ -677,8 +677,7 @@ document.addEventListener("DOMContentLoaded", function () {
     </form>
   </aside>
   {% endif %}
-  {% if session.get('auth_funnel_attempt_id') and not current_user.is_authenticated %}
-  {% set auth_context_page = request.path.startswith('/login') or request.path.startswith('/register') or '/eduid' in request.path or session.get('auth_switch_returned') %}
+  {% set auth_context_page = (not current_user.is_authenticated) and (request.path.startswith('/login') or request.path.startswith('/register') or '/eduid' in request.path or session.get('auth_switch_returned')) %}
   {% if auth_context_page %}
   <aside class="auth-stage-help" id="auth-stage-help" hidden aria-label="Login information">
     <div class="auth-stage-help-card">
@@ -698,6 +697,7 @@ document.addEventListener("DOMContentLoaded", function () {
     </div>
   </aside>
   {% endif %}
+  {% if auth_context_page %}
   <aside class="auth-exit-survey" id="auth-exit-survey" hidden aria-label="Sign-up feedback">
     <div class="auth-exit-survey-card" role="dialog" aria-modal="true" aria-labelledby="auth-exit-survey-title">
       <button type="button" class="auth-exit-survey-close" id="auth-exit-survey-close" aria-label="Close">&times;</button>
@@ -794,7 +794,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
   </script>
-  {% if auth_context_page %}
   <script>
   (function () {
     const box = document.getElementById('auth-stage-help');
@@ -809,7 +808,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('auth-stage-help-link').addEventListener('click', function () { send('info_opened'); });
   })();
   </script>
-  {% endif %}
   {% endif %}
   {% if not session.get('whats_new_dismissed') and request.endpoint != 'main.whats_new' %}
   <aside class="whats-new-nudge" aria-label="What's new">

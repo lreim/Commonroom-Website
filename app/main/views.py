@@ -1291,7 +1291,7 @@ def track_auth_funnel_event():
     if event_type not in {"pagehide", "survey_shown", "survey_answered", "survey_dismissed", "stage_shown", "stage_answered", "stage_dismissed", "login_page_loaded", "switch_clicked", "info_opened"}:
         return ("", 204)
     reason = str(payload.get("reason") or "").strip()[:64] or None
-    allowed_reasons = {"just_looking", "privacy", "university_login", "unclear_benefit", "unclear_process", "no_time", "return_later", "other"}
+    allowed_reasons = {"just_looking", "privacy", "why_account", "university_login", "unclear_benefit", "unclear_process", "no_time", "return_later", "other"}
     if reason not in allowed_reasons:
         reason = None
     page_key = str(payload.get("page_key") or "").strip().lower()
@@ -2272,6 +2272,8 @@ def update_post_category_admin(post_id):
         abort(400)
     post.category = category
     db.session.commit()
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'ok': True, 'post_id': post.id, 'category': post.category})
     flash('Post category updated.')
     requested_return_url = request.form.get('next')
     if is_safe_local_redirect_target(requested_return_url):

@@ -8520,6 +8520,17 @@ html.dark-mode .help-now-level h4 { color: #f1ebdd; }
   color: #654d34;
   font-family: Arial, sans-serif;
   font-size: 12px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.admin-post-category-form select.is-updated {
+  border-color: #6f9b72;
+  box-shadow: 0 0 0 2px rgba(111, 155, 114, .2);
+}
+
+.admin-post-category-form select.has-error {
+  border-color: #b85d54;
+  box-shadow: 0 0 0 2px rgba(184, 93, 84, .2);
 }
 
 html.dark-mode .admin-post-category-form select {

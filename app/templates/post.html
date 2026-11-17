@@ -167,7 +167,7 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="next" value="{{ request.full_path }}">
                 <label class="sr-only" for="post-category-{{ post.id }}">Post topic</label>
-                <select id="post-category-{{ post.id }}" name="category" onchange="this.form.submit()" title="Change post topic">
+                <select id="post-category-{{ post.id }}" name="category" title="Change post topic">
                     {% for value, label in [('studying','Studying'),('free_time','Free time'),('mental_health','Mental health'),('social','Social life'),('practical_life','Practical life'),('other','Other')] %}
                     <option value="{{ value }}" {% if post.category == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
@@ -431,6 +431,19 @@ document.querySelectorAll('.sunday-post-poll form').forEach(function (form) {
         });
       });
   });
+});
+document.querySelectorAll('.admin-post-category-form').forEach(function (form) {
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var select = form.querySelector('select');
+    select.disabled = true;
+    fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      .then(function (response) { if (!response.ok) throw new Error('Category update failed'); return response.json(); })
+      .then(function () { select.classList.add('is-updated'); setTimeout(function () { select.classList.remove('is-updated'); }, 700); })
+      .catch(function () { select.classList.add('has-error'); })
+      .finally(function () { select.disabled = false; });
+  });
+  form.querySelector('select').addEventListener('change', function () { form.requestSubmit(); });
 });
 </script>
 {% endblock %}
