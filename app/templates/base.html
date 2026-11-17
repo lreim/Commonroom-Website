@@ -765,7 +765,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (authContextPage && destinationPath && destinationPath.indexOf('/auth/') !== 0) {
         // The visitor is leaving the auth page through the logo or navigation.
         // Let the destination page display the feedback prompt immediately.
-        try { sessionStorage.setItem('authExitPending', String(Date.now())); } catch (e) {}
+        try { sessionStorage.setItem('authExitPending', '1'); } catch (e) {}
       }
     });
     // Keep the auth page in place long enough to show the feedback dialog when
