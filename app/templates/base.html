@@ -677,7 +677,7 @@ document.addEventListener("DOMContentLoaded", function () {
     </form>
   </aside>
   {% endif %}
-  {% set auth_context_page = (not current_user.is_authenticated) and (request.path.startswith('/login') or request.path.startswith('/register') or '/eduid' in request.path or session.get('auth_switch_returned')) %}
+  {% set auth_context_page = (not current_user.is_authenticated) and (request.path.startswith('/auth/login') or request.path.startswith('/auth/register') or '/auth/eduid' in request.path or session.get('auth_switch_returned')) %}
   {% if auth_context_page %}
   <aside class="auth-stage-help" id="auth-stage-help" hidden aria-label="Login information">
     <div class="auth-stage-help-card">
