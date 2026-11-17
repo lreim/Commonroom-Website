@@ -108,19 +108,7 @@
     </div>
     </div>
     </details>
-    <div class="post-active-filter-chips" aria-label="Active filters">
-      <span class="post-filter-chip">{% if post_type_filter == 'all' %}All posts{% else %}{{ post_type_filter|capitalize }}{% endif %}</span>
-      <span class="post-filter-chip">{% if sort_by == 'latest_activity' %}Latest activity{% elif sort_by == 'most_recent' %}Newest posts{% elif sort_by == 'most_replies' %}Most replies{% elif sort_by == 'most_relatable' %}Most relatable{% elif sort_by == 'unanswered' %}Unanswered{% elif sort_by == 'still_thinking' %}Still thinking{% else %}Oldest first{% endif %}</span>
-    </div>
 </div>
-
-{% if pagination.pages > 1 %}
-<nav class="post-pagination" aria-label="Post pages">
-  {% for page_number in range(1, pagination.pages + 1) %}
-    <a class="{% if page_number == pagination.page %}is-active{% endif %}" href="{{ url_for('main.post', page=page_number, sort=sort_by, type=post_type_filter, category=category_filter, topics=selected_topics) }}">{{ page_number }}</a>
-  {% endfor %}
-</nav>
-{% endif %}
 
 <div class="posts-browse-layout">
   <aside class="post-category-sidebar" aria-label="Browse by topic">
@@ -136,6 +124,19 @@
     </div>
     </details>
   </aside>
+  <div class="post-browse-meta">
+    <div class="post-active-filter-chips" aria-label="Active filters">
+      <span class="post-filter-chip">{% if post_type_filter == 'all' %}All posts{% else %}{{ post_type_filter|capitalize }}{% endif %}</span>
+      <span class="post-filter-chip">{% if sort_by == 'latest_activity' %}Latest activity{% elif sort_by == 'most_recent' %}Newest posts{% elif sort_by == 'most_replies' %}Most replies{% elif sort_by == 'most_relatable' %}Most relatable{% elif sort_by == 'unanswered' %}Unanswered{% elif sort_by == 'still_thinking' %}Still thinking{% else %}Oldest first{% endif %}</span>
+    </div>
+    {% if pagination.pages > 1 %}
+    <nav class="post-pagination" aria-label="Post pages">
+      {% for page_number in range(1, pagination.pages + 1) %}
+        <a class="{% if page_number == pagination.page %}is-active{% endif %}" href="{{ url_for('main.post', page=page_number, sort=sort_by, type=post_type_filter, category=category_filter, topics=selected_topics) }}">{{ page_number }}</a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+  </div>
   <div class="posts-feed-column">
 <ul class="posts post-page-list">
     {% for post in posts %}

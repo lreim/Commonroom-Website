@@ -818,23 +818,33 @@ document.addEventListener("DOMContentLoaded", function () {
   (function () {
     // A back swipe can bypass the auth page's popstate handler on mobile.
     // Show the same short feedback prompt on the page the visitor returns to.
+    if ({{ current_user.is_authenticated|tojson }}) {
+      try { sessionStorage.removeItem('authExitPending'); } catch (e) {}
+      return;
+    }
     if ({{ auth_context_page|default(false)|tojson }}) return;
-    try {
-      if (sessionStorage.getItem('authExitPending') !== '1') return;
-      sessionStorage.removeItem('authExitPending');
-    } catch (e) { return; }
-    var box = document.createElement('aside');
-    box.className = 'auth-exit-survey';
-    box.setAttribute('aria-label', 'Sign-up feedback');
-    box.innerHTML = '<div class="auth-exit-survey-card" role="dialog" aria-modal="true"><button type="button" class="auth-exit-survey-close" aria-label="Close">&times;</button><strong>Before you go, what made you pause your sign-up?</strong><div class="auth-exit-survey-choices"><button type="button" data-exit-reason="just_looking">I was just looking around.</button><button type="button" data-exit-reason="privacy">I had a privacy concern.</button><button type="button" data-exit-reason="university_login">I did not want to use university login.</button><button type="button" data-exit-reason="unclear_benefit">I was unsure what I would get.</button><button type="button" data-exit-reason="unclear_process">The process was unclear.</button><button type="button" data-exit-reason="no_time">I did not have time right now.</button><button type="button" data-exit-reason="return_later">I may come back later.</button><button type="button" data-exit-reason="other">Something else.</button></div></div>';
-    document.body.appendChild(box);
     var endpoint = {{ url_for('main.track_auth_funnel_event')|tojson }};
     function send(type, reason) {
       fetch(endpoint, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({event_type:type, reason:reason || '', page_key:'login', duration_seconds:0, exit_method:'back', referrer_path:document.referrer}), keepalive:true}).catch(function () {});
     }
-    send('survey_shown');
-    box.querySelector('.auth-exit-survey-close').addEventListener('click', function () { send('survey_dismissed'); box.remove(); });
-    box.querySelectorAll('[data-exit-reason]').forEach(function (button) { button.addEventListener('click', function () { send('survey_answered', button.dataset.exitReason); box.remove(); }); });
+    var box;
+    function showPendingSurvey() {
+      if (box) return;
+      try {
+        if (sessionStorage.getItem('authExitPending') !== '1') return;
+        sessionStorage.removeItem('authExitPending');
+      } catch (e) { return; }
+      box = document.createElement('aside');
+      box.className = 'auth-exit-survey';
+      box.setAttribute('aria-label', 'Sign-up feedback');
+      box.innerHTML = '<div class="auth-exit-survey-card" role="dialog" aria-modal="true"><button type="button" class="auth-exit-survey-close" aria-label="Close">&times;</button><strong>Before you go, what made you pause your sign-up?</strong><div class="auth-exit-survey-choices"><button type="button" data-exit-reason="just_looking">I was just looking around.</button><button type="button" data-exit-reason="privacy">I had a privacy concern.</button><button type="button" data-exit-reason="university_login">I did not want to use university login.</button><button type="button" data-exit-reason="unclear_benefit">I was unsure what I would get.</button><button type="button" data-exit-reason="unclear_process">The process was unclear.</button><button type="button" data-exit-reason="no_time">I did not have time right now.</button><button type="button" data-exit-reason="return_later">I may come back later.</button><button type="button" data-exit-reason="other">Something else.</button></div></div>';
+      document.body.appendChild(box);
+      send('survey_shown');
+      box.querySelector('.auth-exit-survey-close').addEventListener('click', function () { send('survey_dismissed'); box.remove(); box = null; });
+      box.querySelectorAll('[data-exit-reason]').forEach(function (button) { button.addEventListener('click', function () { send('survey_answered', button.dataset.exitReason); box.remove(); box = null; }); });
+    }
+    showPendingSurvey();
+    window.addEventListener('pageshow', showPendingSurvey);
   })();
   </script>
   {% if not session.get('whats_new_dismissed') and request.endpoint != 'main.whats_new' %}

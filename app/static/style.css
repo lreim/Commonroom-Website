@@ -8681,6 +8681,14 @@ html.dark-mode .admin-post-category-form select {
   display: block;
 }
 
+.post-browse-meta {
+  margin-bottom: 18px;
+}
+
+.post-browse-meta .post-active-filter-chips {
+  margin-top: 0;
+}
+
 .post-category-sidebar {
   position: fixed;
   z-index: 5;
