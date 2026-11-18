@@ -497,6 +497,17 @@ html {
   white-space: nowrap;
 }
 
+.analytics-table tfoot th {
+  border-top: 2px solid #c9b18f;
+  color: #604a35;
+  font-weight: 700;
+}
+
+html.dark-mode .analytics-table tfoot th {
+  border-top-color: #806b50;
+  color: #f0dfc4;
+}
+
 .analytics-table th {
   color: #60342c;
   font-family: Arial, sans-serif;

@@ -599,7 +599,7 @@ def _build_auth_funnel_stats(first_bucket_start):
         "post": "Write a post",
         "reply": "Reply",
         "relate": "Relate",
-        "protected_page": "Protected page",
+        "protected_page": "Other protected action",
     }
     action_rows = {
         action: {"action": action, "label": label, "started": 0, "completed": 0, "abandoned": 0}

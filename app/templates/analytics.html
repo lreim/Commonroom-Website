@@ -450,6 +450,7 @@
       </div>
       <p>{{ auth_funnel_stats.started }} protected actions started in this period.</p>
     </div>
+    <p class="analytics-card-note">A funnel attempt starts when a visitor tries an action that requires an account and is sent to the Login/Register page, including writing a post, replying, relating, or using another protected action. “Other protected action” is the catch-all category for account-only actions outside Post, Reply, and Relate, such as opening private chats or another page that requires sign-in. The banner feedback is recorded when that visitor leaves the actual Login/Register page.</p>
 
     <div class="analytics-content-grid">
       <article class="analytics-breakdown-card">
@@ -483,8 +484,28 @@
               </tr>
               {% endfor %}
             </tbody>
+            <tfoot>
+              <tr>
+                <th>Total</th>
+                <th>{{ auth_funnel_stats.actions | sum(attribute='started') }}</th>
+                <th>{{ auth_funnel_stats.actions | sum(attribute='completed') }}</th>
+                <th>{{ auth_funnel_stats.actions | sum(attribute='abandoned') }}</th>
+              </tr>
+            </tfoot>
           </table>
         </div>
+        <p class="analytics-card-note">The totals in this table match the Started, Completed, and abandoned values in the “From intent to access” panel.</p>
+        <p class="analytics-card-note"><strong>Other protected action includes:</strong></p>
+        <ul class="analytics-card-note analytics-protected-pages-list">
+          <li>Chats</li>
+          <li>Settings</li>
+          <li>Edit profile</li>
+          <li>Tag search</li>
+          <li>Individual post threads</li>
+          <li>Admin pages</li>
+          <li>Analytics</li>
+          <li>Moderator area</li>
+        </ul>
       </article>
 
       <article class="analytics-breakdown-card">
@@ -502,6 +523,7 @@
           <div><strong>{% if auth_funnel_stats.exit_duration_minutes.login is not none %}{{ auth_funnel_stats.exit_duration_minutes.login }} min{% else %}—{% endif %}</strong><span>Average time before leaving login</span></div>
           <div><strong>{% if auth_funnel_stats.exit_duration_minutes.register is not none %}{{ auth_funnel_stats.exit_duration_minutes.register }} min{% else %}—{% endif %}</strong><span>Average time before leaving registration</span></div>
         </div>
+        <p class="analytics-card-note">“Unknown” means the browser reported that the auth page ended, but gave no reliable method. This can happen when a tab or browser is closed, the browser crashes, the connection is interrupted, an older event has no method saved, or mobile Safari skips its navigation event. These cases cannot be identified more precisely after the fact.</p>
         <div class="analytics-content-grid">
           {% for page, title in [('login', 'Login page'), ('register', 'Registration page')] %}
           <div>
