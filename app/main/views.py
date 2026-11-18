@@ -670,6 +670,9 @@ def _build_auth_funnel_stats(first_bucket_start):
         for page in ("login", "register")
     }
     totals["exit_events"] = sum(1 for event in exit_events if event.event_type == "pagehide")
+    exit_attempt_ids = [event.attempt_id for event in exit_events if event.event_type == "pagehide"]
+    totals["distinct_exit_attempts"] = len(set(exit_attempt_ids))
+    totals["repeat_exit_events"] = max(0, totals["exit_events"] - totals["distinct_exit_attempts"])
     totals["survey_shown"] = sum(1 for event in exit_events if event.event_type == "survey_shown")
     totals["survey_answered"] = sum(1 for event in exit_events if event.event_type == "survey_answered")
     totals["survey_dismissed"] = sum(1 for event in exit_events if event.event_type == "survey_dismissed")

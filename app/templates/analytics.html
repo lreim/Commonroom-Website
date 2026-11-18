@@ -492,6 +492,8 @@
         <h3>Why people paused</h3>
         <div class="analytics-big-numbers">
           <div><strong>{{ auth_funnel_stats.exit_events }}</strong><span>Left the auth page</span></div>
+          <div><strong>{{ auth_funnel_stats.distinct_exit_attempts }}</strong><span>Distinct auth attempts that left</span></div>
+          <div><strong>{{ auth_funnel_stats.repeat_exit_events }}</strong><span>Repeat exits in the same session</span></div>
           <div><strong>{{ auth_funnel_stats.survey_shown }}</strong><span>Survey shown</span></div>
           <div><strong>{{ auth_funnel_stats.survey_answered }}</strong><span>Answered</span></div>
           <div><strong>{{ auth_funnel_stats.survey_dismissed }}</strong><span>Dismissed</span></div>
