@@ -519,21 +519,22 @@ def _build_acquisition_stats(visits):
     }
 
 
-def _build_content_stats():
-    root_posts = Post.query.filter(Post.parent_id.is_(None)).all()
+def _build_content_stats(first_bucket_start):
+    root_posts = Post.query.filter(Post.parent_id.is_(None), Post.timestamp >= first_bucket_start).all()
     root_post_count = len(root_posts)
     relate_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "relate").count()
     question_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "question").count()
     confession_post_count = Post.query.filter(Post.parent_id.is_(None), Post.post_type == "confession").count()
-    reply_count = Post.query.filter(Post.parent_id.isnot(None)).count()
+    reply_count = Post.query.filter(Post.parent_id.isnot(None), Post.timestamp >= first_bucket_start).count()
     replied_post_count = sum(post.replies.count() > 0 for post in root_posts)
     profile_query = (
         User.query
         .outerjoin(Role, User.role_id == Role.id)
-        .filter((Role.name.is_(None)) | (Role.name != "Administrator"))
+        .filter((Role.name.is_(None)) | (Role.name != "Administrator"), User.member_since >= first_bucket_start)
     )
     profile_count = profile_query.count()
     profiles_with_contact_email = profile_query.filter(
+        User.member_since >= first_bucket_start,
         User.contact_email.isnot(None),
         func.length(func.trim(User.contact_email)) > 0,
     ).count()
@@ -541,7 +542,7 @@ def _build_content_stats():
     community_roots = [post for post in root_posts if post.author_id is not None and not post.is_archived and post.deleted_at is None]
     author_counts = Counter(post.author_id for post in community_roots)
     post_counts = list(author_counts.values())
-    all_posts = [post for post in Post.query.filter(Post.is_archived.is_(False), Post.deleted_at.is_(None)).all()]
+    all_posts = [post for post in Post.query.filter(Post.is_archived.is_(False), Post.deleted_at.is_(None), Post.timestamp >= first_bucket_start).all()]
     reply_authors = {post.author_id for post in all_posts if post.parent_id is not None and post.author_id is not None}
     post_authors = set(author_counts)
     all_content_authors = post_authors | reply_authors
@@ -577,7 +578,7 @@ def _build_content_stats():
         "total_profiles": profile_count,
         "profiles_with_contact_email": profiles_with_contact_email,
         "profiles_without_contact_email": max(profile_count - profiles_with_contact_email, 0),
-        "total_conversations": Conversation.query.count(),
+        "total_conversations": Conversation.query.filter(Conversation.created_at >= first_bucket_start).count(),
         "max_chats_per_user": chat_stats["max_chats_per_user"],
         "chat_count_std_dev": round(chat_stats["chat_count_std_dev"], 2),
         "tracked_user_count": chat_stats["user_count"],
@@ -726,13 +727,13 @@ def _build_auth_funnel_stats(first_bucket_start):
     return totals
 
 
-def _build_login_behavior_stats():
+def _build_login_behavior_stats(first_bucket_start):
     """Aggregate login frequency without exposing individual user identities."""
     users = User.query.outerjoin(Role, User.role_id == Role.id).filter(
         (Role.name.is_(None)) | (Role.name != 'Administrator')
     ).all()
     counts = Counter()
-    events = LoginEvent.query.order_by(LoginEvent.created_at.asc()).all()
+    events = LoginEvent.query.filter(LoginEvent.created_at >= first_bucket_start).order_by(LoginEvent.created_at.asc()).all()
     events_by_user = defaultdict(list)
     for event in events:
         events_by_user[event.user_id].append(event.created_at)
@@ -825,19 +826,20 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
         "journey_stats": _build_journey_stats(visits_in_range),
         "acquisition_stats": _build_acquisition_stats(visits_in_range),
         "auth_funnel_stats": _build_auth_funnel_stats(visit_timeline["first_bucket_start"]),
-        "login_behavior_stats": _build_login_behavior_stats(),
+        "login_behavior_stats": _build_login_behavior_stats(visit_timeline["first_bucket_start"]),
         "previous_analytics": previous_analytics,
     }
-    snapshot.update(_build_content_stats())
-    snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats()
-    snapshot['sunday_post_stats'] = _build_sunday_post_admin_stats()
-    snapshot['visit_purpose_survey_stats'] = _build_visit_purpose_survey_stats()
+    snapshot.update(_build_content_stats(visit_timeline["first_bucket_start"]))
+    snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats(visit_timeline["first_bucket_start"])
+    snapshot['sunday_post_stats'] = _build_sunday_post_admin_stats(visit_timeline["first_bucket_start"])
+    snapshot['visit_purpose_survey_stats'] = _build_visit_purpose_survey_stats(visit_timeline["first_bucket_start"])
     event_counts = Counter(
         event.event_type
         for event in ProfileNudgeEvent.query
         .join(User, ProfileNudgeEvent.user_id == User.id)
         .outerjoin(Role, User.role_id == Role.id)
         .filter((Role.name.is_(None)) | (Role.name != 'Administrator'))
+        .filter(ProfileNudgeEvent.created_at >= visit_timeline["first_bucket_start"])
         .all()
     )
     snapshot['profile_nudge_stats'] = {
@@ -950,8 +952,8 @@ def _weekly_checkin_context():
     }
 
 
-def _build_weekly_checkin_admin_stats():
-    rows = WeeklyCheckInResponse.query.order_by(WeeklyCheckInResponse.week_key.desc()).all()
+def _build_weekly_checkin_admin_stats(first_bucket_start):
+    rows = WeeklyCheckInResponse.query.filter(WeeklyCheckInResponse.created_at >= first_bucket_start).order_by(WeeklyCheckInResponse.week_key.desc()).all()
     analytics_choices = CHECKIN_CHOICES + [choice for choice in CHECKIN_LEGACY_CHOICES if choice[0] not in dict(CHECKIN_CHOICES)]
     grouped = {}
     for row in rows:
@@ -962,11 +964,11 @@ def _build_weekly_checkin_admin_stats():
     weeks = list(grouped.values())[:12]
     return {'choices': analytics_choices, 'weeks': weeks, 'latest': weeks[0] if weeks else None}
 
-def _build_sunday_post_admin_stats():
-    posts = Post.query.filter(Post.is_starter.is_(True), Post.body.ilike('%Sunday Check-in%')).order_by(Post.timestamp.desc()).all()
+def _build_sunday_post_admin_stats(first_bucket_start):
+    posts = Post.query.filter(Post.is_starter.is_(True), Post.body.ilike('%Sunday Check-in%'), Post.timestamp >= first_bucket_start).order_by(Post.timestamp.desc()).all()
     result = []
     for post in posts:
-        rows = SundayCheckInResponse.query.filter_by(post_id=post.id).all()
+        rows = SundayCheckInResponse.query.filter_by(post_id=post.id).filter(SundayCheckInResponse.created_at >= first_bucket_start).all()
         counts = {}
         for row in rows:
             counts.setdefault(row.question, {})[row.choice] = counts.setdefault(row.question, {}).get(row.choice, 0) + 1
@@ -2323,11 +2325,12 @@ def edit_starter_post_admin(post_id):
     )
 
 
-def _build_visit_purpose_survey_stats():
+def _build_visit_purpose_survey_stats(first_bucket_start):
     rows = (VisitPurposeSurveyEvent.query
             .outerjoin(User, VisitPurposeSurveyEvent.user_id == User.id)
             .outerjoin(Role, User.role_id == Role.id)
             .filter(VisitPurposeSurveyEvent.event_type == 'answered')
+            .filter(VisitPurposeSurveyEvent.created_at >= first_bucket_start)
             .filter(or_(VisitPurposeSurveyEvent.user_id.is_(None), Role.name.is_(None), Role.name != 'Administrator'))
             .all())
     grouped = defaultdict(Counter)
