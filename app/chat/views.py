@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from . import chat
 from .. import db
 from ..email import send_email
-from ..models import User, Conversation, Message, UserBlock, ChatRequest
+from ..models import User, Conversation, Message, UserBlock, ChatRequest, ChatRequestAnalyticsEvent
 from ..notifications import mark_notifications_seen_now, set_notification_read
 from ..security import is_safe_local_redirect_target
 
@@ -310,6 +310,8 @@ def request_chat():
     if current_user.has_block_relationship(other):
         abort(403)
     if not other.contact_email:
+        db.session.add(ChatRequestAnalyticsEvent(event_type="blocked_missing_recipient_email"))
+        db.session.commit()
         flash("This user cannot receive chat requests by email yet.")
         return redirect(next_url)
 

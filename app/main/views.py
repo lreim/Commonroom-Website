@@ -23,6 +23,7 @@ from ..models import (
     Role,
     Tag,
     Conversation,
+    ChatRequestAnalyticsEvent,
     PageVisit,
     PostThreadSubscription,
     PostThreadVisit,
@@ -182,21 +183,45 @@ def _validated_analytics_session_token(value):
     return token
 
 
+def _analytics_database_start():
+    """Return the earliest timestamp stored by any analytics-relevant model.
+
+    The total range must include records that predate page-visit tracking, so
+    it cannot use PageVisit.started_at alone as its lower bound.
+    """
+    timestamp_columns = (
+        (PageVisit, PageVisit.started_at),
+        (User, User.member_since),
+        (Post, Post.timestamp),
+        (Conversation, Conversation.created_at),
+        (AuthFunnelAttempt, AuthFunnelAttempt.started_at),
+        (LoginEvent, LoginEvent.created_at),
+        (WeeklyCheckInResponse, WeeklyCheckInResponse.created_at),
+        (SundayCheckInResponse, SundayCheckInResponse.created_at),
+        (ProfileNudgeEvent, ProfileNudgeEvent.created_at),
+        (VisitPurposeSurveyEvent, VisitPurposeSurveyEvent.created_at),
+    )
+    earliest_values = [
+        db.session.query(func.min(column)).scalar()
+        for _model, column in timestamp_columns
+    ]
+    earliest_values = [value for value in earliest_values if value is not None]
+    if not earliest_values:
+        return datetime(2026, 9, 13, tzinfo=timezone.utc)
+    earliest = min(earliest_values)
+    if earliest.tzinfo is None:
+        earliest = earliest.replace(tzinfo=timezone.utc)
+    return earliest
+
+
 def _build_visit_timeline(range_key, visits_query=None, stacked_acquisition=False):
     now = datetime.now(timezone.utc)
     local_timezone = ZoneInfo("Europe/Zurich")
     if range_key == "all":
         bucket_size = timedelta(days=1)
         label_format = "%b %d"
-        source_query = visits_query if visits_query is not None else _tracked_page_visits_query()
-        earliest = source_query.with_entities(func.min(PageVisit.started_at)).scalar()
-        if earliest is None:
-            current_bucket_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        else:
-            current_bucket_start = earliest
-            if current_bucket_start.tzinfo is None:
-                current_bucket_start = current_bucket_start.replace(tzinfo=timezone.utc)
-            current_bucket_start = current_bucket_start.replace(hour=0, minute=0, second=0, microsecond=0)
+        earliest = _analytics_database_start()
+        current_bucket_start = earliest.replace(hour=0, minute=0, second=0, microsecond=0)
         bucket_count = max((now.date() - current_bucket_start.date()).days + 1, 1)
     elif range_key == "24h":
         bucket_count = 24
@@ -588,6 +613,15 @@ def _build_content_stats(first_bucket_start):
     }
 
 
+def _build_chat_request_delivery_stats(first_bucket_start):
+    return {
+        "blocked_missing_recipient_email": ChatRequestAnalyticsEvent.query.filter(
+            ChatRequestAnalyticsEvent.event_type == "blocked_missing_recipient_email",
+            ChatRequestAnalyticsEvent.created_at >= first_bucket_start,
+        ).count(),
+    }
+
+
 def _build_auth_funnel_stats(first_bucket_start):
     attempts = (
         AuthFunnelAttempt.query
@@ -833,6 +867,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
     snapshot['weekly_checkin_stats'] = _build_weekly_checkin_admin_stats(visit_timeline["first_bucket_start"])
     snapshot['sunday_post_stats'] = _build_sunday_post_admin_stats(visit_timeline["first_bucket_start"])
     snapshot['visit_purpose_survey_stats'] = _build_visit_purpose_survey_stats(visit_timeline["first_bucket_start"])
+    snapshot['chat_request_delivery_stats'] = _build_chat_request_delivery_stats(visit_timeline["first_bucket_start"])
     event_counts = Counter(
         event.event_type
         for event in ProfileNudgeEvent.query

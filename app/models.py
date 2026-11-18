@@ -593,6 +593,14 @@ class ChatRequest(db.Model):
         return chat_request
 
 
+class ChatRequestAnalyticsEvent(db.Model):
+    """Aggregate-only events for chat requests blocked by a missing email."""
+    __tablename__ = "chat_request_analytics_events"
+    id = db.Column(db.Integer, primary_key=True)
+    event_type = db.Column(db.String(48), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+
+
 class Message(db.Model):    #einzelne Nachricht
     __tablename__ = "messages"
     id = db.Column(db.Integer, primary_key=True)

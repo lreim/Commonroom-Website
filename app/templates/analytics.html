@@ -275,6 +275,15 @@
         </div>
         <p class="analytics-card-note">Standard deviation across profiles: {{ chat_count_std_dev }}. No message content is used.</p>
       </article>
+
+      <article class="analytics-breakdown-card">
+        <span class="analytics-card-kicker">CHAT REQUEST DELIVERY</span>
+        <h3>Requests blocked by missing email</h3>
+        <div class="analytics-big-numbers">
+          <div><strong>{{ chat_request_delivery_stats.blocked_missing_recipient_email }}</strong><span>Not sent</span></div>
+        </div>
+        <p class="analytics-card-note">Counts attempts where the recipient had no contact email, so no chat request was created or sent. Only the aggregate count and timestamp are stored.</p>
+      </article>
     </div>
   </section>
 
