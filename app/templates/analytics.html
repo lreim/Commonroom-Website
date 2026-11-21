@@ -478,6 +478,13 @@
       <article class="analytics-breakdown-card">
         <span class="analytics-card-kicker">ENTRY POINTS</span>
         <h3>What required the login?</h3>
+        <label class="analytics-filter-label" for="auth-audience-filter">Show</label>
+        <select id="auth-audience-filter" class="analytics-select" onchange="const params = new URLSearchParams(window.location.search); params.set('auth_audience', this.value); window.location.search = params.toString();">
+          <option value="all" {% if auth_funnel_stats.audience_filter == 'all' %}selected{% endif %}>All auth attempts</option>
+          <option value="existing" {% if auth_funnel_stats.audience_filter == 'existing' %}selected{% endif %}>Existing users who logged in</option>
+          <option value="new" {% if auth_funnel_stats.audience_filter == 'new' %}selected{% endif %}>New users who registered</option>
+        </select>
+        <p class="analytics-card-note">Existing users are attempts completed through login; new users are attempts that reached profile setup after registration.</p>
         <div class="analytics-table-wrap">
           <table class="analytics-table">
             <thead>

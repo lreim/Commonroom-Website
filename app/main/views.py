@@ -23,6 +23,7 @@ from ..models import (
     Role,
     Tag,
     Conversation,
+    Message,
     ChatRequestAnalyticsEvent,
     PageVisit,
     PostThreadSubscription,
@@ -622,13 +623,18 @@ def _build_chat_request_delivery_stats(first_bucket_start):
     }
 
 
-def _build_auth_funnel_stats(first_bucket_start):
+def _build_auth_funnel_stats(first_bucket_start, audience_filter="all"):
     attempts = (
         AuthFunnelAttempt.query
         .filter(AuthFunnelAttempt.started_at >= first_bucket_start)
         .order_by(AuthFunnelAttempt.started_at.asc(), AuthFunnelAttempt.id.asc())
         .all()
     )
+    if audience_filter in {"existing", "new"}:
+        attempts = [
+            attempt for attempt in attempts
+            if (attempt.profile_required_at is not None) == (audience_filter == "new")
+        ]
     abandoned_cutoff = datetime.now(timezone.utc) - timedelta(minutes=30)
     labels = {
         "post": "Write a post",
@@ -758,6 +764,7 @@ def _build_auth_funnel_stats(first_bucket_start):
         }
         for page in ("login", "register")
     }
+    totals["audience_filter"] = audience_filter if audience_filter in {"existing", "new"} else "all"
     return totals
 
 
@@ -813,7 +820,7 @@ def _build_login_behavior_stats(first_bucket_start):
     }
 
 
-def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisition=False):
+def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisition=False, auth_audience="all"):
     selected_segment = ANALYTICS_TRAFFIC_SEGMENTS.get(segment_key)
     current_query = _tracked_page_visits_query().filter(
         PageVisit.tracking_version == CURRENT_ANALYTICS_VERSION
@@ -859,7 +866,7 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
         "hour_distribution": _build_hour_distribution(visits_in_range),
         "journey_stats": _build_journey_stats(visits_in_range),
         "acquisition_stats": _build_acquisition_stats(visits_in_range),
-        "auth_funnel_stats": _build_auth_funnel_stats(visit_timeline["first_bucket_start"]),
+        "auth_funnel_stats": _build_auth_funnel_stats(visit_timeline["first_bucket_start"], auth_audience),
         "login_behavior_stats": _build_login_behavior_stats(visit_timeline["first_bucket_start"]),
         "previous_analytics": previous_analytics,
     }
@@ -894,23 +901,63 @@ def _build_analytics_snapshot(selected_range, segment_key=None, stacked_acquisit
 def index():
     form = PostForm()
     reply_form = ReplyForm()
+    all_tags = Tag.library_names()
+    profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
     homepage_posts = (
         Post.query
         .filter(
             Post.parent_id.is_(None),
+            ~Post.body.ilike('Sunday Check-in%'),
             or_(Post.is_archived.is_(False), Post.is_archived.is_(None)),
         )
         .order_by(Post.timestamp.desc(), Post.id.desc())
         .limit(6)
         .all()
     )
+    chat_preview_items = []
+    if current_user.is_authenticated:
+        conversations = (
+            Conversation.query
+            .filter(
+                (Conversation.user_a_id == current_user.id)
+                | (Conversation.user_b_id == current_user.id)
+            )
+            .order_by(Conversation.created_at.desc())
+            .limit(12)
+            .all()
+        )
+        for conversation in conversations:
+            other = conversation.other_user(current_user.id)
+            if current_user.has_block_relationship(other):
+                continue
+            chat_preview_items.append({
+                'conversation': conversation,
+                'other': other,
+                'last_msg': conversation.messages.order_by(
+                    Message.created_at.desc()
+                ).first(),
+            })
+            if len(chat_preview_items) == 2:
+                break
     return render_template(
         'index.html',
         active_page='index',
         current_time=datetime.now(timezone.utc),
         homepage_posts=homepage_posts,
+        chat_preview_items=chat_preview_items,
         form=form,
         reply_form=reply_form,
+        all_tags=all_tags,
+        profile_label_choices=profile_label_choices,
+        checkin=_weekly_checkin_context(),
+    )
+
+
+@main.route('/sunday-check-in')
+def public_checkin():
+    return render_template(
+        'public_checkin.html',
+        active_page=None,
         checkin=_weekly_checkin_context(),
     )
 
@@ -2101,7 +2148,8 @@ def tag_search():
         return redirect(url_for('auth.login', next=request.url, gate=1))
     all_tags = Tag.library_names()
     profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
-    return render_template('tag_search.html', all_tags=all_tags, profile_label_choices=profile_label_choices, active_page='tag_search')
+    initial_tag_query = request.args.get('topics', '', type=str).strip()
+    return render_template('tag_search.html', all_tags=all_tags, profile_label_choices=profile_label_choices, initial_tag_query=initial_tag_query, active_page='tag_search')
 
 @main.route('/get-help-now')
 def get_help_now():
@@ -2406,6 +2454,7 @@ def analytics():
         request.args.get("range", "1w", type=str),
         request.args.get("segment", type=str),
         request.args.get("stacked", "0", type=str) == "1",
+        request.args.get("auth_audience", "all", type=str),
     )
     snapshot["user_growth_stats"] = _build_user_growth_stats(request.args.get("user_growth_range", "1m", type=str))
     return render_template('analytics.html', active_page=None, **snapshot)

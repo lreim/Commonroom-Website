@@ -114,6 +114,15 @@
           <div class="profile-top-time-value">{{ moment(current_time).format('LLL') }}</div>
         </div>
         <div class="profile-menu">
+          {% if active_page|default('') == 'index' %}
+          <span class="profile-options-cue" aria-hidden="true">
+            <span>Your profile</span>
+            <svg viewBox="0 0 132 64" fill="none" focusable="false">
+              <path d="M12 54C49 63 75 45 110 15" />
+              <path class="profile-options-cue-tip" d="M97 15L119 7L110 29Z" />
+            </svg>
+          </span>
+          {% endif %}
           <a href="{{ url_for('main.admin_profile') if admin_demo_mode else url_for('main.user', username=current_user.username) }}" class="profile-menu-trigger">
             <img
               src="{{ display_avatar_url(current_user, 40) }}"

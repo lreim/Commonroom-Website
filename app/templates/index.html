@@ -1,302 +1,227 @@
 {% extends "base.html" %}
-{% from "reports/button.html" import report_button with context %}
+
 {% block title %}Home{% endblock %}
 
-{% macro example_profile(username, avatar_url, about_me, tags, profile_labels, funny_fact="") -%}
-<span
-  class="homepage-profile-preview-trigger"
-  data-profile-preview='{{ {
-    "username": username,
-    "name": "",
-    "about_me": about_me,
-    "funny_fact": funny_fact,
-    "tags": tags,
-    "profile_labels": profile_labels,
-    "avatar_url": avatar_url
-  }|tojson }}'
->{{ username }}</span>
-{%- endmacro %}
-
 {% block page_content %}
-{% include "_weekly_checkin.html" %}
-<div class="welcome-hero">
-  <div class="page-header text-center welcome-hero-header">
-  <h2 class="welcome-logo-tagline">Share what’s on your mind. Find people who get it.</h2>
-  <div class="welcome-logo-wrap welcome-image-wrap">
-    <img
-      src="{{ url_for('static', filename='Logo_Website_larger.jpg') }}"
-      alt="CommonRoom logo"
-      class="welcome-logo"
-    >
-  </div>
-  <p class="welcome-logo-friendline">Come as you are, as you were, as a friend.</p>
-  <div class="welcome-bubbles" aria-label="What CommonRoom offers">
-    <a
-      class="welcome-bubble welcome-bubble-link"
-      href="#community-examples-heading"
-      aria-label="Jump to community post examples"
-    >
-      <strong>COMMUNITY</strong>
-      <em>Share what’s on your mind with posts</em>
-      <span class="welcome-bubble-link-preview" aria-hidden="true">look at community posts</span>
-    </a>
-    <div class="welcome-bubble"><strong>1:1 CHAT</strong><em>Talk to someone who gets it</em></div>
-    <a
-      class="welcome-bubble welcome-bubble-link"
-      href="{{ url_for('main.data_and_privacy') }}"
-      aria-label="Read about data and privacy"
-    >
-      <strong>ANONYMOUS</strong>
-      <em>Anonymous profile and pseudonymous pairwise identifier</em>
-      <span class="welcome-bubble-link-preview" aria-hidden="true">read about data &amp; privacy</span>
-    </a>
-    <div class="welcome-bubble"><strong>ETH ONLY</strong><em>By ETH students, for ETH students</em></div>
-    <a
-      class="welcome-bubble welcome-bubble-link"
-      href="https://github.com/lreim/Commonroom-Website.git"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Open the CommonRoom source code on GitHub"
-    >
-      <strong>OPEN SOURCE</strong>
-      <em>Transparent &amp; non-profit.</em>
-      <span class="welcome-bubble-link-preview" aria-hidden="true">https://github.com/lreim/Commonroom-Website.git</span>
-    </a>
-  </div>
-  <a class="welcome-scroll-cue" href="#community-examples-heading" aria-label="Scroll to community post examples">
-    <svg viewBox="0 0 28 34" aria-hidden="true" focusable="false">
-      <path d="M5 7 L14 16 L23 7"></path>
-      <path d="M5 18 L14 27 L23 18"></path>
-    </svg>
-  </a>
-  </div>
-</div>
+{% set checkin_href = url_for('main.public_checkin') %}
+{% set chat_href = url_for('chat.index') if current_user.is_authenticated else url_for('auth.login', next=url_for('chat.index')) %}
+<main class="landing-feature-page room-dashboard" data-landing-features>
+  <header class="room-dashboard-heading">
+    <h1>Your CommonRoom</h1>
+    <span class="room-dashboard-mode">{% if current_user.is_authenticated %}Your room{% else %}Visitor mode{% endif %}</span>
+  </header>
 
-<h2 id="community-examples-heading" class="homepage-post-intro-title">
-  Big worries, small moments, random thoughts 
-  <span>Share yours, or just see what others are thinking.</span>
-</h2>
-<section id="community-examples" class="homepage-post-showcase" aria-labelledby="homepage-post-showcase-title">
-  <div class="homepage-post-showcase-header">
-    <div>
-      <h3 id="homepage-post-showcase-title">What the community is thinking about</h3>
-      <p>{% if homepage_posts %}from the community{% else %}example posts{% endif %}</p>
-    </div>
-    <div class="homepage-post-showcase-links">
-      <a class="homepage-explore-posts-button" href="{{ url_for('main.post') }}">Explore all posts &rarr;</a>
-      <span>no profile needed, just take a look</span>
-    </div>
-  </div>
+  <section class="landing-feature-explorer room-dashboard-explorer" aria-label="Explore CommonRoom">
+    <div class="landing-feature-list room-dashboard-grid" id="landing-room-features">
+      <article class="landing-feature-item room-tile room-tile-community" data-feature="community" data-feature-url="{{ url_for('main.post') }}" tabindex="0" aria-label="Community preview">
+        <div class="room-tile-heading"><span class="room-tile-icon" aria-hidden="true">♧</span><div><h2>Community</h2><p>Recent public posts from the student community.</p></div></div>
+        <ul class="posts post-page-list room-post-feed">
+          {% for post in homepage_posts[:3] %}
+          <li class="post{% if post.is_starter %} post-starter{% endif %}{% if loop.index == 3 %} room-post-mobile-extra{% endif %}">
+            <div class="post-card-date">{{ moment(post.timestamp).fromNow() }}</div>
+            <div class="profile-thumbnail">
+              {% if post.is_starter %}<img src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom">{% else %}<img src="{{ post.author.gravatar(size=56) }}" alt="">{% endif %}
+            </div>
+            <div class="post-content">
+              <div class="post-category-status-row"><span class="post-category-label">{{ post.post_type|capitalize }}</span></div>
+              <div class="post-author">{% if post.is_starter %}CommonRoom{% else %}{{ post.author.username }}{% endif %}</div>
+              <a class="post-body room-post-body-link" href="{{ url_for('main.post', _anchor='post-' ~ post.id) }}">{{ post.body|striptags|truncate(150, True, '…') }}</a>
+              <div class="room-post-actions">
+                <a class="post-like-button" href="{{ url_for('main.post', _anchor='post-' ~ post.id) if current_user.is_authenticated else url_for('auth.login', next=url_for('main.post', _anchor='post-' ~ post.id), intent='relate') }}">Relate · {{ post.liked_by.count() }}</a>
+                <a class="post-thread-link" href="{{ url_for('main.post', _anchor='post-' ~ post.id) }}">↳ {{ post.descendant_reply_count }} replies</a>
+                <a class="post-reply-register" href="{{ url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id) if current_user.is_authenticated else url_for('auth.login', next=url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id), intent='reply') }}">Reply</a>
+              </div>
+            </div>
+          </li>
+          {% else %}<li class="room-empty-posts">The first shared thoughts will appear here.</li>{% endfor %}
+        </ul>
+      </article>
 
-  <div class="homepage-post-wall post-page-list">
-    {% if homepage_posts %}
-    {% for post in homepage_posts %}
-    <article class="post homepage-example-post homepage-real-post{% if post.is_starter %} post-starter{% endif %}">
-      <div class="post-card-date">{{ moment(post.timestamp).fromNow() }}{% if post.edited_at %} <span class="post-edited-label">edited</span>{% endif %}</div>
-      <div class="profile-thumbnail">
-        {% if post.is_starter %}
-        <a href="{{ url_for('main.admin_profile') }}" aria-label="Open the CommonRoom Admin profile">
-          <img src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom">
-        </a>
-        {% else %}
-        <a href="{{ url_for('main.user', username=post.author.username) }}">
-          <img src="{{ post.author.gravatar(size=80) }}" alt="Avatar of {{ post.author.username }}">
-        </a>
-        {% endif %}
-      </div>
-        <div class="post-content">
-        <div class="post-category-status-row">
-          {% if post.is_starter %}<a class="starter-post-badge" href="{{ url_for('main.admin_profile') }}">{% if post.body.startswith('Sunday Check-in') %}Sunday Check-in{% else %}Starter post{% endif %}</a>{% endif %}
-          <span class="post-category-label">{{ post.post_type|capitalize }}</span>
-          {% if current_user.is_authenticated and not (post.is_starter and post.body.startswith('Sunday Check-in')) and (post.author_id == current_user.id or (post.is_starter and current_user.is_administrator())) %}
-          <div class="post-feed-status-controls" aria-label="Thread status">
-            <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="thread_status" value="still_thinking"><input type="hidden" name="next" value="{{ request.path }}"><button class="post-feed-status-option{% if post.thread_status != 'answered' %} is-active{% endif %}" type="submit">Still thinking about this</button></form>
-            <form method="post" action="{{ url_for('main.update_post_thread_status', post_id=post.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="thread_status" value="answered"><input type="hidden" name="next" value="{{ request.path }}"><button class="post-feed-status-option{% if post.thread_status == 'answered' %} is-active{% endif %}" type="submit">Answered</button></form>
+      <article class="landing-feature-item room-tile room-tile-tags" data-feature="tag-search" data-feature-url="{{ url_for('main.tag_search') }}" tabindex="0" aria-label="Tag search preview">
+        <div class="room-tile-heading"><span class="room-tile-icon" aria-hidden="true">⌕</span><div><h2>Tag search</h2><p>Find people through shared experiences.</p></div></div>
+        <div class="tag-design-widget room-tag-widget">
+          <div class="tag-main-column">
+            <form class="room-tag-form form-group" action="{{ url_for('main.tag_search') }}" method="get">
+              <label class="sr-only" for="room-tag-input">Search tags</label>
+              <input id="room-tag-input" class="form-control" name="topics" type="search" placeholder="Type a topic (e.g. exam stress)" autocomplete="off">
+            </form>
+            <h4>Existing Tags</h4>
+            <div class="tag-list room-tag-chips" aria-label="Existing tags">
+              {% for tag in all_tags[:6] %}
+              <a class="label label-info" href="{{ url_for('main.tag_search', topics=tag) }}">{{ tag }}</a>
+              {% endfor %}
+            </div>
           </div>
-          {% elif not (post.is_starter and post.body.startswith('Sunday Check-in')) and post.thread_status != 'answered' %}<span class="post-thread-status">Still thinking about this</span>{% elif not (post.is_starter and post.body.startswith('Sunday Check-in')) %}<span class="post-thread-status">Answered</span>{% endif %}
         </div>
-        <div class="post-author">
-          {% if post.is_starter %}
-          <a href="{{ url_for('main.admin_profile') }}">CommonRoom</a>
+        {% if not current_user.is_authenticated %}<p class="room-feature-footnote">Sign in to see matching profiles.</p>{% endif %}
+      </article>
+
+      <article class="landing-room-welcome room-welcome" aria-labelledby="landing-room-welcome-title">
+        <img class="room-welcome-avatar{% if not current_user.is_authenticated %} is-example-avatar{% endif %}" src="{{ display_avatar_url(current_user, 180) if current_user.is_authenticated else 'https://api.dicebear.com/9.x/thumbs/svg?seed=quiet-nebula-4318&size=180' }}" alt="{{ current_user.username ~ ' avatar' if current_user.is_authenticated else 'Example anonymous avatar' }}">
+        {% if current_user.is_authenticated %}
+        <span class="room-welcome-kicker">Your personal room</span>
+        <h2 id="landing-room-welcome-title">{{ current_user.username }}</h2>
+        <p>Share what is on your mind and discover people who understand.</p>
+        <a class="landing-room-primary-action" href="{{ url_for('main.user', username=current_user.username) }}">Open my profile</a>
+        <a class="landing-room-secondary-action" href="{{ url_for('main.post') }}">Explore the community</a>
+        <a class="room-welcome-help-link" href="{{ url_for('main.onboarding') }}">How CommonRoom works</a>
+        {% else %}
+        <span class="room-welcome-kicker">Visitor mode</span>
+        <h2 id="landing-room-welcome-title">Your room is waiting</h2>
+        <p><strong>No profile yet.</strong> Look around first. When you are ready, create your anonymous room.</p>
+        <a class="landing-room-primary-action" href="{{ url_for('auth.login', next=url_for('main.index')) }}">Create my anonymous room</a>
+        <a class="landing-room-secondary-action" href="{{ url_for('main.post') }}">Explore first</a>
+        <a class="room-welcome-help-link" href="{{ url_for('main.onboarding') }}">How CommonRoom works</a>
+        {% endif %}
+        <p class="room-welcome-privacy">Your public profile stays anonymous. <a href="{{ url_for('main.data_and_privacy') }}">How privacy works</a></p>
+      </article>
+
+      <article class="landing-feature-item room-tile room-tile-checkin" data-feature="checkins" data-feature-url="{{ checkin_href }}" tabindex="0" aria-label="Sunday Check-in preview">
+        <div class="room-tile-heading"><span class="room-tile-icon" aria-hidden="true">☼</span><div><h2>Sunday Check-in</h2><p>One anonymous question for this week.</p></div></div>
+        <div class="weekly-checkin room-public-checkin-mini">
+          <div class="weekly-checkin-heading">
+            <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=weekly-check-in&amp;size=64" alt="">
+            <div><span class="weekly-checkin-kicker">SUNDAY CHECK-IN</span><h3>{{ checkin.question }}</h3></div>
+          </div>
+          <div class="weekly-checkin-choices">
+            {% for value, label in checkin.choices[:2] %}
+              <a href="{{ url_for('main.public_checkin', choice=value, _anchor='weekly-checkin') }}">{{ label }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+
+      <article class="landing-feature-item room-tile room-tile-chat" data-feature="chat" data-feature-url="{{ chat_href }}" tabindex="0" aria-label="Private chats preview">
+        <div class="room-tile-heading"><span class="room-tile-icon" aria-hidden="true">✉</span><div><h2>1:1 Chat</h2><p>Talk privately with someone who relates.</p></div></div>
+        <ul class="chat-conversation-list room-chat-feed">
+          {% if current_user.is_authenticated and chat_preview_items %}
+          {% for item in chat_preview_items %}
+          <li class="chat-conversation-card">
+            <a class="chat-conversation-link" href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}">
+              <img class="chat-conversation-avatar" src="{{ item.other.gravatar(size=56) }}" alt="">
+              <span class="chat-conversation-meta"><span class="chat-conversation-name">{{ item.other.username }}</span><span class="chat-conversation-last-time">Your chat</span></span>
+              <span class="chat-conversation-bubble">{{ item.last_msg.body[:80] if item.last_msg else 'No messages yet.' }}</span>
+            </a>
+          </li>
+          {% endfor %}
+          {% elif current_user.is_authenticated %}
+          <li class="chat-empty-state">No chats yet. Your conversations will appear here.</li>
           {% else %}
-          <a
-            href="{{ url_for('main.user', username=post.author.username) }}"
-            data-profile-preview='{{ {
-              "username": post.author.username,
-              "name": post.author.name or "",
-              "about_me": (post.author.about_me or "")[:180],
-              "funny_fact": (post.author.funny_fact or "")[:180],
-              "tags": post.author.tags|map(attribute="name")|list|sort,
-              "profile_labels": post.author.profile_label_texts,
-              "avatar_url": post.author.gravatar(size=48)
-            }|tojson }}'
-          >{{ post.author.username }}</a>
+          <li class="chat-conversation-card room-chat-example-card">
+            <span class="room-chat-example-label">Example chats</span>
+            <a class="chat-conversation-link" href="{{ chat_href }}">
+              <img class="chat-conversation-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=lucid-vector-1842&amp;size=100" alt="">
+              <span class="chat-conversation-meta"><span class="chat-conversation-name">lucid-vector-1842</span><span class="chat-conversation-last-time">Private chat</span></span>
+              <span class="chat-conversation-bubble">Hey, would you be open to chatting privately?</span>
+            </a>
+          </li>
+          <li class="chat-conversation-card room-chat-example-card">
+            <a class="chat-conversation-link" href="{{ chat_href }}">
+              <img class="chat-conversation-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed=quiet-nebula-4318&amp;size=100" alt="">
+              <span class="chat-conversation-meta"><span class="chat-conversation-name">quiet-nebula-4318</span><span class="chat-conversation-last-time">Private chat</span></span>
+              <span class="chat-conversation-bubble">I had a similar week. Want to compare notes?</span>
+            </a>
+          </li>
           {% endif %}
-        </div>
-        <div class="post-body">{% if post.is_starter and post.body.startswith('Sunday Check-in') %}Sunday Check-in 🌿<br><br>Choose one question or answer more than one. Short answers are very welcome.{% else %}{{ post.body }}{% endif %}</div>
-        <div class="post-meta-actions">
-          {% if current_user.is_authenticated %}
-          <button type="button" class="post-like-button{% if post.is_liked_by(current_user) %} is-liked{% endif %}" data-like-url="{{ url_for('main.toggle_post_like', post_id=post.id) }}" aria-pressed="{{ 'true' if post.is_liked_by(current_user) else 'false' }}">
-            <span class="post-relate-label">{{ 'Related' if post.is_liked_by(current_user) else 'Relate' }}</span><span aria-hidden="true">·</span><span class="post-like-count">{{ post.liked_by.count() }}</span>
-          </button>
-          {% else %}<a class="post-like-button" href="{{ url_for('auth.login', next=request.path, intent='relate') }}">Relate <span aria-hidden="true">·</span> {{ post.liked_by.count() }}</a>{% endif %}
-          {% if post.descendant_reply_count > 0 %}<a class="post-thread-link" href="{{ url_for('main.post_thread', post_id=post.id) }}">&#8627; {{ post.descendant_reply_count }} {% if post.descendant_reply_count == 1 %}reply{% else %}replies{% endif %}</a>{% endif %}
-        </div>
-      </div>
-      <div class="post-side-actions">
-        <div class="post-action-stack">
-          {% if current_user.is_authenticated and not post.is_starter and post.author_id == current_user.id %}<a class="post-edit-link" href="{{ url_for('main.edit_post', post_id=post.id, next=request.path) }}">Edit</a>{% endif %}
-          {% if current_user.is_authenticated %}
-          <details class="post-reply-box" data-reply-toggle><summary>Reply</summary><form method="post" action="{{ url_for('main.post') }}">{{ reply_form.hidden_tag() }}<input type="hidden" name="reply_to_id" value="{{ post.id }}">{{ reply_form.body(class="form-control", rows="4", placeholder="Write your reply here.") }}<fieldset class="post-reply-type-picker"><legend>{{ reply_form.reply_type.label.text }}</legend>{% for value, label in reply_form.reply_type.choices %}<label for="index-reply-type-{{ post.id }}-{{ value }}"><input id="index-reply-type-{{ post.id }}-{{ value }}" type="radio" name="reply_type" value="{{ value }}"{% if value == 'experience' %} checked{% endif %}> {{ label }}</label>{% endfor %}</fieldset><div class="post-reply-actions">{{ reply_form.submit(class="btn btn-primary", value="Send reply") }}</div></form></details>
-          {% else %}<a class="post-reply-register" href="{{ url_for('auth.login', next=url_for('main.post', reply_to=post.id), intent='reply') }}">Reply</a>{% endif %}
-          {{ report_button('post', post.id) }}
-        </div>
-      </div>
-    </article>
-    {% endfor %}
-    {% else %}
-    <article class="post homepage-example-post">
-      <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=gentle-nebula-4318&amp;size=80" alt="Avatar of gentle-nebula-4318">
-      </div>
-      <div class="post-content">
-        <div class="post-date">2 hours ago</div>
-        <div class="post-author">{{ example_profile(
-          "gentle-nebula-4318",
-          "https://api.dicebear.com/9.x/thumbs/svg?seed=gentle-nebula-4318&size=80",
-          "Trying to find a kinder balance between studying, resting and everything else.",
-          ["exam stress", "feeling behind", "work-life balance"],
-          ["Currently dealing with this", "Happy to listen"],
-          "I own four mugs but somehow always use the same one."
-        ) }}</div>
-        <div class="post-body">I passed the exam, but I still feel like I’m falling behind everyone else. Does anyone know this feeling?</div>
-        <div class="homepage-post-meta-actions">
-          <span class="homepage-post-relate">Relate · 8</span>
-          <span class="post-thread-link">&#8627; 4 replies</span>
-        </div>
-      </div>
-      <div class="post-side-actions"><span class="homepage-post-reply">Reply</span></div>
-    </article>
+        </ul>
+        <a class="room-chat-open" href="{{ chat_href }}">{% if current_user.is_authenticated %}Open chats{% else %}Sign in to start a chat{% endif %}</a>
+      </article>
+    </div>
 
-    <article class="post homepage-example-post">
-      <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=cosmic-tensor-7642&amp;size=80" alt="Avatar of cosmic-tensor-7642">
-      </div>
-      <div class="post-content">
-        <div class="post-date">yesterday</div>
-        <div class="post-author">{{ example_profile(
-          "cosmic-tensor-7642",
-          "https://api.dicebear.com/9.x/thumbs/svg?seed=cosmic-tensor-7642&size=80",
-          "Still figuring out how to feel at home at ETH and meet people along the way.",
-          ["making friends", "feeling left out", "starting at ETH"],
-          ["Currently dealing with this"],
-          "I know every shortcut through CAB but still get lost in HG."
-        ) }}</div>
-        <div class="post-body">Making friends after the first semester feels much harder than people admit.</div>
-        <div class="homepage-post-meta-actions">
-          <span class="homepage-post-relate">Relate · 14</span>
-          <span class="post-thread-link">&#8627; 9 replies</span>
-        </div>
-      </div>
-      <div class="post-side-actions"><span class="homepage-post-reply">Reply</span></div>
-    </article>
+    <div class="landing-feature-preview" id="landing-feature-preview" role="tabpanel" tabindex="-1" aria-label="Feature preview">
+      <button class="room-preview-close" type="button" aria-label="Close preview">×</button>
 
-    <article class="post homepage-example-post">
-      <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=patient-photon-2856&amp;size=80" alt="Avatar of patient-photon-2856">
-      </div>
-      <div class="post-content">
-        <div class="post-date">3 days ago</div>
-        <div class="post-author">{{ example_profile(
-          "patient-photon-2856",
-          "https://api.dicebear.com/9.x/thumbs/svg?seed=patient-photon-2856&size=80",
-          "Taking small social steps and happy to share what has made them easier.",
-          ["social anxiety", "meeting new people", "small wins"],
-          ["Been through this", "Happy to share my experience"],
-          "My best conversations usually begin while waiting for coffee."
-        ) }}</div>
-        <div class="post-body">Today I finally asked someone from my lecture to have coffee. It was less scary than I expected.</div>
-        <div class="homepage-post-meta-actions">
-          <span class="homepage-post-relate">Relate · 11</span>
-          <span class="post-thread-link">&#8627; 6 replies</span>
+      <article class="landing-preview-content is-active" data-preview-content="community">
+        <div class="landing-onboarding-scene post-page-list landing-live-posts">
+          {% if homepage_posts %}
+          {% for post in homepage_posts %}
+          <article class="post landing-live-post" data-post-url="{{ url_for('main.post', _anchor='post-' ~ post.id) }}">
+            <div class="post-card-date">{{ moment(post.timestamp).fromNow() }}</div>
+            <div class="profile-thumbnail">
+              {% if post.is_starter %}<img src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom">{% else %}<img src="{{ post.author.gravatar(size=80) }}" alt="Avatar of {{ post.author.username }}">{% endif %}
+            </div>
+            <div class="post-content">
+              <div class="post-category-status-row"><span class="post-category-label">{{ post.post_type|capitalize }}</span></div>
+              <div class="post-author">{% if post.is_starter %}CommonRoom{% else %}{{ post.author.username }}{% endif %}</div>
+              <div class="post-body">{{ post.body }}</div>
+              <div class="post-meta-actions landing-live-post-actions">
+                <a class="post-like-button landing-preview-action-link" href="{{ url_for('main.post', _anchor='post-' ~ post.id) if current_user.is_authenticated else url_for('auth.login', next=url_for('main.post', _anchor='post-' ~ post.id), intent='relate') }}">Relate · {{ post.liked_by.count() }}</a>
+                {% if post.descendant_reply_count > 0 %}<a class="post-thread-link landing-preview-action-link" href="{{ url_for('main.post', _anchor='post-' ~ post.id) }}">↳ {{ post.descendant_reply_count }} replies</a>{% endif %}
+                <a class="post-reply-register landing-preview-action-link" href="{{ url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id) if current_user.is_authenticated else url_for('auth.login', next=url_for('main.post', reply_to=post.id, _anchor='reply-' ~ post.id), intent='reply') }}">Reply</a>
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+          {% else %}<p class="landing-live-empty">There are no posts to show yet.</p>{% endif %}
         </div>
-      </div>
-      <div class="post-side-actions"><span class="homepage-post-reply">Reply</span></div>
-    </article>
+        {% if homepage_posts %}<a class="landing-preview-forward" href="{{ url_for('main.post', _anchor='post-' ~ homepage_posts[0].id) }}" aria-label="Open posts"><span aria-hidden="true">⇊</span></a>{% endif %}
+      </article>
 
-    <article class="post homepage-example-post">
-      <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=amber-lattice-9137&amp;size=80" alt="Avatar of amber-lattice-9137">
-      </div>
-      <div class="post-content">
-        <div class="post-date">4 days ago</div>
-        <div class="post-author">{{ example_profile(
-          "amber-lattice-9137",
-          "https://api.dicebear.com/9.x/thumbs/svg?seed=amber-lattice-9137&size=80",
-          "Learning that rest is part of student life too.",
-          ["rest and recovery", "study pressure", "perfectionism"],
-          ["Happy to listen"],
-          "My study playlist is mostly film music and one embarrassing pop song."
-        ) }}</div>
-        <div class="post-body">How do you let yourself rest without feeling guilty about not studying?</div>
-        <div class="homepage-post-meta-actions">
-          <span class="homepage-post-relate">Relate · 19</span>
-          <span class="post-thread-link">&#8627; 12 replies</span>
+      <article class="landing-preview-content" data-preview-content="tag-search">
+        {% if current_user.is_authenticated %}
+        <div class="tag-two-column-layout tag-design-widget landing-tag-preview" data-tag-widget="search" data-search-endpoint="{{ url_for('main.tag_search_api') }}" data-all-tags='{{ all_tags|tojson }}' data-can-request-chat="true">
+          <div class="tag-main-column"><div class="form-group"><input id="tag-search-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, loneliness)"></div><div id="tag-search-status" class="onboarding-semantic-status"></div><h4>Selected Tags</h4><div id="tag-selected-list" class="tag-list"></div><h4>Matches</h4><div id="tag-search-results" class="tag-results"></div></div>
+          <aside class="tag-side-column"><h4>Existing Tags</h4><div id="tag-existing-list" class="tag-list"></div></aside>
         </div>
-      </div>
-      <div class="post-side-actions"><span class="homepage-post-reply">Reply</span></div>
-    </article>
+        {% else %}
+        <div class="tag-two-column-layout tag-design-widget landing-tag-preview room-tag-guest-preview">
+          <div class="tag-main-column"><form action="{{ url_for('main.tag_search') }}" method="get"><label class="sr-only" for="room-preview-tag-input">Search a topic</label><input id="room-preview-tag-input" class="form-control" name="topics" type="search" placeholder="Type a topic (e.g. exam stress)"></form><h4>Selected Tags</h4><div class="tag-list"></div><h4>Matches</h4><p>Sign in to see matching profiles and connect anonymously.</p></div>
+          <aside class="tag-side-column"><h4>Existing Tags</h4><div class="tag-list room-tag-chips">{% for tag in all_tags[:12] %}<a class="label label-info" href="{{ url_for('main.tag_search', topics=tag) }}">{{ tag }}</a>{% endfor %}</div></aside>
+        </div>
+        {% endif %}
+      </article>
 
-    <article class="post homepage-example-post">
-      <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=curious-quasar-5463&amp;size=80" alt="Avatar of curious-quasar-5463">
-      </div>
-      <div class="post-content">
-        <div class="post-date">last week</div>
-        <div class="post-author">{{ example_profile(
-          "curious-quasar-5463",
-          "https://api.dicebear.com/9.x/thumbs/svg?seed=curious-quasar-5463&size=80",
-          "Thinking through study doubts, future plans and what a good direction might look like.",
-          ["study doubts", "changing degree", "finding direction"],
-          ["Currently dealing with this", "Happy to listen"],
-          "I rate every campus study spot by chair comfort."
-        ) }}</div>
-        <div class="post-body">I don’t know whether I chose the wrong degree or whether I’m simply exhausted.</div>
-        <div class="homepage-post-meta-actions">
-          <span class="homepage-post-relate">Relate · 16</span>
-          <span class="post-thread-link">&#8627; 8 replies</span>
+      <article class="landing-preview-content" data-preview-content="checkins">
+        <div class="landing-public-checkin-preview">
+          {% with checkin_preview=true, checkin_id='weekly-checkin-preview' %}{% include "_weekly_checkin.html" %}{% endwith %}
         </div>
-      </div>
-      <div class="post-side-actions"><span class="homepage-post-reply">Reply</span></div>
-    </article>
+      </article>
 
-    <article class="post homepage-example-post">
-      <div class="profile-thumbnail">
-        <img src="https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&amp;size=80" alt="Avatar of steady-orbit-6724">
-      </div>
-      <div class="post-content">
-        <div class="post-date">last week</div>
-        <div class="post-author">{{ example_profile(
-          "steady-orbit-6724",
-          "https://api.dicebear.com/9.x/thumbs/svg?seed=steady-orbit-6724&size=80",
-          "Trying to make everyday student life a little more manageable.",
-          ["sleep", "study routine", "work-life balance"],
-          ["Happy to share my experience"],
-          "I prepare elaborate meals exactly when I should be studying."
-        ) }}</div>
-        <div class="post-body">How do people actually manage lectures, exercise, cooking, friends and enough sleep?</div>
-        <div class="homepage-post-meta-actions">
-          <span class="homepage-post-relate">Relate · 23</span>
-          <span class="post-thread-link">&#8627; 15 replies</span>
-        </div>
-      </div>
-      <div class="post-side-actions"><span class="homepage-post-reply">Reply</span></div>
-    </article>
-    {% endif %}
-  </div>
-</section>
+      <article class="landing-preview-content" data-preview-content="chat">
+        <section class="chat-overview-panel room-chat-preview-list">
+          <h4>{% if current_user.is_authenticated and chat_preview_items %}Your Chats{% else %}Example chats{% endif %}</h4>
+          <ul class="chat-conversation-list room-chat-preview-feed">
+            {% if current_user.is_authenticated and chat_preview_items %}
+            {% for item in chat_preview_items %}
+            <li class="chat-conversation-card"><a class="chat-conversation-link" href="{{ url_for('chat.detail', conversation_id=item.conversation.id) }}"><img class="chat-conversation-avatar" src="{{ item.other.gravatar(size=80) }}" alt=""><div class="chat-conversation-meta"><div class="chat-conversation-name">{{ item.other.username }}</div><div class="chat-conversation-last-time">{{ moment(item.last_msg.created_at).fromNow() if item.last_msg else 'Your chat' }}</div></div><div class="chat-conversation-bubble">{{ item.last_msg.body[:140] if item.last_msg else 'No messages yet.' }}</div></a></li>
+            {% endfor %}
+            {% else %}
+            {% for username, message in [
+              ('lucid-vector-1842', 'Hey, would you be open to chatting privately?'),
+              ('quiet-nebula-4318', 'I had a similar week. Want to compare notes?'),
+              ('soft-comet-2841', 'Thanks for listening. That really helped.'),
+              ('mellow-orbit-5732', 'It helps to know someone else understands.'),
+              ('gentle-moss-6204', 'Would you like to talk about how the exam went?')
+            ] %}
+            <li class="chat-conversation-card"><a class="chat-conversation-link" href="{{ chat_href }}"><img class="chat-conversation-avatar" src="https://api.dicebear.com/9.x/thumbs/svg?seed={{ username }}&amp;size=100" alt=""><div class="chat-conversation-meta"><div class="chat-conversation-name">{{ username }}</div><div class="chat-conversation-last-time">Private chat</div></div><div class="chat-conversation-bubble">{{ message }}</div></a></li>
+            {% endfor %}
+            {% endif %}
+          </ul>
+        </section>
+      </article>
+    </div>
+  </section>
+
+  <p class="room-dashboard-note">You can read public posts without an account.</p>
+</main>
 
 <section class="landing-summary" aria-labelledby="landing-summary-title">
+  <a class="room-info-cue" href="#landing-summary-links" aria-label="Scroll to more information about CommonRoom">
+    <span>More to explore</span>
+    <svg viewBox="0 0 120 380" preserveAspectRatio="none" fill="none" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="room-pencil-texture" x="-20%" y="-5%" width="140%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency=".055 .025" numOctaves="3" seed="8" result="grain" />
+          <feDisplacementMap in="SourceGraphic" in2="grain" scale="5" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+      <g filter="url(#room-pencil-texture)">
+        <path class="room-info-cue-line" d="M35 14C94 47 101 112 72 171C43 230 92 283 62 337" />
+        <path class="room-info-cue-pencil-mark" d="M37 18C95 51 97 114 74 173C46 232 88 282 64 336" />
+        <path class="room-info-cue-tip" d="M48 326L62 353L77 328Z" />
+      </g>
+    </svg>
+  </a>
   <h2 id="landing-summary-title">A room for student life</h2>
   <div class="landing-summary-copy">
     <p>
@@ -306,7 +231,7 @@
     <p>Read, post, reply, or talk 1:1. You decide how much you want to share.</p>
   </div>
 
-  <div class="landing-summary-links">
+  <div class="landing-summary-links" id="landing-summary-links">
     <a class="landing-summary-card" href="{{ url_for('main.onboarding') }}">
       <strong>New here?</strong>
       <span>See how CommonRoom works &rarr;</span>
@@ -330,8 +255,157 @@
 {% block scripts %}
 {{ super() }}
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
-<script src="{{ url_for('static', filename='landing_scroll_previews.js') }}"></script>
 <script>
+(function () {
+  var explorer = document.querySelector('[data-landing-features] .landing-feature-explorer');
+  if (!explorer) return;
+  var items = Array.prototype.slice.call(explorer.querySelectorAll('[data-feature]'));
+  var previews = Array.prototype.slice.call(explorer.querySelectorAll('[data-preview-content]'));
+  var fitFrame;
+
+  function fitCards(selector, boundary) {
+    if (!boundary) return;
+    var cards = Array.prototype.slice.call(explorer.querySelectorAll(selector));
+    cards.forEach(function (card) { card.classList.remove('room-fit-hidden'); });
+    var visible = cards.filter(function (card) { return getComputedStyle(card).display !== 'none'; });
+    var bottom = boundary.getBoundingClientRect().bottom - parseFloat(getComputedStyle(boundary).paddingBottom || 0) - 2;
+    while (visible.length > 1 && visible[visible.length - 1].getBoundingClientRect().bottom > bottom) {
+      visible.pop().classList.add('room-fit-hidden');
+    }
+  }
+
+  function fitCheckin() {
+    var mini = explorer.querySelector('.room-public-checkin-mini');
+    var miniChoices = Array.prototype.slice.call(mini.querySelectorAll('.weekly-checkin-choices a'));
+    miniChoices.forEach(function (choice) { choice.classList.remove('room-fit-hidden'); });
+    var miniBottom = mini.getBoundingClientRect().bottom - parseFloat(getComputedStyle(mini).paddingBottom || 0) - 2;
+    while (miniChoices.length && miniChoices[miniChoices.length - 1].getBoundingClientRect().bottom > miniBottom) {
+      miniChoices.pop().classList.add('room-fit-hidden');
+    }
+
+  }
+
+  function fitVisibleContent() {
+    fitCards('.room-post-feed > .post', explorer.querySelector('.room-post-feed'));
+    fitCards('.room-chat-feed > .chat-conversation-card', explorer.querySelector('.room-chat-feed'));
+    fitCards('.room-tag-widget .room-tag-chips > a', explorer.querySelector('.room-tag-widget .tag-main-column'));
+    fitCheckin();
+    if (!explorer.classList.contains('has-active-preview')) return;
+    fitCards('.landing-live-posts > .landing-live-post', explorer.querySelector('.landing-live-posts'));
+    fitCards('.room-chat-preview-feed > .chat-conversation-card', explorer.querySelector('.room-chat-preview-list'));
+    fitCards('.landing-tag-preview .tag-side-column .tag-list > a', explorer.querySelector('.landing-tag-preview .tag-side-column'));
+  }
+
+  function scheduleFit() {
+    if (fitFrame) cancelAnimationFrame(fitFrame);
+    fitFrame = requestAnimationFrame(fitVisibleContent);
+  }
+
+  var fitObserver = new ResizeObserver(scheduleFit);
+  fitObserver.observe(explorer.querySelector('.room-dashboard-grid'));
+  fitObserver.observe(explorer.querySelector('.landing-feature-preview'));
+  window.addEventListener('resize', scheduleFit);
+  window.addEventListener('load', scheduleFit, { once: true });
+  if (document.fonts) document.fonts.ready.then(scheduleFit);
+  scheduleFit();
+
+  function keepPreviewInViewport() {
+    if (!explorer.classList.contains('has-active-preview')) return;
+    var explorerRect = explorer.getBoundingClientRect();
+    var finalHeight = Math.min(explorerRect.height - 24, window.innerHeight - 84, 640);
+    var viewportTop = Math.max(66, (window.innerHeight - finalHeight) / 2);
+    explorer.style.setProperty('--preview-final-top', (viewportTop - explorerRect.top) + 'px');
+    explorer.style.setProperty('--preview-final-height', finalHeight + 'px');
+  }
+
+  function activate(feature, sourceItem) {
+    items.forEach(function (item) {
+      var isActive = item.dataset.feature === feature;
+      item.classList.toggle('is-active', isActive);
+      item.setAttribute('aria-selected', String(isActive));
+    });
+    explorer.classList.add('has-active-preview');
+    explorer.classList.toggle('is-checkin-preview', feature === 'checkins');
+    previews.forEach(function (preview) {
+      preview.classList.toggle('is-active', preview.dataset.previewContent === feature);
+    });
+
+    if (sourceItem) {
+      var explorerRect = explorer.getBoundingClientRect();
+      var itemRect = sourceItem.getBoundingClientRect();
+      explorer.style.setProperty('--preview-start-left', (itemRect.left - explorerRect.left) + 'px');
+      explorer.style.setProperty('--preview-start-top', (itemRect.top - explorerRect.top) + 'px');
+      explorer.style.setProperty('--preview-start-width', itemRect.width + 'px');
+      explorer.style.setProperty('--preview-start-height', itemRect.height + 'px');
+      var finalWidth = Math.min(explorerRect.width - 24, 920);
+      var finalHeight = Math.min(explorerRect.height - 24, window.innerHeight - 84, 640);
+      var viewportTop = Math.max(66, (window.innerHeight - finalHeight) / 2);
+      explorer.style.setProperty('--preview-final-left', ((explorerRect.width - finalWidth) / 2) + 'px');
+      explorer.style.setProperty('--preview-final-top', (viewportTop - explorerRect.top) + 'px');
+      explorer.style.setProperty('--preview-final-width', finalWidth + 'px');
+      explorer.style.setProperty('--preview-final-height', finalHeight + 'px');
+      requestAnimationFrame(function () { explorer.classList.add('is-preview-expanded'); });
+    }
+    scheduleFit();
+  }
+
+  function hidePreview() {
+    explorer.classList.remove('has-active-preview', 'is-preview-expanded', 'is-checkin-preview');
+    items.forEach(function (item) {
+      item.classList.remove('is-active');
+      item.setAttribute('aria-selected', 'false');
+    });
+  }
+
+  items.forEach(function (item) {
+    item.addEventListener('mouseenter', function () {
+      if (window.innerWidth > 850 && window.matchMedia('(hover: hover)').matches) activate(item.dataset.feature, item);
+    });
+    item.addEventListener('click', function (event) {
+      if (event.target.closest('a, input, button, form')) return;
+      if (item.dataset.feature === 'checkins') {
+        window.location.href = item.dataset.featureUrl;
+        return;
+      }
+      if (item.classList.contains('is-active') && explorer.classList.contains('has-active-preview') && item.dataset.featureUrl) {
+        window.location.href = item.dataset.featureUrl;
+        return;
+      }
+      activate(item.dataset.feature, item);
+    });
+    item.addEventListener('keydown', function (event) {
+      if (event.target !== item || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      if (item.dataset.feature === 'checkins') {
+        window.location.href = item.dataset.featureUrl;
+        return;
+      }
+      activate(item.dataset.feature, item);
+    });
+  });
+
+  explorer.addEventListener('mouseleave', hidePreview);
+  explorer.querySelector('.room-preview-close').addEventListener('click', hidePreview);
+  explorer.addEventListener('click', function (event) {
+    var post = event.target.closest('.landing-live-post');
+    if (event.target.closest('a, button, input, textarea, select, summary, label, form')) return;
+    if (post && post.dataset.postUrl) {
+      window.location.href = post.dataset.postUrl;
+      return;
+    }
+    var preview = event.target.closest('[data-preview-content]');
+    if (preview) {
+      var source = items.find(function (item) { return item.dataset.feature === preview.dataset.previewContent; });
+      if (source && source.dataset.featureUrl) window.location.href = source.dataset.featureUrl;
+    }
+  });
+  document.addEventListener('pointerdown', function (event) {
+    if (!explorer.contains(event.target)) hidePreview();
+  });
+  window.addEventListener('scroll', keepPreviewInViewport, { passive: true });
+  window.addEventListener('resize', keepPreviewInViewport);
+})();
+
 document.querySelectorAll('[data-like-url]').forEach(function (button) {
   button.addEventListener('click', function () {
     var csrf = document.querySelector('meta[name="csrf-token"]');

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Sunday Check-in{% endblock %}
+
+{% block page_content %}
+<main class="public-checkin-page">
+  <a class="public-checkin-back" href="{{ url_for('main.index') }}">&larr; Your CommonRoom</a>
+  <h1>Sunday Check-in</h1>
+  <p>One question for the week. You can answer anonymously and change your answer later.</p>
+  {% if checkin.answered %}<p class="public-checkin-confirmation">Your answer is recorded for this week. You can choose another answer below.</p>{% endif %}
+  {% include "_weekly_checkin.html" %}
+</main>
+{% endblock %}

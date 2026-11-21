@@ -210,6 +210,7 @@
 
   function initTagWidget(root) {
     const mode = root.getAttribute("data-tag-widget");
+    const isLandingPreview = root.classList.contains("landing-tag-preview");
     const endpoint = root.getAttribute("data-search-endpoint");
     const allTags = JSON.parse(root.getAttribute("data-all-tags") || "[]");
     const storageKey = "commonroom_tagsearch_state";
@@ -436,8 +437,9 @@
       const visibleMatches = mode === "picker"
         ? currentMatches.filter((m) => !selected.has(m.name.toLowerCase()))
         : currentMatches;
+      const displayMatches = isLandingPreview ? visibleMatches.slice(0, 6) : visibleMatches;
 
-      if (!visibleMatches || visibleMatches.length === 0) {
+      if (!displayMatches || displayMatches.length === 0) {
         const p = document.createElement("p");
         p.className = "text-muted";
         p.textContent = "No matches yet.";
@@ -445,7 +447,7 @@
         return;
       }
 
-      visibleMatches.forEach((m) => {
+      displayMatches.forEach((m) => {
         const row = document.createElement("div");
         row.style.marginBottom = "12px";
 
@@ -492,7 +494,7 @@
 
       if (mode !== "picker") {
         const profilesById = new Map();
-        visibleMatches.forEach((match) => {
+        displayMatches.forEach((match) => {
           (match.users || []).forEach((user) => {
             const key = String(user.id || user.username);
             const existing = profilesById.get(key);
@@ -545,11 +547,17 @@
             const otherProfileTags = (user.tags || []).filter(
               (tag) => !matchingTagNames.has(String(tag).toLowerCase())
             );
-            const profileUrl = new URL(user.profile_url, window.location.origin);
-            profileUrl.searchParams.set(
-              "return_to",
-              `${window.location.pathname}${window.location.search}${window.location.hash}`
-            );
+            const profileUrl = isLandingPreview
+              ? new URL("/tags", window.location.origin)
+              : new URL(user.profile_url, window.location.origin);
+            if (isLandingPreview) {
+              profileUrl.searchParams.set("topics", getSearchQuery());
+            } else {
+              profileUrl.searchParams.set(
+                "return_to",
+                `${window.location.pathname}${window.location.search}${window.location.hash}`
+              );
+            }
 
             const card = document.createElement("article");
             card.className = "tag-matching-profile-card";
@@ -567,6 +575,9 @@
             username.href = profileUrl.toString();
             username.textContent = user.username;
             username.addEventListener("click", function (evt) {
+              if (isLandingPreview) {
+                return;
+              }
               if (!isMobilePreviewMode()) {
                 return;
               }
