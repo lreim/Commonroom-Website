@@ -11656,19 +11656,18 @@ html.dark-mode .landing-room-secondary-action { color:#f2c4d5; }
   inset:auto;
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1.08fr) minmax(0,1fr);
-  grid-template-rows:auto auto;
+  grid-template-rows:minmax(0,1.16fr) minmax(0,.84fr);
   grid-template-areas:"community welcome tags" "checkin welcome chat";
   gap:18px;
-  height:auto;
-  min-height:0;
-  align-items:start;
+  height:clamp(590px,calc(100vh - 210px),710px);
+  min-height:590px;
 }
 .room-dashboard-grid > .room-tile.landing-feature-item {
   display:flex;
   flex-direction:column;
   align-items:stretch;
   gap:12px;
-  height:fit-content;
+  height:100%;
   min-height:0;
   padding:18px 20px;
   overflow:hidden;
@@ -11755,7 +11754,7 @@ html.dark-mode .landing-room-secondary-action { color:#f2c4d5; }
   left:auto;
   grid-area:welcome;
   width:auto;
-  height:fit-content;
+  height:100%;
   min-height:0;
   margin:0;
   padding:36px 26px;
