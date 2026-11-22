@@ -1166,6 +1166,8 @@ SUNDAY_CHECKIN_REDIRECTS = {
     'mavt1': 'sunday_checkin_MAVT1',
     'mavt2': 'sunday_checkin_MAVT2',
     'mavt3': 'sunday_checkin_MAVT3',
+    'mtec25': 'sunday_checkin_MTEC25',
+    'mtec26': 'sunday_checkin_MTEC26',
     'itet1': 'sunday_checkin_ITET1',
     'itet2': 'sunday_checkin_ITET2',
     'itet3': 'sunday_checkin_ITET3',
