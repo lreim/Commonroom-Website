@@ -12616,7 +12616,7 @@ html.dark-mode .room-dashboard-explorer .room-tag-guest-preview .room-guest-prof
     align-self:start;
   }
   .room-dashboard-grid > .room-tile.landing-feature-item {
-    min-height:170px;
+    min-height:187px;
     gap:6px;
     padding:8px;
   }
@@ -12633,9 +12633,34 @@ html.dark-mode .room-dashboard-explorer .room-tag-guest-preview .room-guest-prof
     flex-basis:20px;
   }
   .room-dashboard-grid .room-tile-heading h2 {
-    font-size:clamp(14px,4vw,17px);
+    font-size:clamp(16px,calc(4vw + 2px),19px);
     line-height:1.12;
   }
+  .room-dashboard-grid .room-tile-icon { font-size:17px; }
+  .room-dashboard-grid .room-welcome-kicker { font-size:10px; }
+  .room-dashboard-grid .room-welcome h2 { font-size:20px; }
+  .room-dashboard-grid .room-welcome p { font-size:12px; }
+  .room-dashboard-grid .room-welcome .landing-room-primary-action,
+  .room-dashboard-grid .room-welcome .landing-room-secondary-action,
+  .room-dashboard-grid .room-welcome .room-welcome-help-link { font-size:12px; }
+  .room-dashboard-grid .room-welcome .room-welcome-privacy { font-size:11px !important; }
+  .room-dashboard-grid .room-post-feed .post-author,
+  .room-dashboard-grid .room-post-feed .room-post-body-link { font-size:12px; }
+  .room-dashboard-grid .room-post-feed .room-post-actions .post-like-button,
+  .room-dashboard-grid .room-post-feed .room-post-actions .post-thread-link,
+  .room-dashboard-grid .room-post-feed .room-post-actions .post-reply-register { font-size:10px; }
+  .room-dashboard-grid .room-empty-posts { font-size:17px; }
+  .room-dashboard-grid .room-tag-widget.tag-design-widget .form-control { font-size:12px; }
+  .room-dashboard-grid .room-tag-widget.tag-design-widget h4 { font-size:13px; }
+  .room-dashboard-grid .room-tag-widget.tag-design-widget .room-tag-chips .label { font-size:11px; }
+  .room-dashboard-grid .room-public-checkin-mini h3 { font-size:12px; }
+  .room-dashboard-grid .room-public-checkin-mini .weekly-checkin-choices a,
+  .room-dashboard-grid .room-public-checkin-mini .weekly-checkin-choice-result small { font-size:10px; }
+  .room-dashboard-grid .room-chat-example-label,
+  .room-dashboard-grid .room-chat-feed .chat-empty-state { font-size:10px; }
+  .room-dashboard-grid .room-chat-feed .chat-conversation-name,
+  .room-dashboard-grid .room-chat-feed .chat-conversation-bubble { font-size:11px; }
+  .room-dashboard-grid .room-chat-feed .chat-conversation-last-time { font-size:10px; }
   .room-dashboard-grid .room-post-feed.post-page-list,
   .room-dashboard-grid .room-chat-feed.chat-conversation-list,
   .room-dashboard-grid .room-tag-widget.tag-design-widget,
