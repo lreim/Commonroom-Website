@@ -5348,6 +5348,14 @@ html.dark-mode .homepage-example-post .post-author span {
   line-height: 1.45;
 }
 
+.landing-summary-open-source {
+  margin: 10px 0 0;
+  color: #6d624e;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 html.dark-mode .landing-summary-card {
   border-color: #493e32;
   background: #312923;
@@ -5368,6 +5376,10 @@ html.dark-mode .landing-summary-card span {
 
 html.dark-mode .landing-summary-disclaimer {
   color: #aaa297;
+}
+
+html.dark-mode .landing-summary-open-source {
+  color: #cbbfa8;
 }
 
 @media (max-width: 767px) {
@@ -11762,6 +11774,7 @@ html.dark-mode .landing-room-secondary-action { color:#f2c4d5; }
 .room-welcome .landing-room-primary-action { margin-top:25px; padding:12px 20px; background:#762f44; font-size:15px; }
 .room-welcome .landing-room-secondary-action { margin-top:15px; font-size:15px; }
 .room-dashboard-note { margin:17px 0 0; color:#75685d; font-family:Georgia,serif; font-size:15px; text-align:center; }
+.room-dashboard-open-source { margin-top:5px; font-family:Arial,sans-serif; font-size:12px; font-weight:700; }
 .room-preview-close { position:absolute; z-index:12; top:8px; right:12px; width:34px; height:34px; border:0; border-radius:50%; background:#f0e4dc; color:#713b4c; font-size:24px; line-height:1; cursor:pointer; }
 .room-dashboard-explorer .landing-feature-preview { z-index:20; }
 .room-dashboard-explorer .landing-preview-content {
@@ -12592,24 +12605,41 @@ html.dark-mode .room-dashboard-explorer .room-tag-guest-preview .room-guest-prof
     min-height:0;
     grid-template-rows:auto auto auto;
     align-items:start;
-    gap:14px;
+    gap:18px;
   }
   .room-dashboard-grid > .room-tile.landing-feature-item,
   .room-dashboard-grid > .room-welcome.landing-room-welcome {
-    height:auto;
+    height:fit-content;
+    align-self:start;
   }
   .room-dashboard-grid > .room-tile.landing-feature-item {
     gap:6px;
     padding:8px;
   }
+  .room-dashboard-grid .room-tile-heading {
+    grid-template-columns:20px minmax(0,1fr);
+    gap:5px;
+  }
+  .room-dashboard-grid .room-tile-icon {
+    width:20px;
+    height:20px;
+    flex-basis:20px;
+  }
+  .room-dashboard-grid .room-tile-heading h2 {
+    font-size:clamp(14px,4vw,17px);
+    line-height:1.12;
+  }
   .room-dashboard-grid .room-post-feed.post-page-list,
   .room-dashboard-grid .room-chat-feed.chat-conversation-list,
   .room-dashboard-grid .room-tag-widget.tag-design-widget,
-  .room-public-checkin-mini.weekly-checkin {
-    flex:none;
+  .room-dashboard-grid .room-public-checkin-mini.weekly-checkin {
+    height:fit-content;
+    min-height:0;
+    flex:0 0 auto;
   }
   .room-dashboard-grid .room-tag-widget.tag-design-widget .tag-main-column {
-    height:auto;
+    height:fit-content;
+    min-height:0;
   }
   .room-dashboard-grid .room-chat-feed > .chat-conversation-card:nth-child(n+2) {
     display:none;
