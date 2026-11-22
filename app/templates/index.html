@@ -84,7 +84,7 @@
             <div><span class="weekly-checkin-kicker">SUNDAY CHECK-IN</span><h3>{{ checkin.question }}</h3></div>
           </div>
           <div class="weekly-checkin-choices">
-            {% for value, label in checkin.choices[:2] %}
+            {% for value, label in checkin.choices[1:3] %}
               <a href="{{ url_for('main.public_checkin', choice=value, _anchor='weekly-checkin') }}">
                 <img src="{{ url_for('static', filename=checkin.images[value]) }}" alt="{{ label }}">
               </a>
