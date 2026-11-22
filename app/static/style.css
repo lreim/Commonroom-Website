@@ -11656,18 +11656,19 @@ html.dark-mode .landing-room-secondary-action { color:#f2c4d5; }
   inset:auto;
   display:grid;
   grid-template-columns:minmax(0,1fr) minmax(0,1.08fr) minmax(0,1fr);
-  grid-template-rows:minmax(0,1.16fr) minmax(0,.84fr);
+  grid-template-rows:auto auto;
   grid-template-areas:"community welcome tags" "checkin welcome chat";
   gap:18px;
-  height:clamp(590px,calc(100vh - 210px),710px);
-  min-height:590px;
+  height:auto;
+  min-height:0;
+  align-items:start;
 }
 .room-dashboard-grid > .room-tile.landing-feature-item {
   display:flex;
   flex-direction:column;
   align-items:stretch;
   gap:12px;
-  height:100%;
+  height:fit-content;
   min-height:0;
   padding:18px 20px;
   overflow:hidden;
@@ -11754,7 +11755,7 @@ html.dark-mode .landing-room-secondary-action { color:#f2c4d5; }
   left:auto;
   grid-area:welcome;
   width:auto;
-  height:100%;
+  height:fit-content;
   min-height:0;
   margin:0;
   padding:36px 26px;
@@ -11812,9 +11813,9 @@ html.dark-mode .room-tag-guest-preview input { border-color:#705954; background:
   .room-dashboard-heading { flex-wrap:wrap; gap:10px; margin-bottom:16px; }
   .room-dashboard-grid.landing-feature-list {
     grid-template-columns:minmax(0,1fr) minmax(0,1.08fr) minmax(0,1fr);
-    grid-template-rows:minmax(0,1.16fr) minmax(0,.84fr);
+    grid-template-rows:auto auto;
     grid-template-areas:"community welcome tags" "checkin welcome chat";
-    height:clamp(520px,calc(100dvh - 160px),660px);
+    height:auto;
     min-height:0;
     gap:12px;
   }
@@ -11836,15 +11837,16 @@ html.dark-mode .room-tag-guest-preview input { border-color:#705954; background:
   .room-dashboard-mode { padding:4px 8px; font-size:9px; }
   .room-dashboard-grid.landing-feature-list {
     grid-template-columns:repeat(2,minmax(0,1fr));
-    grid-template-rows:minmax(0,clamp(152px,24dvh,190px)) minmax(0,1.08fr) minmax(0,.92fr);
+    grid-template-rows:auto auto auto;
     grid-template-areas:"welcome welcome" "community tags" "checkin chat";
     gap:6px;
-    height:calc(100dvh - 135px);
+    height:auto;
     min-height:0;
+    align-items:start;
   }
   .room-dashboard-grid > .room-tile.landing-feature-item {
     min-height:0;
-    height:100%;
+    height:fit-content;
     gap:5px;
     padding:7px 5px;
     border-radius:14px;
@@ -11859,7 +11861,7 @@ html.dark-mode .room-tag-guest-preview input { border-color:#705954; background:
     gap:1px 6px;
     align-content:center;
     min-height:0;
-    height:100%;
+    height:fit-content;
     padding:8px 12px;
     border-radius:17px;
     text-align:left;
