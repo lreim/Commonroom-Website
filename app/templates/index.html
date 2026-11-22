@@ -16,8 +16,8 @@
       <article class="landing-feature-item room-tile room-tile-community" data-feature="community" data-feature-url="{{ url_for('main.post') }}" tabindex="0" aria-label="Community preview">
         <div class="room-tile-heading"><span class="room-tile-icon" aria-hidden="true">♧</span><div><h2>Community</h2><p>Recent public posts from the student community.</p></div></div>
         <ul class="posts post-page-list room-post-feed">
-          {% for post in homepage_posts[:3] %}
-          <li class="post{% if post.is_starter %} post-starter{% endif %}{% if loop.index == 3 %} room-post-mobile-extra{% endif %}">
+          {% for post in homepage_posts %}
+          <li class="post{% if post.is_starter %} post-starter{% endif %}">
             <div class="post-card-date">{{ moment(post.timestamp).fromNow() }}</div>
             <div class="profile-thumbnail">
               {% if post.is_starter %}<img src="{{ url_for('static', filename='Logo_Website_small.jpg') }}" alt="CommonRoom">{% else %}<img src="{{ post.author.gravatar(size=56) }}" alt="">{% endif %}
@@ -43,11 +43,11 @@
           <div class="tag-main-column">
             <form class="room-tag-form form-group" action="{{ url_for('main.tag_search') }}" method="get">
               <label class="sr-only" for="room-tag-input">Search tags</label>
-              <input id="room-tag-input" class="form-control" name="topics" type="search" placeholder="Type a topic (e.g. exam stress)" autocomplete="off">
+              <input id="room-tag-input" class="form-control" name="topics" type="search" placeholder="Search tags" autocomplete="off">
             </form>
             <h4>Existing Tags</h4>
             <div class="tag-list room-tag-chips" aria-label="Existing tags">
-              {% for tag in all_tags[:6] %}
+              {% for tag in preview_tags[:6] %}
               <a class="label label-info" href="{{ url_for('main.tag_search', topics=tag) }}">{{ tag }}</a>
               {% endfor %}
             </div>
@@ -85,7 +85,9 @@
           </div>
           <div class="weekly-checkin-choices">
             {% for value, label in checkin.choices[:2] %}
-              <a href="{{ url_for('main.public_checkin', choice=value, _anchor='weekly-checkin') }}">{{ label }}</a>
+              <a href="{{ url_for('main.public_checkin', choice=value, _anchor='weekly-checkin') }}">
+                <img src="{{ url_for('static', filename=checkin.images[value]) }}" alt="{{ label }}">
+              </a>
             {% endfor %}
           </div>
         </div>
@@ -160,13 +162,18 @@
       <article class="landing-preview-content" data-preview-content="tag-search">
         {% if current_user.is_authenticated %}
         <div class="tag-two-column-layout tag-design-widget landing-tag-preview" data-tag-widget="search" data-search-endpoint="{{ url_for('main.tag_search_api') }}" data-all-tags='{{ all_tags|tojson }}' data-can-request-chat="true">
-          <div class="tag-main-column"><div class="form-group"><input id="tag-search-input" class="form-control" type="text" placeholder="Type a topic (e.g. exam stress, loneliness)"></div><div id="tag-search-status" class="onboarding-semantic-status"></div><h4>Selected Tags</h4><div id="tag-selected-list" class="tag-list"></div><h4>Matches</h4><div id="tag-search-results" class="tag-results"></div></div>
+          <div class="tag-main-column"><div class="form-group"><input id="tag-search-input" class="form-control" type="text" placeholder="Search tags"></div><div id="tag-search-status" class="onboarding-semantic-status"></div><h4>Selected Tags</h4><div id="tag-selected-list" class="tag-list"></div><h4>Matches</h4><div id="tag-search-results" class="tag-results"></div></div>
           <aside class="tag-side-column"><h4>Existing Tags</h4><div id="tag-existing-list" class="tag-list"></div></aside>
         </div>
         {% else %}
-        <div class="tag-two-column-layout tag-design-widget landing-tag-preview room-tag-guest-preview">
-          <div class="tag-main-column"><form action="{{ url_for('main.tag_search') }}" method="get"><label class="sr-only" for="room-preview-tag-input">Search a topic</label><input id="room-preview-tag-input" class="form-control" name="topics" type="search" placeholder="Type a topic (e.g. exam stress)"></form><h4>Selected Tags</h4><div class="tag-list"></div><h4>Matches</h4><p>Sign in to see matching profiles and connect anonymously.</p></div>
-          <aside class="tag-side-column"><h4>Existing Tags</h4><div class="tag-list room-tag-chips">{% for tag in all_tags[:12] %}<a class="label label-info" href="{{ url_for('main.tag_search', topics=tag) }}">{{ tag }}</a>{% endfor %}</div></aside>
+        <div class="tag-design-widget landing-tag-preview room-tag-guest-preview" data-preview-endpoint="{{ url_for('main.tag_search_preview_api') }}" data-login-url="{{ url_for('auth.login') }}" data-tags-url="{{ url_for('main.tag_search') }}">
+          <form class="room-guest-tag-form" action="{{ url_for('main.tag_search') }}" method="get"><label class="sr-only" for="room-preview-tag-input">Search a topic</label><input id="room-preview-tag-input" class="form-control" name="topics" type="search" placeholder="Search tags" autocomplete="off" maxlength="80"></form>
+          <div class="room-tag-guest-tags"><h4>Existing Tags</h4><div class="tag-list room-tag-chips">{% for tag in preview_tags %}<button class="label label-info" type="button" data-preview-tag="{{ tag }}" aria-pressed="false">{{ tag }}</button>{% endfor %}</div></div>
+          <div class="room-guest-profile-results" aria-live="polite" hidden>
+            <strong class="room-guest-profile-label">Matching profiles</strong>
+            <div class="room-guest-profile-list"></div>
+            <p class="room-guest-profile-note">Sign in to open a profile or connect.</p>
+          </div>
         </div>
         {% endif %}
       </article>
@@ -197,6 +204,7 @@
             {% endfor %}
             {% endif %}
           </ul>
+          <a class="room-chat-preview-action" href="{{ chat_href }}">{% if current_user.is_authenticated %}Open chats{% else %}Start a chat{% endif %}</a>
         </section>
       </article>
     </div>
@@ -204,6 +212,20 @@
 
   <p class="room-dashboard-note">You can read public posts without an account.</p>
 </main>
+
+<dialog class="room-founder-panel" id="room-founder-panel" aria-labelledby="room-founder-title">
+  <button class="room-founder-close" type="button" aria-label="Close introduction">&times;</button>
+  <div class="room-founder-intro">
+    <div class="about-founder-silhouette" role="img" aria-label="Cute paintbrush avatar of the CommonRoom founder"></div>
+    <div class="room-founder-copy">
+      <h2 id="room-founder-title">Hi friend, I'm Lissy. I built this :)</h2>
+      <p>I am so happy to see you here :))</p>
+      <p>May I introduce myself real quick: <br>
+        I am a physics student in my fifth Bachelor’s semester. I love doing many different things, from sports and creative projects to tech stuff, and I randomly came up with this idea one night.</p>
+    </div>
+  </div>
+  <a class="room-founder-more" href="{{ url_for('main.about') }}" aria-label="Read more about Lissy">More &rarr;</a>
+</dialog>
 
 <section class="landing-summary" aria-labelledby="landing-summary-title">
   <a class="room-info-cue" href="#landing-summary-links" aria-label="Scroll to more information about CommonRoom">
@@ -257,19 +279,55 @@
 <script src="{{ url_for('static', filename='tag_search_widget.js') }}"></script>
 <script>
 (function () {
+  var panel = document.getElementById('room-founder-panel');
+  if (!panel || !panel.showModal) return;
+  var storageKey = 'commonroomFounderIntroDismissed';
+
+  function openIntro() {
+    if (!panel.open) panel.showModal();
+  }
+
+  function closeIntro() {
+    if (panel.open) panel.close();
+  }
+
+  panel.querySelector('.room-founder-close').addEventListener('click', closeIntro);
+  panel.querySelector('.room-founder-more').addEventListener('click', function () {
+    try { sessionStorage.setItem(storageKey, '1'); } catch (error) {}
+  });
+  panel.addEventListener('click', function (event) {
+    if (event.target !== panel) return;
+    var bounds = panel.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right ||
+        event.clientY < bounds.top || event.clientY > bounds.bottom) closeIntro();
+  });
+  panel.addEventListener('close', function () {
+    try { sessionStorage.setItem(storageKey, '1'); } catch (error) {}
+  });
+
+  try {
+    if (sessionStorage.getItem(storageKey) !== '1') openIntro();
+  } catch (error) {
+    openIntro();
+  }
+})();
+
+(function () {
   var explorer = document.querySelector('[data-landing-features] .landing-feature-explorer');
   if (!explorer) return;
   var items = Array.prototype.slice.call(explorer.querySelectorAll('[data-feature]'));
   var previews = Array.prototype.slice.call(explorer.querySelectorAll('[data-preview-content]'));
+  var previewWindow = explorer.querySelector('.landing-feature-preview');
   var fitFrame;
 
-  function fitCards(selector, boundary) {
+  function fitCards(selector, boundary, minVisible) {
     if (!boundary) return;
     var cards = Array.prototype.slice.call(explorer.querySelectorAll(selector));
     cards.forEach(function (card) { card.classList.remove('room-fit-hidden'); });
     var visible = cards.filter(function (card) { return getComputedStyle(card).display !== 'none'; });
     var bottom = boundary.getBoundingClientRect().bottom - parseFloat(getComputedStyle(boundary).paddingBottom || 0) - 2;
-    while (visible.length > 1 && visible[visible.length - 1].getBoundingClientRect().bottom > bottom) {
+    var minimum = typeof minVisible === 'number' ? minVisible : 1;
+    while (visible.length > minimum && visible[visible.length - 1].getBoundingClientRect().bottom > bottom) {
       visible.pop().classList.add('room-fit-hidden');
     }
   }
@@ -288,12 +346,16 @@
   function fitVisibleContent() {
     fitCards('.room-post-feed > .post', explorer.querySelector('.room-post-feed'));
     fitCards('.room-chat-feed > .chat-conversation-card', explorer.querySelector('.room-chat-feed'));
-    fitCards('.room-tag-widget .room-tag-chips > a', explorer.querySelector('.room-tag-widget .tag-main-column'));
+    fitCards('.room-tag-widget .room-tag-chips > a', explorer.querySelector('.room-tag-widget .tag-main-column'), 0);
     fitCheckin();
     if (!explorer.classList.contains('has-active-preview')) return;
     fitCards('.landing-live-posts > .landing-live-post', explorer.querySelector('.landing-live-posts'));
-    fitCards('.room-chat-preview-feed > .chat-conversation-card', explorer.querySelector('.room-chat-preview-list'));
+    fitCards('.room-chat-preview-feed > .chat-conversation-card', explorer.querySelector('.room-chat-preview-feed'));
     fitCards('.landing-tag-preview .tag-side-column .tag-list > a', explorer.querySelector('.landing-tag-preview .tag-side-column'));
+    if (explorer.querySelector('[data-preview-content="checkins"].is-active')) {
+      fitCards('.landing-public-checkin-preview .weekly-checkin-choices > a',
+        explorer.querySelector('.landing-public-checkin-preview .weekly-checkin'));
+    }
   }
 
   function scheduleFit() {
@@ -309,13 +371,31 @@
   if (document.fonts) document.fonts.ready.then(scheduleFit);
   scheduleFit();
 
+  function positionPreview(sourceItem, updateStart) {
+    var explorerRect = explorer.getBoundingClientRect();
+    var itemRect = sourceItem.getBoundingClientRect();
+    if (updateStart) {
+      explorer.style.setProperty('--preview-start-left', (itemRect.left - explorerRect.left) + 'px');
+      explorer.style.setProperty('--preview-start-top', (itemRect.top - explorerRect.top) + 'px');
+      explorer.style.setProperty('--preview-start-width', itemRect.width + 'px');
+      explorer.style.setProperty('--preview-start-height', itemRect.height + 'px');
+    }
+    var finalWidth = Math.min(itemRect.width * 1.2, explorerRect.width - 16, window.innerWidth - 24);
+    var finalHeight = Math.min(itemRect.height * 1.2, window.innerHeight - 80);
+    var left = Math.max(8, Math.min(itemRect.left - explorerRect.left - (finalWidth - itemRect.width) / 2,
+      explorerRect.width - finalWidth - 8));
+    var viewportTop = Math.max(66, Math.min(itemRect.top - (finalHeight - itemRect.height) / 2,
+      window.innerHeight - finalHeight - 12));
+    explorer.style.setProperty('--preview-final-left', left + 'px');
+    explorer.style.setProperty('--preview-final-top', (viewportTop - explorerRect.top) + 'px');
+    explorer.style.setProperty('--preview-final-width', finalWidth + 'px');
+    explorer.style.setProperty('--preview-final-height', finalHeight + 'px');
+  }
+
   function keepPreviewInViewport() {
     if (!explorer.classList.contains('has-active-preview')) return;
-    var explorerRect = explorer.getBoundingClientRect();
-    var finalHeight = Math.min(explorerRect.height - 24, window.innerHeight - 84, 640);
-    var viewportTop = Math.max(66, (window.innerHeight - finalHeight) / 2);
-    explorer.style.setProperty('--preview-final-top', (viewportTop - explorerRect.top) + 'px');
-    explorer.style.setProperty('--preview-final-height', finalHeight + 'px');
+    var activeItem = items.find(function (item) { return item.classList.contains('is-active'); });
+    if (activeItem) positionPreview(activeItem, false);
   }
 
   function activate(feature, sourceItem) {
@@ -331,19 +411,7 @@
     });
 
     if (sourceItem) {
-      var explorerRect = explorer.getBoundingClientRect();
-      var itemRect = sourceItem.getBoundingClientRect();
-      explorer.style.setProperty('--preview-start-left', (itemRect.left - explorerRect.left) + 'px');
-      explorer.style.setProperty('--preview-start-top', (itemRect.top - explorerRect.top) + 'px');
-      explorer.style.setProperty('--preview-start-width', itemRect.width + 'px');
-      explorer.style.setProperty('--preview-start-height', itemRect.height + 'px');
-      var finalWidth = Math.min(explorerRect.width - 24, 920);
-      var finalHeight = Math.min(explorerRect.height - 24, window.innerHeight - 84, 640);
-      var viewportTop = Math.max(66, (window.innerHeight - finalHeight) / 2);
-      explorer.style.setProperty('--preview-final-left', ((explorerRect.width - finalWidth) / 2) + 'px');
-      explorer.style.setProperty('--preview-final-top', (viewportTop - explorerRect.top) + 'px');
-      explorer.style.setProperty('--preview-final-width', finalWidth + 'px');
-      explorer.style.setProperty('--preview-final-height', finalHeight + 'px');
+      positionPreview(sourceItem, true);
       requestAnimationFrame(function () { explorer.classList.add('is-preview-expanded'); });
     }
     scheduleFit();
@@ -359,14 +427,10 @@
 
   items.forEach(function (item) {
     item.addEventListener('mouseenter', function () {
-      if (window.innerWidth > 850 && window.matchMedia('(hover: hover)').matches) activate(item.dataset.feature, item);
+      if (window.innerWidth > 850 && window.matchMedia('(hover: hover)').matches && !item.classList.contains('is-active')) activate(item.dataset.feature, item);
     });
     item.addEventListener('click', function (event) {
       if (event.target.closest('a, input, button, form')) return;
-      if (item.dataset.feature === 'checkins') {
-        window.location.href = item.dataset.featureUrl;
-        return;
-      }
       if (item.classList.contains('is-active') && explorer.classList.contains('has-active-preview') && item.dataset.featureUrl) {
         window.location.href = item.dataset.featureUrl;
         return;
@@ -376,12 +440,31 @@
     item.addEventListener('keydown', function (event) {
       if (event.target !== item || (event.key !== 'Enter' && event.key !== ' ')) return;
       event.preventDefault();
-      if (item.dataset.feature === 'checkins') {
+      if (item.classList.contains('is-active') && explorer.classList.contains('has-active-preview') && item.dataset.featureUrl) {
         window.location.href = item.dataset.featureUrl;
         return;
       }
       activate(item.dataset.feature, item);
     });
+  });
+
+  explorer.addEventListener('pointermove', function (event) {
+    if (!explorer.classList.contains('has-active-preview') ||
+        window.innerWidth <= 850 ||
+        !window.matchMedia('(hover: hover)').matches ||
+        (event.pointerType !== 'mouse' && event.pointerType !== 'pen')) return;
+
+    var overPreview = previewWindow.contains(event.target);
+    if (overPreview && event.target.closest('a, button, input, textarea, select, summary, label, form')) return;
+
+    var nextItem = items.find(function (item) {
+      var rect = item.getBoundingClientRect();
+      return event.clientX >= rect.left && event.clientX < rect.right &&
+             event.clientY >= rect.top && event.clientY < rect.bottom;
+    });
+    if (nextItem && !nextItem.classList.contains('is-active')) {
+      activate(nextItem.dataset.feature, nextItem);
+    }
   });
 
   explorer.addEventListener('mouseleave', hidePreview);
@@ -404,6 +487,161 @@
   });
   window.addEventListener('scroll', keepPreviewInViewport, { passive: true });
   window.addEventListener('resize', keepPreviewInViewport);
+})();
+
+(function () {
+  var root = document.querySelector('.room-tag-guest-preview');
+  if (!root) return;
+  var form = root.querySelector('.room-guest-tag-form');
+  var input = root.querySelector('#room-preview-tag-input');
+  var results = root.querySelector('.room-guest-profile-results');
+  var list = root.querySelector('.room-guest-profile-list');
+  var chips = Array.prototype.slice.call(root.querySelectorAll('[data-preview-tag]'));
+  var tile = document.querySelector('.room-tile-tags');
+  var tileForm = tile && tile.querySelector('.room-tag-form');
+  var tileInput = tile && tile.querySelector('#room-tag-input');
+  var previewWindow = root.closest('.landing-feature-preview');
+  var previewContent = root.closest('[data-preview-content]');
+  var selected = new Set();
+  var latestRequest = 0;
+  var searchTimer;
+
+  function destinationUrl() {
+    var destination = new URL(root.dataset.tagsUrl, window.location.origin);
+    var terms = Array.from(selected).sort();
+    var query = input.value.trim();
+    if (query && !terms.includes(query.toLowerCase())) terms.push(query);
+    if (terms.length) destination.searchParams.set('topics', terms.join(', '));
+    return destination;
+  }
+
+  function loginUrl() {
+    var destination = destinationUrl();
+    var login = new URL(root.dataset.loginUrl, window.location.origin);
+    login.searchParams.set('next', destination.pathname + destination.search);
+    login.searchParams.set('gate', '1');
+    return login.pathname + login.search;
+  }
+
+  function saveSearchState() {
+    try {
+      sessionStorage.setItem('commonroom_tagsearch_state', JSON.stringify({
+        query: input.value.trim(), selectedTags: Array.from(selected), selectedProfileLabels: []
+      }));
+    } catch (error) { /* The URL still carries the topics. */ }
+  }
+
+  function openFromTile(topic, selectTag) {
+    if (selectTag) selected.add(topic.trim().toLowerCase());
+    else input.value = topic.trim();
+    runSearch();
+    var explorer = tile && tile.closest('.landing-feature-explorer');
+    if (tile && explorer && (!tile.classList.contains('is-active') || !explorer.classList.contains('has-active-preview'))) {
+      tile.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }
+  }
+
+  function renderProfiles(profiles) {
+    list.replaceChildren();
+    if (!profiles.length) {
+      var empty = document.createElement('p');
+      empty.className = 'room-guest-profile-empty';
+      empty.textContent = 'No matching profiles for these topics yet.';
+      list.appendChild(empty);
+      return;
+    }
+    profiles.forEach(function (profile) {
+      var card = document.createElement('a');
+      card.className = 'room-guest-profile-card';
+      card.href = loginUrl();
+      card.setAttribute('aria-label', 'Sign in to view ' + profile.username);
+      card.addEventListener('click', saveSearchState);
+
+      var avatar = document.createElement('img');
+      avatar.src = profile.avatar_url;
+      avatar.alt = '';
+      var details = document.createElement('span');
+      details.className = 'room-guest-profile-details';
+      var username = document.createElement('strong');
+      username.textContent = profile.username;
+      var match = document.createElement('small');
+      match.textContent = 'Shared: ' + profile.matching_tags.join(', ');
+      details.append(username, match);
+      card.append(avatar, details);
+      list.appendChild(card);
+    });
+  }
+
+  function runSearch() {
+    var query = input.value.trim();
+    var hasTerms = selected.size > 0 || query.length > 0;
+    results.hidden = !hasTerms;
+    root.classList.toggle('has-demo-results', hasTerms);
+    chips.forEach(function (chip) {
+      chip.setAttribute('aria-pressed', String(selected.has(chip.dataset.previewTag.toLowerCase())));
+    });
+    var destination = destinationUrl();
+    tile.dataset.featureUrl = destination.pathname + destination.search;
+    saveSearchState();
+    list.replaceChildren();
+    var requestId = ++latestRequest;
+    if (!hasTerms) return;
+    var pending = document.createElement('p');
+    pending.className = 'room-guest-profile-empty';
+    pending.textContent = 'Finding matching profiles…';
+    list.appendChild(pending);
+    var params = new URLSearchParams();
+    if (query) params.set('q', query);
+    Array.from(selected).sort().forEach(function (tag) { params.append('tags', tag); });
+    fetch(root.dataset.previewEndpoint + '?' + params.toString(), { headers: { Accept: 'application/json' } })
+      .then(function (response) { if (!response.ok) throw new Error('Preview search failed'); return response.json(); })
+      .then(function (data) { if (requestId === latestRequest) renderProfiles(data.profiles || []); })
+      .catch(function () {
+        if (requestId !== latestRequest) return;
+        list.replaceChildren();
+        var message = document.createElement('p');
+        message.className = 'room-guest-profile-empty';
+        message.textContent = 'Matches could not be loaded right now.';
+        list.appendChild(message);
+      });
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    clearTimeout(searchTimer);
+    runSearch();
+  });
+  input.addEventListener('input', function () {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(runSearch, 180);
+  });
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var tag = chip.dataset.previewTag.toLowerCase();
+      if (selected.has(tag)) selected.delete(tag);
+      else selected.add(tag);
+      runSearch();
+    });
+  });
+  if (tileForm) {
+    tileForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      openFromTile(tileInput.value, false);
+    });
+    tile.querySelectorAll('.room-tag-chips a').forEach(function (chip) {
+      chip.addEventListener('click', function (event) {
+        event.preventDefault();
+        openFromTile(chip.textContent, true);
+      });
+    });
+  }
+  previewWindow.addEventListener('click', function (event) {
+    if (!previewContent.classList.contains('is-active') ||
+        event.target.closest('a, button, input, textarea, select, label, form')) return;
+    event.stopPropagation();
+    saveSearchState();
+    window.location.href = loginUrl();
+  });
 })();
 
 document.querySelectorAll('[data-like-url]').forEach(function (button) {

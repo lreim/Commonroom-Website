@@ -8,11 +8,12 @@
       <p>Answer anonymously.</p>
     </div>
   </div>
-  <div class="weekly-checkin-choices">
+  <div class="weekly-checkin-choices weekly-checkin-cat-choices">
     {% for value, label in checkin.choices %}
       {% if is_preview %}
         <a class="weekly-checkin-choice" href="{{ url_for('main.public_checkin', choice=value, _anchor='weekly-checkin') }}">
-          <span>{{ label }}</span>
+          <img src="{{ url_for('static', filename=checkin.images[value]) }}" alt="{{ label }}">
+          <span class="sr-only">{{ label }}</span>
           <span class="weekly-checkin-choice-result"><i><b style="width: {{ (checkin.counts[value] / checkin.total * 100) if checkin.total else 0 }}%;"></b></i><small>{{ checkin.counts[value] }}</small></span>
         </a>
       {% else %}
@@ -21,7 +22,8 @@
           <input type="hidden" name="choice" value="{{ value }}">
           <input type="hidden" name="next" value="{{ url_for('main.public_checkin') }}">
           <button type="submit" class="weekly-checkin-choice{% if request.args.get('choice') == value %} is-suggested-choice{% endif %}">
-            <span>{{ label }}</span>
+            <img src="{{ url_for('static', filename=checkin.images[value]) }}" alt="{{ label }}">
+            <span class="sr-only">{{ label }}</span>
             <span class="weekly-checkin-choice-result"><i><b style="width: {{ (checkin.counts[value] / checkin.total * 100) if checkin.total else 0 }}%;"></b></i><small>{{ checkin.counts[value] }}</small></span>
           </button>
         </form>

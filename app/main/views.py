@@ -902,6 +902,14 @@ def index():
     form = PostForm()
     reply_form = ReplyForm()
     all_tags = Tag.library_names()
+    preview_tags = [
+        tag.name for tag in Tag.query.join(Tag.users)
+        .filter(Tag.name.in_(all_tags))
+        .distinct()
+        .order_by(Tag.name.asc())
+        .limit(12)
+        .all()
+    ] or all_tags[:12]
     profile_label_choices = [("__none__", "No label")] + User.PROFILE_LABEL_CHOICES
     homepage_posts = (
         Post.query
@@ -948,6 +956,7 @@ def index():
         form=form,
         reply_form=reply_form,
         all_tags=all_tags,
+        preview_tags=preview_tags,
         profile_label_choices=profile_label_choices,
         checkin=_weekly_checkin_context(),
     )
@@ -963,15 +972,24 @@ def public_checkin():
 
 
 CHECKIN_CHOICES = [
-    ('relatable_anonymous_post', 'When I read an anonymous post I deeply relate to'),
-    ('similar_experience_reply', 'When someone replies with a similar experience'),
-    ('share_anonymously', 'When I can share honestly without revealing my identity'),
-    ('shared_tags', 'When I find people through shared interests or tags'),
-    ('private_conversation', 'When I can continue a meaningful conversation privately'),
-    ('regular_checkin', 'When people check in and make space for quieter voices'),
-    ('helpful_support', 'When I find helpful advice or support resources'),
+    ('cat_1', 'Angry and ready to fight'),
+    ('cat_2', 'Doing my best'),
+    ('cat_3', 'Awesome'),
+    ('cat_4', 'Trying to stay positive'),
+    ('cat_5', 'Tired or skeptical'),
+    ('cat_6', 'I need sleep'),
+    ('cat_7', 'Happy and curious'),
 ]
-CHECKIN_QUESTION = "When do you feel most understood and accepted in a community?"
+CHECKIN_QUESTION = "Which cat describes this week's mood best?"
+CHECKIN_IMAGES = {
+    'cat_1': 'sunday-checkin-cats/cat-1.png',
+    'cat_2': 'sunday-checkin-cats/cat-2.png',
+    'cat_3': 'sunday-checkin-cats/cat-3.png',
+    'cat_4': 'sunday-checkin-cats/cat-4.png',
+    'cat_5': 'sunday-checkin-cats/cat-5.png',
+    'cat_6': 'sunday-checkin-cats/cat-6.png',
+    'cat_7': 'sunday-checkin-cats/cat-7.png',
+}
 CHECKIN_LEGACY_CHOICES = [
     ('listening', 'A listening ear'),
     ('advice', 'Practical advice'),
@@ -1027,6 +1045,7 @@ def _weekly_checkin_context():
         'week_key': week_key,
         'question': CHECKIN_QUESTION,
         'choices': CHECKIN_CHOICES,
+        'images': CHECKIN_IMAGES,
         'counts': counts,
         'total': total,
         'answered': answered,
@@ -2154,6 +2173,55 @@ def tag_search():
 @main.route('/get-help-now')
 def get_help_now():
     return render_template('get_help_now.html', active_page='get_help_now')
+
+@main.route('/tags/preview')
+def tag_search_preview_api():
+    """Show a small, anonymous sample of real tag matches before sign-in."""
+    query = request.args.get('q', '', type=str).strip()[:80]
+    available_tags = Tag.library_names()
+    available_names = set(available_tags)
+    selected_tags = []
+    for value in request.args.getlist('tags'):
+        name = value.strip().lower()
+        if name in available_names and name not in selected_tags:
+            selected_tags.append(name)
+        if len(selected_tags) == 24:
+            break
+
+    if not query and not selected_tags:
+        return jsonify({'profiles': []})
+
+    tag_scores = {name: 2.0 for name in selected_tags}
+    if query:
+        for match in match_tags(query, available_tags):
+            name = match['name']
+            tag_scores[name] = max(tag_scores.get(name, 0), match['score'])
+
+    profiles_by_id = {}
+    for tag in Tag.query.filter(Tag.name.in_(tag_scores)).all():
+        for user in tag.users.order_by(User.username.asc()).all():
+            if not user.username or (current_user.is_authenticated and user.id == current_user.id):
+                continue
+            profile = profiles_by_id.setdefault(user.id, {
+                'user': user, 'matching_tags': set(), 'selected_count': 0, 'score': 0,
+            })
+            profile['matching_tags'].add(tag.name)
+            profile['selected_count'] += int(tag.name in selected_tags)
+            profile['score'] += tag_scores[tag.name]
+
+    ranked = sorted(
+        profiles_by_id.values(),
+        key=lambda item: (-item['selected_count'], -len(item['matching_tags']),
+                          -item['score'], item['user'].username.lower()),
+    )[:2]
+    return jsonify({'profiles': [
+        {
+            'username': item['user'].username,
+            'avatar_url': item['user'].gravatar(size=56),
+            'matching_tags': sorted(item['matching_tags']),
+        }
+        for item in ranked
+    ]})
 
 @main.route('/tags/search')
 @login_required
