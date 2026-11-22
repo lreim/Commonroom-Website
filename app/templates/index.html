@@ -344,7 +344,7 @@
   }
 
   function fitVisibleContent() {
-    var contentSizedPhone = window.matchMedia('(max-width:600px) and (min-height:621px)').matches;
+    var contentSizedPhone = window.matchMedia('(max-width:600px)').matches;
     if (contentSizedPhone) {
       explorer.querySelectorAll('.room-post-feed > .post, .room-chat-feed > .chat-conversation-card, .room-tag-widget .room-tag-chips > a, .room-public-checkin-mini .weekly-checkin-choices a').forEach(function (item) {
         item.classList.remove('room-fit-hidden');
@@ -360,7 +360,7 @@
     fitCards('.room-chat-preview-feed > .chat-conversation-card', explorer.querySelector('.room-chat-preview-feed'));
     fitCards('.landing-tag-preview .tag-side-column .tag-list > a', explorer.querySelector('.landing-tag-preview .tag-side-column'));
     if (explorer.querySelector('[data-preview-content="checkins"].is-active')) {
-      if (contentSizedPhone) {
+      if (window.matchMedia('(max-width:600px) and (min-height:621px)').matches) {
         explorer.querySelectorAll('.landing-public-checkin-preview .weekly-checkin-choices > a').forEach(function (item) {
           item.classList.remove('room-fit-hidden');
         });

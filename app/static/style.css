@@ -12582,14 +12582,17 @@ html.dark-mode .room-dashboard-explorer .room-tag-guest-preview .room-guest-prof
   .room-dashboard-explorer .room-chat-preview-action { min-height:18px; margin-top:2px; padding:1px 7px; font-size:8px; }
 }
 
-/* On taller phones, let each dashboard row follow its visible content. */
-@media (max-width:600px) and (min-height:621px) {
+/* Phone tiles follow their content rather than the viewport height. */
+@media (max-width:600px) {
+  .landing-feature-page.room-dashboard { padding:20px 0 28px; }
+  .room-dashboard-heading { margin-bottom:20px; }
+  .room-dashboard-note { margin-top:18px; }
   .room-dashboard-grid.landing-feature-list {
     height:auto;
     min-height:0;
     grid-template-rows:auto auto auto;
     align-items:start;
-    gap:8px;
+    gap:14px;
   }
   .room-dashboard-grid > .room-tile.landing-feature-item,
   .room-dashboard-grid > .room-welcome.landing-room-welcome {
