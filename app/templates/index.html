@@ -145,7 +145,7 @@
             <div class="post-content">
               <div class="post-category-status-row"><span class="post-category-label">{{ post.post_type|capitalize }}</span></div>
               <div class="post-author">{% if post.is_starter %}CommonRoom{% else %}{{ post.author.username }}{% endif %}</div>
-              <div class="post-body">{{ post.body }}</div>
+              <div class="post-body">{{ post.body|striptags|truncate(180, True, '…') }}</div>
               <div class="post-meta-actions landing-live-post-actions">
                 <a class="post-like-button landing-preview-action-link" href="{{ url_for('main.post', _anchor='post-' ~ post.id) if current_user.is_authenticated else url_for('auth.login', next=url_for('main.post', _anchor='post-' ~ post.id), intent='relate') }}">Relate · {{ post.liked_by.count() }}</a>
                 {% if post.descendant_reply_count > 0 %}<a class="post-thread-link landing-preview-action-link" href="{{ url_for('main.post', _anchor='post-' ~ post.id) }}">↳ {{ post.descendant_reply_count }} replies</a>{% endif %}
@@ -344,17 +344,30 @@
   }
 
   function fitVisibleContent() {
-    fitCards('.room-post-feed > .post', explorer.querySelector('.room-post-feed'));
-    fitCards('.room-chat-feed > .chat-conversation-card', explorer.querySelector('.room-chat-feed'));
-    fitCards('.room-tag-widget .room-tag-chips > a', explorer.querySelector('.room-tag-widget .tag-main-column'), 0);
-    fitCheckin();
+    var contentSizedPhone = window.matchMedia('(max-width:600px) and (min-height:700px)').matches;
+    if (contentSizedPhone) {
+      explorer.querySelectorAll('.room-post-feed > .post, .room-chat-feed > .chat-conversation-card, .room-tag-widget .room-tag-chips > a, .room-public-checkin-mini .weekly-checkin-choices a').forEach(function (item) {
+        item.classList.remove('room-fit-hidden');
+      });
+    } else {
+      fitCards('.room-post-feed > .post', explorer.querySelector('.room-post-feed'));
+      fitCards('.room-chat-feed > .chat-conversation-card', explorer.querySelector('.room-chat-feed'));
+      fitCards('.room-tag-widget .room-tag-chips > a', explorer.querySelector('.room-tag-widget .tag-main-column'), 0);
+      fitCheckin();
+    }
     if (!explorer.classList.contains('has-active-preview')) return;
     fitCards('.landing-live-posts > .landing-live-post', explorer.querySelector('.landing-live-posts'));
     fitCards('.room-chat-preview-feed > .chat-conversation-card', explorer.querySelector('.room-chat-preview-feed'));
     fitCards('.landing-tag-preview .tag-side-column .tag-list > a', explorer.querySelector('.landing-tag-preview .tag-side-column'));
     if (explorer.querySelector('[data-preview-content="checkins"].is-active')) {
-      fitCards('.landing-public-checkin-preview .weekly-checkin-choices > a',
-        explorer.querySelector('.landing-public-checkin-preview .weekly-checkin'));
+      if (contentSizedPhone) {
+        explorer.querySelectorAll('.landing-public-checkin-preview .weekly-checkin-choices > a').forEach(function (item) {
+          item.classList.remove('room-fit-hidden');
+        });
+      } else {
+        fitCards('.landing-public-checkin-preview .weekly-checkin-choices > a',
+          explorer.querySelector('.landing-public-checkin-preview .weekly-checkin'));
+      }
     }
   }
 

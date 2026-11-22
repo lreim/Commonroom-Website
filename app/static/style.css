@@ -11469,7 +11469,7 @@ html.dark-mode .landing-onboarding-scene.onboarding-post-examples { background:#
 .landing-live-post { min-height:0; height:100%; margin:0; padding:12px; overflow:hidden; }
 .landing-live-post .profile-thumbnail { flex-basis:34px; }
 .landing-live-post .profile-thumbnail img { width:34px; height:34px; }
-.landing-live-post .post-body { max-height:4.35em; overflow:hidden; font-size:clamp(13px,1.25vw,17px); line-height:1.45; }
+.landing-live-post .post-body { display:-webkit-box; max-height:4.05em; overflow:hidden; font-size:13px; line-height:1.35; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
 .landing-live-post .post-date { font-size:11px; }
 .landing-live-post .post-author { font-size:13px; }
 .landing-live-post .post-content { min-width:0; }
@@ -12103,7 +12103,7 @@ html.dark-mode .room-tag-guest-preview.tag-design-widget .room-tag-chips .label 
 .room-dashboard-explorer .room-chat-preview-feed .chat-conversation-link { padding:8px; gap:8px; }
 .room-dashboard-explorer .room-chat-preview-feed .chat-conversation-avatar { width:36px; height:36px; flex-basis:36px; }
 .room-dashboard-explorer .room-chat-preview-feed .chat-conversation-bubble { flex:1 1 150px; min-width:0; overflow:visible; font-size:12px; text-align:left; text-overflow:clip; white-space:normal; overflow-wrap:anywhere; }
-.room-dashboard-explorer .landing-live-post .post-body { max-height:none; overflow:visible; }
+.room-dashboard-explorer .landing-live-post .post-body { display:-webkit-box; max-height:4.05em; overflow:hidden; font-size:13px; line-height:1.35; -webkit-box-orient:vertical; -webkit-line-clamp:3; }
 .room-dashboard-explorer .landing-live-post { overflow:visible; }
 .room-dashboard-grid .room-post-feed.post-page-list { display:flex; flex-direction:column; }
 .room-dashboard-grid .room-post-feed .post-card-date,
@@ -12580,4 +12580,110 @@ html.dark-mode .room-dashboard-explorer .room-tag-guest-preview .room-guest-prof
   .room-dashboard-explorer .room-chat-preview-feed .chat-conversation-name { font-size:7px; }
   .room-dashboard-explorer .room-chat-preview-feed .chat-conversation-bubble { padding:1px 2px; font-size:7px; line-height:1; }
   .room-dashboard-explorer .room-chat-preview-action { min-height:18px; margin-top:2px; padding:1px 7px; font-size:8px; }
+}
+
+/* On taller phones, let each dashboard row follow its visible content. */
+@media (max-width:600px) and (min-height:700px) {
+  .room-dashboard-grid.landing-feature-list {
+    height:auto;
+    min-height:0;
+    grid-template-rows:auto auto auto;
+    align-items:stretch;
+    gap:8px;
+  }
+  .room-dashboard-grid > .room-tile.landing-feature-item,
+  .room-dashboard-grid > .room-welcome.landing-room-welcome {
+    height:auto;
+  }
+  .room-dashboard-grid > .room-tile.landing-feature-item {
+    gap:6px;
+    padding:8px;
+  }
+  .room-dashboard-grid .room-post-feed.post-page-list,
+  .room-dashboard-grid .room-chat-feed.chat-conversation-list,
+  .room-dashboard-grid .room-tag-widget.tag-design-widget,
+  .room-public-checkin-mini.weekly-checkin {
+    flex:none;
+  }
+  .room-dashboard-grid .room-tag-widget.tag-design-widget .tag-main-column {
+    height:auto;
+  }
+  .room-dashboard-grid .room-chat-feed > .chat-conversation-card:nth-child(n+2) {
+    display:none;
+  }
+  .room-public-checkin-mini .weekly-checkin-choices {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    align-items:start;
+    gap:5px;
+    margin-top:6px;
+  }
+  .room-public-checkin-mini .weekly-checkin-choices a {
+    display:block;
+    min-width:0;
+    padding:3px;
+    border-radius:10px;
+  }
+  .room-public-checkin-mini .weekly-checkin-choices a img {
+    display:block;
+    width:100%;
+    max-height:76px;
+    aspect-ratio:1;
+    border-radius:7px;
+    object-fit:cover;
+  }
+  .room-dashboard-explorer .weekly-checkin-preview .weekly-checkin-choices {
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:3px;
+    margin-top:5px;
+  }
+  .room-dashboard-explorer .landing-public-checkin-preview .weekly-checkin-heading img {
+    display:none;
+  }
+  .room-dashboard-explorer .landing-public-checkin-preview .weekly-checkin h2 {
+    font-size:11px;
+    line-height:1.1;
+  }
+  .room-dashboard-explorer .weekly-checkin-preview .weekly-checkin-choices a {
+    padding:2px;
+    border-radius:6px;
+  }
+  .room-dashboard-explorer .weekly-checkin-preview .weekly-checkin-choice > img {
+    width:min(100%,28px);
+    margin:0 auto;
+  }
+  .room-dashboard-explorer .weekly-checkin-preview .weekly-checkin-choice-result {
+    gap:2px;
+    margin:2px 0 0;
+  }
+  .room-dashboard-explorer .weekly-checkin-preview .weekly-checkin-choice-result small {
+    flex-basis:8px;
+    font-size:7px;
+  }
+}
+
+@media (max-width:600px) and (max-height:620px) {
+  .room-dashboard-grid .room-chat-example-label,
+  .room-dashboard-grid .room-chat-feed .chat-conversation-last-time {
+    display:none;
+  }
+  .room-dashboard-grid .room-chat-feed .chat-conversation-link {
+    grid-template-columns:16px minmax(0,1fr);
+    gap:2px;
+    padding:2px;
+  }
+  .room-dashboard-grid .room-chat-feed .chat-conversation-avatar {
+    width:16px;
+    height:16px;
+    flex-basis:16px;
+  }
+  .room-dashboard-grid .room-chat-feed .chat-conversation-bubble {
+    display:block;
+    overflow:hidden;
+    padding:2px;
+    font-size:7px;
+    line-height:1;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
 }
