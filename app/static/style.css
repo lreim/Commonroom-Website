@@ -12616,8 +12616,12 @@ html.dark-mode .room-dashboard-explorer .room-tag-guest-preview .room-guest-prof
     align-self:start;
   }
   .room-dashboard-grid > .room-tile.landing-feature-item {
+    min-height:170px;
     gap:6px;
     padding:8px;
+  }
+  .room-dashboard-grid > .room-welcome.landing-room-welcome {
+    padding:12px;
   }
   .room-dashboard-grid .room-tile-heading {
     grid-template-columns:20px minmax(0,1fr);
