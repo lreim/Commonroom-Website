@@ -344,7 +344,7 @@
   }
 
   function fitVisibleContent() {
-    var contentSizedPhone = window.matchMedia('(max-width:600px) and (min-height:700px)').matches;
+    var contentSizedPhone = window.matchMedia('(max-width:600px) and (min-height:621px)').matches;
     if (contentSizedPhone) {
       explorer.querySelectorAll('.room-post-feed > .post, .room-chat-feed > .chat-conversation-card, .room-tag-widget .room-tag-chips > a, .room-public-checkin-mini .weekly-checkin-choices a').forEach(function (item) {
         item.classList.remove('room-fit-hidden');
